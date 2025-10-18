@@ -1,0 +1,26 @@
+[
+  { "src": "assets2/1.webp", "width": 800, "height": 1270 },
+  { "src": "assets2/2.webp", "width": 1920, "height": 1080 },
+  { "src": "assets2/3.webp", "width": 1200, "height": 800 },
+  { "src": "assets2/4.webp", "width": 800, "height": 1000 },
+
+  { "src": "assets2/5.webp", "width": 800, "height": 1270 },
+  { "src": "assets2/6.webp", "width": 1920, "height": 1080 },
+  { "src": "assets2/7.webp", "width": 1200, "height": 800 },
+  { "src": "assets2/8.webp", "width": 800, "height": 1000 },
+
+  { "src": "assets2/9.webp", "width": 800, "height": 1270 },
+  { "src": "assets2/10.webp", "width": 1920, "height": 1080 },
+  { "src": "assets2/11.webp", "width": 1200, "height": 800 },
+  { "src": "assets2/12.webp", "width": 800, "height": 1000 },
+
+  { "src": "assets2/13.webp", "width": 800, "height": 1270 },
+  { "src": "assets2/14.webp", "width": 1920, "height": 1080 },
+  { "src": "assets2/15.webp", "width": 1200, "height": 800 },
+  { "src": "assets2/16.webp", "width": 800, "height": 1000 },
+
+  { "src": "assets2/17.webp", "width": 800, "height": 1270 },
+  { "src": "assets2/18.webp", "width": 1920, "height": 1080 },
+  { "src": "assets2/19.webp", "width": 1200, "height": 800 },
+  { "src": "assets2/20.webp", "width": 800, "height": 1000 }
+]

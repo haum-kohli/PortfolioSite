@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Welcome</title>
+<style>
+  body {
+    margin: 0;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    background: black;
+    color: white;
+    font-family: monospace;
+  }
+
+  #menu-logo img {
+    width: 80vw;
+    height: auto;
+    display: block;
+    margin-bottom: 40px;
+  }
+
+  #menu-info {
+    position: absolute;
+    top: 40px;
+    font-size: 2.2em;
+    cursor: default;
+  }
+
+  .enter-link {
+    margin-top: 30px;
+    font-size: 2em;
+    text-decoration: none;
+    color: white;
+    cursor: pointer;
+  }
+
+  .scramble span {
+    display: inline-block;
+    width: 1ch;
+    transform-origin: center center;
+    will-change: transform;
+  }
+</style>
+</head>
+<body>
+
+<div id="menu-info" class="scramble">
+  CONTROLS://_WASD=MOVE_//_CLICK+DRAG=LOOK_AROUND_//_ESC=OPEN_MENU_//
+</div>
+
+<div id="menu-logo">
+  <img src="assets/haumlogofinal.svg" alt="Logo">
+</div>
+
+<a href="index.html" class="enter-link scramble">CLICK_TO_ENTER</a>
+
+<script>
+const letters = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789!@#$%^&* ";
+
+function wrapCharacters(el) {
+  el.innerHTML = el.innerText
+    .split("")
+    .map(c => `<span data-original="${c}">${c}</span>`)
+    .join("");
+}
+
+function scrambleChar(span, delay = 0) {
+  const original = span.dataset.original;
+  const duration = 1000; 
+  const start = performance.now() + delay;
+
+  function animate(time) {
+    const t = (time - start) / duration;
+    if (t < 0) {
+      requestAnimationFrame(animate);
+      return;
+    }
+    if (t >= 1) {
+      span.innerText = original;
+      span.style.transform = "scale(1)";
+      return;
+    }
+
+    
+    const scrambleChance = Math.sin(t * Math.PI) * 0.8 + 0.2; 
+    if (Math.random() < scrambleChance) {
+      span.innerText = letters[Math.floor(Math.random() * letters.length)];
+    }
+
+  
+    const scale = 1 + Math.sin(t * Math.PI) * 0.15;
+    span.style.transform = `scale(${scale})`;
+
+    requestAnimationFrame(animate);
+  }
+
+  requestAnimationFrame(animate);
+}
+
+document.querySelectorAll(".scramble").forEach(el => {
+  wrapCharacters(el);
+  const spans = el.querySelectorAll("span");
+
+  spans.forEach((span, i) => {
+    span.addEventListener("mouseenter", () => {
+      for (let j = i - 2; j <= i + 2; j++) { 
+        if (j >= 0 && j < spans.length) {
+          scrambleChar(spans[j], Math.abs(j - i) * 50);
+        }
+      }
+    });
+  });
+});
+</script>
+
+</body>
+</html>

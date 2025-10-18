@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio - About</title>
+  <style>
+@font-face {
+  font-family: 'Monospace821Bold';
+  src: url('assets/fonts/MONOSPACE821BOLDBT.TTF') format('truetype');
+  font-weight: bold;
+}
+@font-face {
+  font-family: 'Monospace821';
+  src: url('assets/fonts/MONOSPACE821BT.TTF') format('truetype');
+  font-weight: normal;
+}
+@import url('https://fonts.googleapis.com/css?family=Oswald:wght@400;600&display=swap');
+
+body { margin: 0; overflow: hidden; }
+
+/* Reticle */
+#reticle {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2px solid #fff;
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: 100;
+  transition: all 0.2s ease;
+  box-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+#reticle.hover {
+  border-color: #22ff00;
+  box-shadow: 0 0 20px rgba(34,255,0,0.8);
+  transform: scale(1.3);
+}
+
+/* Menu */
+#top-menu {
+  display: none;
+  position: fixed;
+  top: 0; left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.85);
+  backdrop-filter: invert(100%) blur(5px);
+  z-index: 9999;
+  padding: 40px;
+  box-sizing: border-box;
+}
+
+#menu-logo {
+  position: absolute;
+  top: 40px;
+  right: 150px;
+  width: 100px;   
+  height: auto;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+#menu-logo img {
+  width: 200px;
+  height: auto;
+}
+
+#menu-pages {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.menu-btn {
+  font-family: 'monospace821';
+  font-weight: 900;
+  font-size: 15em;
+  background: none;
+  color: #ffffff;
+  cursor: pointer;
+  border: none;
+  text-align: left;
+  text-decoration: underline;
+}
+
+.menu-btn:hover {
+  color: rgb(34, 255, 0);
+}
+
+#menu-info {
+  margin-top: 40px;
+  font-family: 'monospace821';
+  color: #fff;
+  font-size: 1.5em;
+}
+
+/* Click prompt */
+#click-prompt {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: 'Monospace821Bold', monospace;
+  font-size: 2em;
+  color: #fff;
+  background-color: #000;
+  text-align: center;
+  z-index: 500;
+  pointer-events: none;
+  text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+}
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div id="reticle"></div>
+
+<div id="click-prompt">|| CLICK_TO_START ||  ESC=MENU</div>
+
+<div id="top-menu">
+  <div id="menu-pages">
+    <button class="menu-btn" data-url="index.html">HOME</button>
+    <button class="menu-btn" data-url="about.html">ABOUT</button>
+    <button class="menu-btn" data-url="gallery.html">GALLERY</button>
+    <div id="menu-info">
+      <div>// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU //</div>
+    </div>
+  </div>
+  <div id="menu-logo">
+    <a href="home.html">
+      <img src="assets/haumlogofinal.svg" alt="Logo">
+    </a>
+  </div>
+</div>
+
+<script>
+// ===== CONFIG MODULE =====
+const CONFIG = {
+  MOVEMENT_SPEED: 150,
+  JUMP_FORCE: 350,
+  MOUSE_SENSITIVITY: 0.002
+};
+
+// ===== INPUT MANAGER MODULE =====
+const InputManager = {
+  keys: {},
+  pointerLocked: false,
+  
+  init() {
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        return;
+      }
+      this.keys[e.code] = true;
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.code] = false;
+    });
+    
+    document.addEventListener('pointerlockchange', () => {
+      const wasLocked = this.pointerLocked;
+      this.pointerLocked = document.pointerLockElement === document.body;
+      
+      if (this.pointerLocked) {
+        document.getElementById('click-prompt').style.display = 'none';
+      }
+      
+      if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen) {
+        AboutApp.openMenu();
+      }
+    });
+    
+    document.addEventListener('click', () => {
+      if (!this.pointerLocked && !AboutApp.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    });
+  },
+  
+  isKeyPressed(code) {
+    return this.keys[code] || false;
+  }
+};
+
+// ===== SCENE MANAGER MODULE =====
+const SceneManager = {
+  scene: null,
+  camera: null,
+  renderer: null,
+  yaw: null,
+  pitch: null,
+  objects: [],
+  bigbox: null,
+  
+  init() {
+    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    this.pitch = new THREE.Object3D();
+    this.pitch.add(this.camera);
+    this.yaw = new THREE.Object3D();
+    this.yaw.position.y = 20;
+    this.yaw.add(this.pitch);
+    this.yaw.rotation.y = 9.5;
+    
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0xcc11cc);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, 700);
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(0, 300, 50);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.left = -200;
+    dirLight.shadow.camera.right = 200;
+    dirLight.shadow.camera.top = 400;
+    dirLight.shadow.camera.bottom = -400;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 500;
+    this.scene.add(dirLight);
+    this.scene.add(this.yaw);
+    
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(this.renderer.domElement);
+    
+    window.addEventListener('resize', () => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+    
+    this.createEnvironment();
+  },
+  
+  createCheckeredTexture(size = 1024, squares = 32) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const s = size / squares;
+    for (let y = 0; y < squares; y++) {
+      for (let x = 0; x < squares; x++) {
+        ctx.fillStyle = (x + y) % 2 ? '#1976D2' : '#FFD600';
+        ctx.fillRect(x * s, y * s, s, s);
+      }
+    }
+    return new THREE.CanvasTexture(canvas);
+  },
+  
+  createDeformedGeometry(geometry, deformAmount = 10) {
+    const pos = geometry.attributes.position;
+    const vertex = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      vertex.fromBufferAttribute(pos, i);
+      vertex.x += (Math.random() - 0.5) * deformAmount;
+      vertex.y += (Math.random() - 0.5) * deformAmount;
+      vertex.z += (Math.random() - 0.5) * deformAmount;
+      pos.setXYZ(i, vertex.x, vertex.y, vertex.z);
+    }
+    return geometry;
+  },
+  
+  createWall(width, height, segments, position, rotation, deformAmount = 10) {
+    const geometry = this.createDeformedGeometry(
+      new THREE.PlaneGeometry(width, height, segments[0], segments[1]),
+      deformAmount
+    );
+    const texture = this.createCheckeredTexture();
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    
+    const wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+    wall.position.set(...position);
+    if (rotation) wall.rotation.set(...rotation);
+    return wall;
+  },
+  
+  createEnvironment() {
+    const floorGeo = this.createDeformedGeometry(new THREE.PlaneGeometry(200, 500, 20, 40), 2);
+    floorGeo.rotateX(-Math.PI / 2);
+    const tex = this.createCheckeredTexture();
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, 2);
+    const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }));
+    floor.position.set(0, 4, 200);
+    floor.receiveShadow = true;
+    this.scene.add(floor);
+    this.objects.push(floor);
+    
+    const walls = [
+      this.createWall(500, 200, [20, 40], [-100, -1, 200], [0, Math.PI/2, -0.15]),
+      this.createWall(500, 200, [20, 40], [90, 4, 200], [0, Math.PI/2, 0.15]),
+      this.createWall(200, 200, [20, 40], [0, 4, 400], [0.15, 0, 0]),
+      this.createWall(200, 200, [20, 40], [0, 4, 0], [-0.15, 0, 0])
+    ];
+    walls.forEach(wall => {
+      this.scene.add(wall);
+      this.objects.push(wall);
+    });
+    
+    const geometry = new THREE.BoxGeometry(90, 90, 90);
+    const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
+    this.bigbox = new THREE.Mesh(geometry, material);
+    this.bigbox.position.set(0, 50, 175);
+    this.bigbox.castShadow = true;
+    this.bigbox.receiveShadow = true;
+    this.scene.add(this.bigbox);
+  }
+};
+
+// ===== PHYSICS MANAGER MODULE =====
+const PhysicsManager = {
+  velocity: new THREE.Vector3(),
+  direction: new THREE.Vector3(),
+  canJump: false,
+  raycaster: new THREE.Raycaster(),
+  
+  update(delta) {
+    const yaw = SceneManager.yaw;
+    
+    yaw.position.x = Math.max(-95, Math.min(85, yaw.position.x));
+    yaw.position.z = Math.max(5, Math.min(395, yaw.position.z));
+    
+    this.raycaster.ray.origin.copy(yaw.position);
+    this.raycaster.ray.origin.y += 1;
+    this.raycaster.ray.direction.set(0, -1, 0);
+    const hits = this.raycaster.intersectObjects(SceneManager.objects, false);
+    const onGround = hits.length > 0 && hits[0].distance < 2;
+    
+    this.velocity.x -= this.velocity.x * 8 * delta;
+    this.velocity.z -= this.velocity.z * 8 * delta;
+    this.velocity.y -= 5 * 200 * delta;
+    
+    this.direction.set(
+      (InputManager.isKeyPressed('KeyD') || InputManager.isKeyPressed('ArrowRight') ? 1 : 0) - 
+      (InputManager.isKeyPressed('KeyA') || InputManager.isKeyPressed('ArrowLeft') ? 1 : 0),
+      0,
+      (InputManager.isKeyPressed('KeyS') || InputManager.isKeyPressed('ArrowDown') ? 1 : 0) - 
+      (InputManager.isKeyPressed('KeyW') || InputManager.isKeyPressed('ArrowUp') ? 1 : 0)
+    ).normalize();
+    
+    if (this.direction.z) this.velocity.z -= this.direction.z * CONFIG.MOVEMENT_SPEED * delta;
+    if (this.direction.x) this.velocity.x += this.direction.x * CONFIG.MOVEMENT_SPEED * delta;
+    
+    if (!onGround) {
+      const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
+      const maxAir = 300, airAccel = 400;
+      if (this.direction.x && speed < maxAir) this.velocity.x += this.direction.x * airAccel * delta;
+      if (this.direction.z && speed < maxAir) this.velocity.z -= this.direction.z * airAccel * delta;
+    }
+    
+    if (onGround) {
+      this.velocity.y = Math.max(0, this.velocity.y);
+      this.canJump = true;
+    }
+    
+    if (InputManager.isKeyPressed('Space') && this.canJump) {
+      this.velocity.y += CONFIG.JUMP_FORCE;
+      this.canJump = false;
+    }
+    
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(yaw.quaternion).setY(0).normalize();
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(yaw.quaternion).setY(0).normalize();
+    yaw.position.addScaledVector(forward, this.velocity.z * delta);
+    yaw.position.addScaledVector(right, this.velocity.x * delta);
+    yaw.position.y += this.velocity.y * delta;
+    
+    if (yaw.position.y < 20) {
+      this.velocity.y = 0;
+      yaw.position.y = 20;
+      this.canJump = true;
+    }
+  }
+};
+
+// ===== INTERACTION MANAGER MODULE =====
+const InteractionManager = {
+  reticle: null,
+  
+  init() {
+    this.reticle = document.getElementById('reticle');
+    
+    document.addEventListener('mousemove', (e) => {
+      if (InputManager.pointerLocked && !AboutApp.menuOpen) {
+        SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
+        SceneManager.pitch.rotation.x = Math.max(
+          -Math.PI/2, 
+          Math.min(Math.PI/2, SceneManager.pitch.rotation.x - e.movementY * CONFIG.MOUSE_SENSITIVITY)
+        );
+      }
+    });
+  }
+};
+
+// ===== MAIN APP MODULE =====
+const AboutApp = {
+  menuOpen: false,
+  animationId: null,
+  prevTime: performance.now(),
+  
+  init() {
+    InputManager.init();
+    SceneManager.init();
+    InteractionManager.init();
+    
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const url = e.target.dataset.url;
+        if (url) window.location.href = url;
+      });
+    });
+    
+    document.getElementById('top-menu').addEventListener('click', (e) => {
+      if (e.target.id === 'top-menu' || e.target.id === 'menu-info') {
+        this.closeMenu();
+      }
+    });
+    
+    this.animate();
+  },
+  
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = this.menuOpen ? 'flex' : 'none';
+    
+    if (this.menuOpen) {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+    } else {
+      document.body.requestPointerLock();
+    }
+  },
+  
+  openMenu() {
+    if (this.menuOpen) return;
+    this.menuOpen = true;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = 'flex';
+  },
+  
+  closeMenu() {
+    if (!this.menuOpen) return;
+    this.menuOpen = false;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = 'none';
+    document.body.requestPointerLock();
+  },
+  
+  animate() {
+    this.animationId = requestAnimationFrame(() => this.animate());
+    
+    const time = performance.now();
+    const delta = (time - this.prevTime) / 1000;
+    this.prevTime = time;
+    
+    if (!this.menuOpen) {
+      PhysicsManager.update(delta);
+      
+      if (SceneManager.bigbox) {
+        SceneManager.bigbox.rotation.y += 0.0003;
+      }
+    }
+    
+    SceneManager.renderer.render(SceneManager.scene, SceneManager.camera);
+  }
+};
+
+// Initialize the app
+AboutApp.init();
+</script>
+</body>
+</html>

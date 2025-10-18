@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Portfolio</title>
+  <style>
+    @font-face {
+      font-family: 'Monospace821Bold';
+      src: url('assets/fonts/MONOSPACE821BOLDBT.TTF') format('truetype');
+      font-weight: bold;
+    }
+    @font-face {
+      font-family: 'Monospace821';
+      src: url('assets/fonts/MONOSPACE821BT.TTF') format('truetype');
+      font-weight: normal;
+    }
+    @import url('https://fonts.googleapis.com/css?family=Oswald:wght@400;600&display=swap');
+
+    body { margin: 0; overflow: hidden; }
+
+    /* Reticle */
+    #reticle {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      width: 20px;
+      height: 20px;
+      margin: -10px 0 0 -10px;
+      border: 2px solid #fff;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 100;
+      transition: all 0.2s ease;
+      box-shadow: 0 0 10px rgba(255,255,255,0.5);
+    }
+
+    #reticle.hover {
+      border-color: #22ff00;
+      box-shadow: 0 0 20px rgba(34,255,0,0.8);
+      transform: scale(1.3);
+    }
+
+    /* Menu */
+    #top-menu {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: rgba(0,0,0,0.85);
+      backdrop-filter: invert(100%) blur(5px);
+      z-index: 9999;
+      padding: 40px;
+      box-sizing: border-box;
+    }
+
+    #menu-logo {
+      position: absolute;
+      top: 40px;
+      right: 150px;
+      width: 100px;
+      cursor: pointer;
+      transition: transform 0.3s ease, filter 0.3s ease;
+    }
+
+    #menu-logo img {
+      width: 200px;
+      height: auto;
+    }
+
+    #menu-pages {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .menu-btn {
+      font-family: 'monospace821';
+      font-weight: 900;
+      font-size: 15em;
+      background: none;
+      color: #fff;
+      cursor: pointer;
+      border: none;
+      text-align: left;
+      text-decoration: underline;
+    }
+
+    .menu-btn:hover {
+      color: rgb(34, 255, 0);
+    }
+
+    #menu-info {
+      margin-top: 40px;
+      font-family: 'monospace821';
+      color: #fff;
+      font-size: 1.5em;
+    }
+
+    #menu-toggle-btn {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      z-index: 10000;
+      font-family: 'Monospace821Bold', monospace;
+      font-size: 4em;
+      color: #fff;
+      background: none;
+      border: 0;
+      padding: 10px 20px;
+      cursor: pointer;
+      transition: transform 0.2s, background 0.2s;
+    }
+
+    #menu-toggle-btn:hover {
+      transform: scale(1.05);
+    }
+
+    /* Popup */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0,0,0,0.95);
+      justify-content: center;
+      align-items: center;
+      z-index: 10001;
+    }
+
+    #popup-content {
+      width: 80%;
+      height: 80%;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+
+
+    .popup-images-scroll {
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+    }
+
+    .popup-images-scroll img {
+      max-width: 100%;
+      max-height: 100%;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+      display: block;
+    }
+
+    /* Click prompt */
+    #click-prompt {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-family: 'Monospace821Bold', monospace;
+      font-size: 2em;
+      color: #fff;
+      background-color: #000;
+      text-align: center;
+      z-index: 500;
+      pointer-events: none;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+
+<div id="reticle"></div>
+<div id="click-prompt">|| CLICK TO START || ESC=MENU</div>
+
+<div id="top-menu">
+  <div id="menu-pages">
+    <button class="menu-btn" data-url="index.html">HOME</button>
+    <button class="menu-btn" data-url="about.html">ABOUT</button>
+    <button class="menu-btn" data-url="gallery.html">GALLERY</button>
+    <div id="menu-info">// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU // CLICK=SELECT //</div>
+  </div>
+  <div id="menu-logo">
+    <a href="home.html"><img src="assets/haumlogofinal.svg" alt="Logo"></a>
+  </div>
+</div>
+
+
+
+<div id="popup">
+  <div id="popup-content"></div>
+</div>
+
+<script>
+// ===== CONFIG MODULE =====
+const CONFIG = {
+  HOVER_DISTANCE: 160,
+  CLICK_DISTANCE: 200,
+  MOVEMENT_SPEED: 150,
+  JUMP_FORCE: 350,
+  MOUSE_SENSITIVITY: 0.002
+};
+
+// ===== INPUT MANAGER MODULE =====
+const InputManager = {
+  keys: {},
+  pointerLocked: false,
+  
+  init() {
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Escape') {
+        e.preventDefault();
+        return;
+      }
+      this.keys[e.code] = true;
+    });
+    
+    document.addEventListener('keyup', (e) => {
+      this.keys[e.code] = false;
+    });
+    
+    document.addEventListener('pointerlockchange', () => {
+      const wasLocked = this.pointerLocked;
+      this.pointerLocked = document.pointerLockElement === document.body;
+      
+      if (this.pointerLocked) {
+        document.getElementById('click-prompt').style.display = 'none';
+      }
+      
+      if (wasLocked && !this.pointerLocked && !GalleryApp.menuOpen && !GalleryApp.popupVisible) {
+        GalleryApp.openMenu();
+      }
+    });
+    
+    document.addEventListener('click', () => {
+      if (!this.pointerLocked && !GalleryApp.popupVisible && !GalleryApp.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    });
+  },
+  
+  isKeyPressed(code) {
+    return this.keys[code] || false;
+  }
+};
+
+// ===== SCENE MANAGER MODULE =====
+const SceneManager = {
+  scene: null,
+  camera: null,
+  renderer: null,
+  yaw: null,
+  pitch: null,
+  objects: [],
+  boxes: [],
+  
+  init() {
+    this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
+    this.pitch = new THREE.Object3D();
+    this.pitch.add(this.camera);
+    this.yaw = new THREE.Object3D();
+    this.yaw.position.y = 20;
+    this.yaw.add(this.pitch);
+    this.yaw.rotation.y = 9.5;
+    
+    this.scene = new THREE.Scene();
+    this.scene.background = new THREE.Color(0xcc11cc);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, 700);
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
+    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    
+    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+    dirLight.position.set(0, 300, 50);
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.left = -200;
+    dirLight.shadow.camera.right = 200;
+    dirLight.shadow.camera.top = 400;
+    dirLight.shadow.camera.bottom = -400;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 500;
+    this.scene.add(dirLight);
+    this.scene.add(this.yaw);
+    
+    this.extendRoom(500);
+    
+    this.renderer = new THREE.WebGLRenderer({ antialias: true });
+    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer.setSize(window.innerWidth, window.innerHeight);
+    this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    document.body.appendChild(this.renderer.domElement);
+    
+    window.addEventListener('resize', () => {
+      this.camera.aspect = window.innerWidth / window.innerHeight;
+      this.camera.updateProjectionMatrix();
+      this.renderer.setSize(window.innerWidth, window.innerHeight);
+    });
+  },
+  
+  createCheckeredTexture(size = 1024, squares = 32) {
+    const canvas = document.createElement('canvas');
+    canvas.width = canvas.height = size;
+    const ctx = canvas.getContext('2d');
+    const s = size / squares;
+    for (let y = 0; y < squares; y++) {
+      for (let x = 0; x < squares; x++) {
+        ctx.fillStyle = (x + y) % 2 ? '#1976D2' : '#FFD600';
+        ctx.fillRect(x * s, y * s, s, s);
+      }
+    }
+    return new THREE.CanvasTexture(canvas);
+  },
+  
+  createDeformedGeometry(geometry, deformAmount = 10) {
+    const pos = geometry.attributes.position;
+    const vertex = new THREE.Vector3();
+    for (let i = 0; i < pos.count; i++) {
+      vertex.fromBufferAttribute(pos, i);
+      vertex.x += (Math.random() - 0.5) * deformAmount;
+      vertex.y += (Math.random() - 0.5) * deformAmount;
+      vertex.z += (Math.random() - 0.5) * deformAmount;
+      pos.setXYZ(i, vertex.x, vertex.y, vertex.z);
+    }
+    return geometry;
+  },
+  
+  createWall(width, height, segments, position, rotation, deformAmount = 10) {
+    const geometry = this.createDeformedGeometry(
+      new THREE.PlaneGeometry(width, height, segments[0], segments[1]),
+      deformAmount
+    );
+    const texture = this.createCheckeredTexture();
+    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+    texture.repeat.set(2, 2);
+    
+    const wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+    wall.position.set(...position);
+    if (rotation) wall.rotation.set(...rotation);
+    return wall;
+  },
+  
+  extendRoom(newLength) {
+    this.objects.forEach(obj => this.scene.remove(obj));
+    this.objects.length = 0;
+    
+    const floorGeo = this.createDeformedGeometry(
+      new THREE.PlaneGeometry(200, newLength, 20, Math.max(2, Math.ceil(newLength / 10))),
+      2
+    );
+    floorGeo.rotateX(-Math.PI / 2);
+    const tex = this.createCheckeredTexture();
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(2, Math.max(1, newLength / 50));
+    const floor = new THREE.Mesh(
+      floorGeo,
+      new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide })
+    );
+    floor.position.set(0, 4, newLength / 2);
+    floor.receiveShadow = true;
+    floor.userData.type = 'floorOrWall';
+    this.scene.add(floor);
+    this.objects.push(floor);
+    
+    const walls = [
+      this.createWall(newLength, 200, [20, 40], [-100, -1, newLength / 2], [0, Math.PI/2, -0.15]),
+      this.createWall(newLength, 200, [20, 40], [90, 4, newLength / 2], [0, Math.PI/2, 0.15]),
+      this.createWall(200, 200, [20, 40], [0, 4, newLength], [0.15, 0, 0]),
+      this.createWall(200, 200, [20, 40], [0, 4, 0], [-0.15, 0, 0])
+    ];
+    walls.forEach(w => {
+      w.userData.type = 'floorOrWall';
+      this.scene.add(w);
+      this.objects.push(w);
+    });
+  },
+  
+  loadGallery() {
+    fetch('assets/gallery.json')
+      .then(res => res.json())
+      .then(images => {
+        const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
+        const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
+        let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
+        const loader = new THREE.TextureLoader();
+        
+        const addBox = (img, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
+          loader.load(img.src, texture => {
+            const aspect = texture.image.width / texture.image.height;
+            let boxWidth, boxHeight;
+            if (aspect >= 1) {
+              boxWidth = maxDim;
+              boxHeight = maxDim / aspect;
+            } else {
+              boxHeight = maxDim;
+              boxWidth = maxDim * aspect;
+            }
+            const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
+            const material = new THREE.MeshStandardMaterial({ map: texture });
+            const box = new THREE.Mesh(geometry, material);
+            if (isCeiling) {
+              box.position.set(x, y, z);
+              box.rotation.x = -Math.PI / 2;
+            } else {
+              box.position.set(x, y + boxHeight / 2, z);
+              box.rotation.y = rotationY;
+            }
+            box.userData.popup = `<div class="popup-images-scroll"><img src="${img.src}" alt="${img.title}" style="max-width:100%; height:auto; object-fit:contain;"></div>`;
+            this.scene.add(box);
+            this.boxes.push(box);
+          });
+        };
+        
+        while (globalIndex < images.length) {
+          for (let j = 0; j < 2 && globalIndex < images.length; j++, globalIndex++) {
+            const img = images[globalIndex];
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            lastZ = Math.max(lastZ, currentZ);
+            addBox(img, leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+          }
+          for (let j = 0; j < 2 && globalIndex < images.length; j++, globalIndex++) {
+            const img = images[globalIndex];
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            lastZ = Math.max(lastZ, currentZ);
+            addBox(img, rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+          }
+          rowIndex++;
+          for (let j = 0; j < 2 && globalIndex < images.length; j++, globalIndex++) {
+            const img = images[globalIndex];
+            const z = ceilingRowIndex * ceilingZSpacing + zOffset;
+            lastZ = Math.max(lastZ, z);
+            addBox(img, ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
+          }
+          ceilingRowIndex++;
+        }
+        
+        this.extendRoom(lastZ + 30);
+      })
+      .catch(err => console.error('Failed to load gallery JSON', err));
+  }
+};
+
+// ===== PHYSICS MANAGER MODULE =====
+const PhysicsManager = {
+  velocity: new THREE.Vector3(),
+  direction: new THREE.Vector3(),
+  canJump: false,
+  raycaster: new THREE.Raycaster(),
+  
+  update(delta) {
+    const yaw = SceneManager.yaw;
+    
+    yaw.position.x = Math.max(-95, Math.min(85, yaw.position.x));
+    const roomEndZ = Math.max(...SceneManager.objects.map(o => o.position.z)) - 5;
+    yaw.position.z = Math.max(5, Math.min(roomEndZ, yaw.position.z));
+    
+    this.raycaster.ray.origin.copy(yaw.position);
+    this.raycaster.ray.origin.y += 1;
+    this.raycaster.ray.direction.set(0, -1, 0);
+    const hits = this.raycaster.intersectObjects(SceneManager.objects, false);
+    const onGround = hits.length > 0 && hits[0].distance < 2;
+    
+    this.velocity.x -= this.velocity.x * 8 * delta;
+    this.velocity.z -= this.velocity.z * 8 * delta;
+    this.velocity.y -= 5 * 200 * delta;
+    
+    this.direction.set(
+      (InputManager.isKeyPressed('KeyD') || InputManager.isKeyPressed('ArrowRight') ? 1 : 0) -
+      (InputManager.isKeyPressed('KeyA') || InputManager.isKeyPressed('ArrowLeft') ? 1 : 0),
+      0,
+      (InputManager.isKeyPressed('KeyS') || InputManager.isKeyPressed('ArrowDown') ? 1 : 0) -
+      (InputManager.isKeyPressed('KeyW') || InputManager.isKeyPressed('ArrowUp') ? 1 : 0)
+    ).normalize();
+    
+    if (this.direction.z) this.velocity.z -= this.direction.z * CONFIG.MOVEMENT_SPEED * delta;
+    if (this.direction.x) this.velocity.x += this.direction.x * CONFIG.MOVEMENT_SPEED * delta;
+    
+    if (!onGround) {
+      const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
+      const maxAir = 300, airAccel = 400;
+      if (this.direction.x && speed < maxAir) this.velocity.x += this.direction.x * airAccel * delta;
+      if (this.direction.z && speed < maxAir) this.velocity.z -= this.direction.z * airAccel * delta;
+    }
+    
+    if (onGround) {
+      this.velocity.y = Math.max(0, this.velocity.y);
+      this.canJump = true;
+    }
+    
+    if (InputManager.isKeyPressed('Space') && this.canJump) {
+      this.velocity.y += CONFIG.JUMP_FORCE;
+      this.canJump = false;
+    }
+    
+    const forward = new THREE.Vector3(0, 0, -1).applyQuaternion(yaw.quaternion).setY(0).normalize();
+    const right = new THREE.Vector3(1, 0, 0).applyQuaternion(yaw.quaternion).setY(0).normalize();
+    yaw.position.addScaledVector(forward, this.velocity.z * delta);
+    yaw.position.addScaledVector(right, this.velocity.x * delta);
+    yaw.position.y += this.velocity.y * delta;
+    
+    if (yaw.position.y < 20) {
+      this.velocity.y = 0;
+      yaw.position.y = 20;
+      this.canJump = true;
+    }
+  }
+};
+
+// ===== INTERACTION MANAGER MODULE =====
+const InteractionManager = {
+  raycaster: new THREE.Raycaster(),
+  reticle: null,
+  hoveredBox: null,
+  
+  init() {
+    this.reticle = document.getElementById('reticle');
+    
+    document.addEventListener('mousemove', (e) => {
+      if (InputManager.pointerLocked && !GalleryApp.popupVisible && !GalleryApp.menuOpen) {
+        SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
+        SceneManager.pitch.rotation.x = Math.max(
+          -Math.PI / 2,
+          Math.min(Math.PI / 2, SceneManager.pitch.rotation.x - e.movementY * CONFIG.MOUSE_SENSITIVITY)
+        );
+      }
+    });
+    
+    document.addEventListener('click', (e) => {
+      if (GalleryApp.popupVisible) {
+        const img = document.querySelector('.popup-images-scroll img');
+        if (img) {
+          const rect = img.getBoundingClientRect();
+          const clickedOnImage = e.clientX >= rect.left && e.clientX <= rect.right &&
+                                 e.clientY >= rect.top && e.clientY <= rect.bottom;
+          
+          if (!clickedOnImage) {
+            GalleryApp.hidePopup();
+          }
+        }
+        return;
+      }
+      
+      if (!InputManager.pointerLocked || GalleryApp.menuOpen) return;
+      
+      if (this.hoveredBox) {
+        const cameraPos = new THREE.Vector3();
+        SceneManager.camera.getWorldPosition(cameraPos);
+        const dist = cameraPos.distanceTo(this.hoveredBox.position);
+        
+        if (dist <= CONFIG.CLICK_DISTANCE) {
+          GalleryApp.showPopup(this.hoveredBox.userData.popup);
+        }
+      }
+    });
+  },
+  
+  update() {
+    if (!InputManager.pointerLocked || GalleryApp.popupVisible || GalleryApp.menuOpen) {
+      this.reticle.classList.remove('hover');
+      this.hoveredBox = null;
+      return;
+    }
+    
+    this.raycaster.setFromCamera(new THREE.Vector2(0, 0), SceneManager.camera);
+    const intersects = this.raycaster.intersectObjects(SceneManager.boxes);
+    
+    if (intersects.length > 0) {
+      const obj = intersects[0].object;
+      const cameraPos = new THREE.Vector3();
+      SceneManager.camera.getWorldPosition(cameraPos);
+      const dist = cameraPos.distanceTo(obj.position);
+      
+      if (dist <= CONFIG.HOVER_DISTANCE) {
+        this.reticle.classList.add('hover');
+        this.hoveredBox = obj;
+      } else {
+        this.reticle.classList.remove('hover');
+        this.hoveredBox = null;
+      }
+    } else {
+      this.reticle.classList.remove('hover');
+      this.hoveredBox = null;
+    }
+  }
+};
+
+// ===== MAIN APP MODULE =====
+const GalleryApp = {
+  menuOpen: false,
+  popupVisible: false,
+  animationId: null,
+  prevTime: performance.now(),
+  
+  init() {
+    InputManager.init();
+    SceneManager.init();
+    InteractionManager.init();
+    
+    SceneManager.loadGallery();
+    
+
+    
+    document.querySelectorAll('.menu-btn').forEach(btn => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const url = e.target.dataset.url;
+        if (url) window.location.href = url;
+      });
+    });
+    
+    document.getElementById('top-menu').addEventListener('click', (e) => {
+      if (e.target.id === 'top-menu' || e.target.id === 'menu-info') {
+        this.closeMenu();
+      }
+    });
+    
+    this.animate();
+  },
+  
+  toggleMenu() {
+    this.menuOpen = !this.menuOpen;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = this.menuOpen ? 'flex' : 'none';
+    
+    if (this.menuOpen) {
+      if (document.pointerLockElement) {
+        document.exitPointerLock();
+      }
+    } else {
+      document.body.requestPointerLock();
+    }
+  },
+  
+  openMenu() {
+    if (this.menuOpen) return;
+    this.menuOpen = true;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = 'flex';
+  },
+  
+  closeMenu() {
+    if (!this.menuOpen) return;
+    this.menuOpen = false;
+    const menu = document.getElementById('top-menu');
+    menu.style.display = 'none';
+    document.body.requestPointerLock();
+  },
+  
+  showPopup(html) {
+    const popup = document.getElementById('popup');
+    const popupContent = document.getElementById('popup-content');
+    popupContent.innerHTML = html;
+    popup.style.display = 'flex';
+    this.popupVisible = true;
+    
+    if (document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  },
+  
+  hidePopup() {
+    const popup = document.getElementById('popup');
+    popup.style.display = 'none';
+    this.popupVisible = false;
+    
+    if (!this.menuOpen) {
+      document.body.requestPointerLock();
+    }
+  },
+  
+  animate() {
+    this.animationId = requestAnimationFrame(() => this.animate());
+    
+    const time = performance.now();
+    const delta = (time - this.prevTime) / 1000;
+    this.prevTime = time;
+    
+    if (!this.menuOpen) {
+      PhysicsManager.update(delta);
+      InteractionManager.update();
+    }
+    
+    SceneManager.renderer.render(SceneManager.scene, SceneManager.camera);
+  }
+};
+
+// Initialize the app
+GalleryApp.init();
+</script>
+
+</body>
+</html>
