@@ -1047,7 +1047,49 @@ const SceneManager = {
             this.videoElements[project.id] = videoElem;
             material = new THREE.MeshStandardMaterial({ map: videoTexture });
           } else if (isGif && !CONFIG.IS_MOBILE) {
-            // Skip GIFs on mobile for performance
+            // Skip GIFs on mobile for performance - EXCEPT for project boxes
+            const canvas = document.createElement('canvas');
+            const tempImg = new Image();
+            tempImg.src = `assets/${project.thumbnail}`;
+            tempImg.onload = () => {
+              canvas.width = tempImg.width;
+              canvas.height = tempImg.height;
+              
+              try {
+                gifler(`assets/${project.thumbnail}`).get((anim) => {
+                  const texture = new THREE.CanvasTexture(canvas);
+                  const box = SceneManager.boxes.find(b => b.userData.projectId === project.id);
+                  if (box) {
+                    box.material.map = texture;
+                    box.material.needsUpdate = true;
+                  }
+                  
+                  this.gifAnimations.push(anim);
+                  anim.animateInCanvas(canvas);
+                  
+                  let animationRunning = true;
+                  function updateTexture() {
+                    if (animationRunning && !PortfolioApp.menuOpen) {
+                      texture.needsUpdate = true;
+                    }
+                    requestAnimationFrame(updateTexture);
+                  }
+                  updateTexture();
+                  
+                  anim.stop = () => { animationRunning = false; };
+                  anim.play = () => { animationRunning = true; };
+                });
+              } catch (e) {
+                console.error('Error loading GIF:', e);
+              }
+            };
+            
+            // Use placeholder material initially
+            material = new THREE.MeshStandardMaterial({
+              map: textureLoader.load(`assets/${project.thumbnail}`)
+            });
+          } else if (isGif && CONFIG.IS_MOBILE) {
+            // On mobile, load GIFs for project boxes (they're important content)
             const canvas = document.createElement('canvas');
             const tempImg = new Image();
             tempImg.src = `assets/${project.thumbnail}`;
