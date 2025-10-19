@@ -609,9 +609,7 @@ body {
     <button class="menu-btn" data-url="home.html">HOME</button>
     <button class="menu-btn" data-url="about.html">ABOUT</button>
     <button class="menu-btn" data-url="gallery.html">GALLERY</button>
-    <div id="menu-info">
-      <div>// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU //</div>
-    </div>
+    <div id="menu-info">// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU // CLICK=SELECT //</div>
   </div>
   <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
 </div>
@@ -695,6 +693,12 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.006,
   
+  // Mobile optimizations
+  MOBILE_MAX_TEXTURE_SIZE: 512,
+  MOBILE_REDUCE_QUALITY: IS_MOBILE,
+  MOBILE_DISABLE_SHADOWS: IS_MOBILE,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 500,
+  
   gifUrls: [
     'assets/arach.gif', 'assets/baron.gif', 'assets/chomphead.gif', 'assets/dancingdino.gif',
     'assets/dragonmouth.gif', 'assets/elemental.gif', 'assets/greendragon.gif', 'assets/jackhammer.gif',
@@ -756,6 +760,7 @@ const InputManager = {
       this.mobileMovement.z = y;
     });
     
+    // Multi-touch support for simultaneous joystick and camera control
     document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -968,29 +973,39 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, 500);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(0, 300, 50);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left = -150;
-    dirLight.shadow.camera.right = 150;
-    dirLight.shadow.camera.top = 300;
-    dirLight.shadow.camera.bottom = -300;
-    dirLight.shadow.camera.near = 1;
-    dirLight.shadow.camera.far = 400;
-    this.scene.add(dirLight);
+    // Only add directional light and shadows on desktop
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(0, 300, 50);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.camera.left = -150;
+      dirLight.shadow.camera.right = 150;
+      dirLight.shadow.camera.top = 300;
+      dirLight.shadow.camera.bottom = -300;
+      dirLight.shadow.camera.near = 1;
+      dirLight.shadow.camera.far = 400;
+      this.scene.add(dirLight);
+    }
     this.scene.add(this.yaw);
     
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer = new THREE.WebGLRenderer({ 
+      antialias: !CONFIG.IS_MOBILE,
+      powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance"
+    });
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    
     document.body.appendChild(this.renderer.domElement);
     
     window.addEventListener('resize', () => {
@@ -1052,7 +1067,7 @@ const SceneManager = {
     tex.repeat.set(2, 2);
     const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }));
     floor.position.set(0, 4, 100);
-    floor.receiveShadow = true;
+    floor.receiveShadow = !CONFIG.MOBILE_DISABLE_SHADOWS;
     this.scene.add(floor);
     this.objects.push(floor);
     
@@ -1072,8 +1087,12 @@ const SceneManager = {
     const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
     this.bigbox = new THREE.Mesh(geometry, material);
     this.bigbox.position.set(0, 20, 180);
-    this.bigbox.castShadow = true;
-    this.bigbox.receiveShadow = true;
+    
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      this.bigbox.castShadow = true;
+      this.bigbox.receiveShadow = true;
+    }
+    
     this.scene.add(this.bigbox);
     
     // Create 16x9 display box on left wall with temp project data
@@ -1082,8 +1101,12 @@ const SceneManager = {
     this.displayBox = new THREE.Mesh(displayGeometry, displayMaterial);
     this.displayBox.position.set(-45, 25, 100);
     this.displayBox.rotation.y = Math.PI / 2;
-    this.displayBox.castShadow = true;
-    this.displayBox.receiveShadow = true;
+    
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      this.displayBox.castShadow = true;
+      this.displayBox.receiveShadow = true;
+    }
+    
     this.displayBox.userData.isDisplay = true;
     this.displayBox.userData.projectData = {
       title: "About Me",
