@@ -179,6 +179,12 @@
       display: block;
     }
 
+    .popup-images-scroll video {
+      width: 100%;
+      height: 100vh;
+      object-fit: cover;
+    }
+
     /* Click prompt */
     #click-prompt {
       position: fixed;
@@ -502,6 +508,12 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.006,
   
+  // Mobile optimizations
+  MOBILE_MAX_TEXTURE_SIZE: 512,
+  MOBILE_REDUCE_QUALITY: IS_MOBILE,
+  MOBILE_DISABLE_SHADOWS: IS_MOBILE,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
+  
   gifUrls: [
     'assets/arach.gif', 'assets/baron.gif', 'assets/chomphead.gif', 'assets/dancingdino.gif',
     'assets/dragonmouth.gif', 'assets/elemental.gif', 'assets/greendragon.gif', 'assets/jackhammer.gif',
@@ -770,31 +782,41 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, 700);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(0, 300, 50);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left = -200;
-    dirLight.shadow.camera.right = 200;
-    dirLight.shadow.camera.top = 400;
-    dirLight.shadow.camera.bottom = -400;
-    dirLight.shadow.camera.near = 1;
-    dirLight.shadow.camera.far = 500;
-    this.scene.add(dirLight);
+    // Only add directional light and shadows on desktop
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(0, 300, 50);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.camera.left = -200;
+      dirLight.shadow.camera.right = 200;
+      dirLight.shadow.camera.top = 400;
+      dirLight.shadow.camera.bottom = -400;
+      dirLight.shadow.camera.near = 1;
+      dirLight.shadow.camera.far = 500;
+      this.scene.add(dirLight);
+    }
     this.scene.add(this.yaw);
     
     this.extendRoom(500);
     
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer = new THREE.WebGLRenderer({ 
+      antialias: !CONFIG.IS_MOBILE,
+      powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance"
+    });
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    
     document.body.appendChild(this.renderer.domElement);
     
     window.addEventListener('resize', () => {
@@ -891,15 +913,15 @@ const SceneManager = {
         const loader = new THREE.TextureLoader();
         
         const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
-          // Check if item is a video or image
           const isVideo = item.type === 'video' || (item.src && (
             item.src.endsWith('.mp4') || 
             item.src.endsWith('.webm') || 
             item.src.endsWith('.ogv')
           ));
           
+          const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
+          
           if (isVideo) {
-            // Create video element
             const video = document.createElement('video');
             video.src = item.src;
             video.loop = true;
@@ -907,18 +929,21 @@ const SceneManager = {
             video.playsInline = true;
             video.crossOrigin = 'anonymous';
             video.className = 'hidden-video';
-            document.getElementById('hidden-videos-container').appendChild(video);
             
-            // Play video
+            // Reduce video quality on mobile
+            if (CONFIG.IS_MOBILE) {
+              video.setAttribute('playsinline', '');
+              video.setAttribute('webkit-playsinline', '');
+            }
+            
+            document.getElementById('hidden-videos-container').appendChild(video);
             video.play().catch(err => console.log('Video autoplay prevented:', err));
             
-            // Create video texture
             const videoTexture = new THREE.VideoTexture(video);
             videoTexture.minFilter = THREE.LinearFilter;
             videoTexture.magFilter = THREE.LinearFilter;
             this.videoTextures.push(videoTexture);
             
-            // Get video dimensions (use default if not loaded yet)
             const aspect = video.videoWidth && video.videoHeight 
               ? video.videoWidth / video.videoHeight 
               : 16 / 9;
@@ -944,13 +969,90 @@ const SceneManager = {
               box.rotation.y = rotationY;
             }
             
-            box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:100%; height:auto; object-fit:contain;"></video></div>`;
+            box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="width:100%; height:100vh; object-fit:cover;"></video></div>`;
             this.scene.add(box);
             this.boxes.push(box);
             
+          } else if (isGif && !CONFIG.IS_MOBILE) {
+            // Skip GIFs on mobile for performance
+            const img = new Image();
+            img.crossOrigin = 'anonymous';
+            img.onload = () => {
+              const aspect = img.width / img.height;
+              let boxWidth, boxHeight;
+              if (aspect >= 1) {
+                boxWidth = maxDim;
+                boxHeight = maxDim / aspect;
+              } else {
+                boxHeight = maxDim;
+                boxWidth = maxDim * aspect;
+              }
+              
+              const canvas = document.createElement('canvas');
+              canvas.width = img.width;
+              canvas.height = img.height;
+              
+              try {
+                gifler(item.src).get((anim) => {
+                  const texture = new THREE.CanvasTexture(canvas);
+                  const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
+                  const material = new THREE.MeshStandardMaterial({ map: texture });
+                  const box = new THREE.Mesh(geometry, material);
+                  
+                  if (isCeiling) {
+                    box.position.set(x, y, z);
+                    box.rotation.x = -Math.PI / 2;
+                  } else {
+                    box.position.set(x, y + boxHeight / 2, z);
+                    box.rotation.y = rotationY;
+                  }
+                  
+                  box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}" style="max-width:100%; height:auto; object-fit:contain;"></div>`;
+                  this.scene.add(box);
+                  this.boxes.push(box);
+                  
+                  anim.animateInCanvas(canvas);
+                  function updateTexture() {
+                    texture.needsUpdate = true;
+                    requestAnimationFrame(updateTexture);
+                  }
+                  updateTexture();
+                });
+              } catch (e) {
+                console.error('Error loading GIF:', e);
+                loader.load(item.src, texture => {
+                  const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
+                  const material = new THREE.MeshStandardMaterial({ map: texture });
+                  const box = new THREE.Mesh(geometry, material);
+                  if (isCeiling) {
+                    box.position.set(x, y, z);
+                    box.rotation.x = -Math.PI / 2;
+                  } else {
+                    box.position.set(x, y + boxHeight / 2, z);
+                    box.rotation.y = rotationY;
+                  }
+                  box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}" style="max-width:100%; height:auto; object-fit:contain;"></div>`;
+                  this.scene.add(box);
+                  this.boxes.push(box);
+                });
+              }
+            };
+            img.src = item.src;
+            
           } else {
-            // Load image texture
             loader.load(item.src, texture => {
+              // Reduce texture size on mobile
+              if (CONFIG.IS_MOBILE && texture.image) {
+                const canvas = document.createElement('canvas');
+                const maxSize = CONFIG.MOBILE_MAX_TEXTURE_SIZE;
+                const scale = Math.min(1, maxSize / Math.max(texture.image.width, texture.image.height));
+                canvas.width = texture.image.width * scale;
+                canvas.height = texture.image.height * scale;
+                const ctx = canvas.getContext('2d');
+                ctx.drawImage(texture.image, 0, 0, canvas.width, canvas.height);
+                texture = new THREE.CanvasTexture(canvas);
+              }
+              
               const aspect = texture.image.width / texture.image.height;
               let boxWidth, boxHeight;
               if (aspect >= 1) {
