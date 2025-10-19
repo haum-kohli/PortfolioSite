@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" />
   <title>Portfolio - About</title>
   <style>
 @font-face {
@@ -17,7 +17,13 @@
 }
 @import url('https://fonts.googleapis.com/css?family=Oswald:wght@400;600&display=swap');
 
-body { margin: 0; overflow: hidden; }
+body { 
+  margin: 0; 
+  overflow: hidden;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
+}
 
 /* Reticle */
 #reticle {
@@ -53,20 +59,23 @@ body { margin: 0; overflow: hidden; }
   z-index: 9999;
   padding: 40px;
   box-sizing: border-box;
+  overflow-y: auto;
+  align-items: flex-start;
+  justify-content: flex-start;
+  flex-direction: column;
 }
 
 #menu-logo {
-  position: absolute;
-  top: 40px;
-  right: 150px;
-  width: 100px;   
+  width: 150px;    
   height: auto;
+  margin-bottom: 60px;
   cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
+  align-self: flex-start;
 }
 
 #menu-logo img {
-  width: 200px;
+  width: 100%;
   height: auto;
 }
 
@@ -74,18 +83,22 @@ body { margin: 0; overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: flex-start;
+  justify-content: flex-start;
+  gap: 20px;
 }
 
 .menu-btn {
   font-family: 'monospace821';
   font-weight: 900;
-  font-size: 15em;
+  font-size: 8em;
   background: none;
   color: #ffffff;
   cursor: pointer;
   border: none;
   text-align: left;
   text-decoration: underline;
+  padding: 10px 0;
+  transition: color 0.2s;
 }
 
 .menu-btn:hover {
@@ -99,7 +112,232 @@ body { margin: 0; overflow: hidden; }
   font-size: 1.5em;
 }
 
-/* Click prompt */
+/* Popup */
+#popup {
+  display: none;
+  position: fixed;
+  left: 0; 
+  top: 0;
+  width: 100vw; 
+  height: 100vh;
+  background: rgba(255,255,255,0.97);
+  border: none;
+  color: #222;
+  font-family: 'Monospace821';
+  z-index: 10001;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.25);
+  font-size: 1em;
+  transition: opacity 0.2s;
+  overflow: hidden;
+}
+
+#popup .close-btn {
+  position: absolute;
+  top: 18px; right: 28px;
+  font-size: 2em;
+  color: #ff0000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 11;
+  transition: color 0.2s;
+}
+
+#popup .close-btn:hover { color: #222; }
+
+#popup .popup-content-layout {
+  display: flex;
+  height: 100%;
+  width: 100%;
+  flex-direction: column;
+}
+
+#popup .popup-left {
+  width: 100%; 
+  padding: 60px 24px 24px 24px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  border-bottom: 1.5px solid #e0e0e0;
+  overflow-y: auto; 
+  position: relative;
+  z-index: 1;
+  max-height: 25%;
+  flex-shrink: 0;
+}
+
+#popup .popup-left h2 {
+  font-family: 'monospace821Bold';
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+#popup .popup-left p {
+  pointer-events: auto;
+  margin: 0;
+  line-height: 1.5;
+}
+
+#popup .popup-right {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+#popup .popup-images-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  display: flex;
+  flex-direction: column;
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+#popup .popup-images-scroll::-webkit-scrollbar { width: 0; height: 0; }
+
+#popup .popup-images-scroll img,
+#popup .popup-images-scroll video {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  cursor: pointer;
+}
+
+#popup .image-row {
+  display: flex;
+  gap: 0px;
+  width: 100%;
+  align-items: stretch;
+}
+
+#popup .image-row img,
+#popup .image-row video {
+  flex: 1;
+  height: 400px;
+  object-fit: cover;
+}
+
+/* Fullscreen image modal */
+#image-modal {
+  display: none;
+  position: fixed;
+  z-index: 10002;
+  left: 0; top: 0;
+  width: 100vw; height: 100vh;
+  background: rgba(0,0,0,0.85);
+  align-items: center;
+  justify-content: center;
+  cursor: zoom-out;
+}
+
+#image-modal img {
+  max-width: 90vw;
+  max-height: 90vh;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+  background: #fff;
+}
+
+#image-modal .modal-close-btn {
+  position: absolute;
+  top: 32px; right: 48px;
+  font-size: 3em;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10003;
+  text-shadow: 0 2px 8px #000;
+}
+
+#image-modal .modal-close-btn:hover { color: #FFD600; }
+
+#doom-popup {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.95);
+  justify-content: center;
+  align-items: center;
+  z-index: 10001;
+}
+
+#doom-popup-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: #000;
+}
+
+#doom-popup-close-btn {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+  background: none;
+  color: #fff;
+  border: none;
+  font-size: 48px;
+  cursor: pointer;
+  z-index: 10002;
+  padding: 0;
+  line-height: 1;
+}
+
+#dosbox {
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.dosbox-container {
+  background: #000 !important;
+  margin: 0 auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.dosbox-container > canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: contain !important;
+}
+
+.dosbox-powered {
+  opacity: 0 !important;
+  display: none !important;
+}
+
+#doom-popup-instructions {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  background: rgba(0, 0, 0, 0.7);
+  padding: 10px 20px;
+  font-size: 14px;
+  text-align: center;
+  font-family: 'Monospace821', monospace;
+  border-radius: 4px;
+  z-index: 10003;
+}
 #click-prompt {
   position: fixed;
   top: 50%;
@@ -113,10 +351,247 @@ body { margin: 0; overflow: hidden; }
   z-index: 500;
   pointer-events: none;
   text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+  padding: 20px;
+}
+
+/* Mobile Controls */
+#mobile-controls {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 200px;
+  z-index: 1000;
+  pointer-events: none;
+}
+
+.mobile-joystick {
+  position: absolute;
+  width: 120px;
+  height: 120px;
+  bottom: 40px;
+  pointer-events: auto;
+}
+
+#movement-joystick {
+  left: 40px;
+}
+
+.joystick-base {
+  width: 100%;
+  height: 100%;
+  background: rgba(255, 255, 255, 0.2);
+  border: 3px solid rgba(255, 255, 255, 0.5);
+  border-radius: 50%;
+  position: relative;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+.joystick-stick {
+  width: 50px;
+  height: 50px;
+  background: rgba(255, 255, 255, 0.7);
+  border: 2px solid #fff;
+  border-radius: 50%;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  transition: none;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+  clip-path: polygon(
+    0px calc(100% - 20px),
+    4px calc(100% - 20px),
+    4px calc(100% - 12px),
+    8px calc(100% - 12px),
+    8px calc(100% - 8px),
+    12px calc(100% - 8px),
+    12px calc(100% - 4px),
+    20px calc(100% - 4px),
+    20px 100%,
+    calc(100% - 20px) 100%,
+    calc(100% - 20px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 20px),
+    100% calc(100% - 20px),
+    100% 20px,
+    calc(100% - 4px) 20px,
+    calc(100% - 4px) 12px,
+    calc(100% - 8px) 12px,
+    calc(100% - 8px) 8px,
+    calc(100% - 12px) 8px,
+    calc(100% - 12px) 4px,
+    calc(100% - 20px) 4px,
+    calc(100% - 20px) 0px,
+    20px 0px,
+    20px 4px,
+    12px 4px,
+    12px 8px,
+    8px 8px,
+    8px 12px,
+    4px 12px,
+    4px 20px,
+    0px 20px
+  );
+}
+
+#shotgun-gif {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 800px;
+  height: auto;
+  max-height: 1500px;
+  z-index: 999;
+  pointer-events: none;
+  image-rendering: pixelated;
+  image-rendering: -moz-crisp-edges;
+  image-rendering: crisp-edges;
+}
+
+#mobile-menu-btn {
+  position: fixed;
+  top: 20px;
+  left: 20px;
+  z-index: 1001;
+  font-family: 'Monospace821Bold', monospace;
+  font-size: 2em;
+  color: #fff;
+  background: rgba(0, 0, 0, 0.5);
+  border: 2px solid #fff;
+  padding: 8px 16px;
+  cursor: pointer;
+  display: none;
+  pointer-events: auto;
+  width: 50px;
+  height: 50px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+}
+
+@media (max-width: 768px) {
+  #mobile-controls {
+    display: block;
+  }
+  
+  #mobile-menu-btn {
+    display: flex;
+  }
+  
+  #click-prompt {
+    display: none !important;
+  }
+  
+  #reticle {
+    display: block;
+  }
+  
+  .menu-btn {
+    font-size: 12vw;
+    line-height: 1.1;
+    width: 100%;
+  }
+  
+  #menu-logo {
+    width: 120px;
+    margin-bottom: 40px;
+  }
+  
+  #top-menu {
+    padding: 40px;
+    padding-top: 60px;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+  
+  #menu-pages {
+    align-items: flex-start;
+    width: 100%;
+    gap: 10px;
+  }
+
+  #menu-info {
+    display: none;
+  }
+  
+  #menu-random-gif {
+    display: block;
+    margin-top: 40px;
+    width: 80%;
+    max-width: 400px;
+    height: auto;
+    border: 3px solid #fff;
+    box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+}
+
+@media (min-width: 769px) {
+  #popup {
+    left: 5vw;
+    top: 5vh;
+    width: 90vw;
+    height: 90vh;
+    border: 2px solid #333;
+    border-radius: 1px;
+  }
+  
+  #popup .popup-content-layout {
+    flex-direction: row;
+  }
+  
+  #popup .popup-left {
+    width: 30%;
+    max-height: 100%;
+    border-right: 1.5px solid #e0e0e0;
+    border-bottom: none;
+    padding: 24px 20px 24px 24px;
+  }
+  
+  #popup .popup-right {
+    width: 70%;
+  }
+  
+  #menu-logo {
+    position: absolute;
+    top: 40px;
+    right: 150px;
+    width: 200px;
+    margin-bottom: 0;
+  }
+  
+  #menu-pages {
+    align-items: flex-start;
+  }
+  
+  .menu-btn {
+    font-size: 15em;
+    text-align: left;
+  }
+  
+  #top-menu {
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+  
+  #menu-random-gif {
+    display: none;
+  }
 }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+  <script src="https://js-dos.com/cdn/js-dos-api.js"></script>
 </head>
 <body>
 
@@ -124,39 +599,123 @@ body { margin: 0; overflow: hidden; }
 
 <div id="click-prompt">|| CLICK_TO_START ||  ESC=MENU</div>
 
-<div id="top-menu">
+<div id="top-menu" onclick="AboutApp.handleMenuClick(event)">
+  <div id="menu-logo">
+    <a href="index.html">
+      <img src="assets/haumlogofinal.svg" alt="Logo">
+    </a>
+  </div>
   <div id="menu-pages">
-    <button class="menu-btn" data-url="index.html">HOME</button>
+    <button class="menu-btn" data-url="home.html">HOME</button>
     <button class="menu-btn" data-url="about.html">ABOUT</button>
     <button class="menu-btn" data-url="gallery.html">GALLERY</button>
     <div id="menu-info">
       <div>// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU //</div>
     </div>
   </div>
-  <div id="menu-logo">
-    <a href="home.html">
-      <img src="assets/haumlogofinal.svg" alt="Logo">
-    </a>
+  <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
+</div>
+
+<div id="popup">
+  <button class="close-btn" onclick="AboutApp.hidePopup()">&times;</button>
+  <div id="popup-content"></div>
+</div>
+
+<div id="image-modal" onclick="AboutApp.closeImageModal(event)">
+  <button class="modal-close-btn" onclick="AboutApp.closeImageModal(event)">&times;</button>
+  <img id="modal-img" src="" alt="Popup Image">
+</div>
+
+<div id="doom-popup">
+  <button id="doom-popup-close-btn" onclick="AboutApp.hideDoomPopup()">×</button>
+  <div id="doom-popup-content">
+    <div id="dosbox"></div>
+    <div id="doom-popup-instructions">
+      Click on Screen, Press Enter to start | Arrows to move, W to use, S to Fire
+    </div>
+  </div>
+</div>
+
+<button id="mobile-menu-btn">+</button>
+
+<img id="shotgun-gif" src="assets/POVSHOTGUN_static.png" alt="Shotgun">
+
+<div id="mobile-controls">
+  <div id="movement-joystick" class="mobile-joystick">
+    <div class="joystick-base">
+      <div class="joystick-stick"></div>
+    </div>
   </div>
 </div>
 
 <script>
+// Detect mobile
+const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+
+// ===== SHOTGUN GIF MANAGER =====
+const ShotgunGif = {
+  imgElement: null,
+  isPlaying: false,
+  staticFrameUrl: 'assets/POVSHOTGUN_static.png',
+  animatedUrl: 'assets/POVSHOTGUN.gif',
+  
+  init() {
+    this.imgElement = document.getElementById('shotgun-gif');
+    this.imgElement.src = this.staticFrameUrl;
+    console.log('Shotgun GIF initialized with static frame');
+  },
+  
+  play() {
+    if (this.isPlaying || !this.imgElement) {
+      console.log('Shotgun already playing or not loaded');
+      return;
+    }
+    
+    console.log('Playing shotgun animation!');
+    this.isPlaying = true;
+    
+    this.imgElement.src = this.animatedUrl + '?' + Math.random();
+    
+    setTimeout(() => {
+      this.imgElement.src = this.staticFrameUrl;
+      this.isPlaying = false;
+      console.log('Animation complete, back to static');
+    }, 1500);
+  }
+};
+
 // ===== CONFIG MODULE =====
 const CONFIG = {
+  IS_MOBILE: IS_MOBILE,
+  HOVER_DISTANCE: 80,
+  CLICK_DISTANCE: 150,
   MOVEMENT_SPEED: 150,
-  JUMP_FORCE: 350,
-  MOUSE_SENSITIVITY: 0.002
+  MOBILE_MOVEMENT_SPEED: 300,
+  JUMP_FORCE: 250,
+  MOUSE_SENSITIVITY: 0.002,
+  MOBILE_LOOK_SENSITIVITY: 0.006,
+  
+  gifUrls: [
+    'assets/arach.gif', 'assets/baron.gif', 'assets/chomphead.gif', 'assets/dancingdino.gif',
+    'assets/dragonmouth.gif', 'assets/elemental.gif', 'assets/greendragon.gif', 'assets/jackhammer.gif',
+    'assets/legorun.gif', 'assets/orangedino.gif', 'assets/pinkydemon.gif', 'assets/shotgunblast.gif',
+    'assets/skullfire.gif', 'assets/whitedragon.gif', 'assets/yellowdragon.gif'
+  ]
 };
 
 // ===== INPUT MANAGER MODULE =====
 const InputManager = {
   keys: {},
   pointerLocked: false,
+  mobileMovement: { x: 0, z: 0 },
+  mobileLookDelta: { x: 0, y: 0 },
+  activeTouches: new Map(),
   
   init() {
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         e.preventDefault();
+        AboutApp.toggleMenu();
         return;
       }
       this.keys[e.code] = true;
@@ -166,28 +725,222 @@ const InputManager = {
       this.keys[e.code] = false;
     });
     
-    document.addEventListener('pointerlockchange', () => {
-      const wasLocked = this.pointerLocked;
-      this.pointerLocked = document.pointerLockElement === document.body;
+    if (!CONFIG.IS_MOBILE) {
+      document.addEventListener('pointerlockchange', () => {
+        const wasLocked = this.pointerLocked;
+        this.pointerLocked = document.pointerLockElement === document.body;
+        
+        if (this.pointerLocked) {
+          document.getElementById('click-prompt').style.display = 'none';
+        }
+        
+        if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+          AboutApp.openMenu();
+        }
+      });
       
-      if (this.pointerLocked) {
-        document.getElementById('click-prompt').style.display = 'none';
-      }
+      document.addEventListener('click', () => {
+        if (!this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+          document.body.requestPointerLock();
+        }
+      });
+    } else {
+      this.initMobileControls();
+      document.getElementById('click-prompt').style.display = 'none';
+    }
+  },
+  
+  initMobileControls() {
+    this.initJoystick('movement-joystick', (x, y) => {
+      this.mobileMovement.x = x;
+      this.mobileMovement.z = y;
+    });
+    
+    document.addEventListener('touchstart', (e) => {
+      Array.from(e.changedTouches).forEach(touch => {
+        const target = document.elementFromPoint(touch.clientX, touch.clientY);
+        
+        const isOnJoystick = target && target.closest('#movement-joystick');
+        const isOnUI = target && (
+          target.closest('#mobile-menu-btn') || 
+          target.closest('#popup') ||
+          target.closest('#top-menu')
+        );
+        
+        this.activeTouches.set(touch.identifier, {
+          startX: touch.clientX,
+          startY: touch.clientY,
+          lastX: touch.clientX,
+          lastY: touch.clientY,
+          isJoystick: isOnJoystick,
+          isUI: isOnUI,
+          isCameraControl: !isOnJoystick && !isOnUI
+        });
+      });
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (AboutApp.menuOpen || AboutApp.popupVisible) return;
       
-      if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen) {
-        AboutApp.openMenu();
+      Array.from(e.changedTouches).forEach(touch => {
+        const touchData = this.activeTouches.get(touch.identifier);
+        if (!touchData) return;
+        
+        if (touchData.isCameraControl) {
+          const deltaX = touch.clientX - touchData.lastX;
+          const deltaY = touch.clientY - touchData.lastY;
+          
+          this.mobileLookDelta.x = deltaX;
+          this.mobileLookDelta.y = deltaY;
+          
+          touchData.lastX = touch.clientX;
+          touchData.lastY = touch.clientY;
+        }
+      });
+    });
+    
+    document.addEventListener('touchend', (e) => {
+      Array.from(e.changedTouches).forEach(touch => {
+        const touchData = this.activeTouches.get(touch.identifier);
+        
+        if (touchData && touchData.isCameraControl) {
+          const distMoved = Math.sqrt(
+            Math.pow(touch.clientX - touchData.startX, 2) + 
+            Math.pow(touch.clientY - touchData.startY, 2)
+          );
+          
+          if (distMoved < 20) {
+            ShotgunGif.play();
+            
+            if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible) {
+              if (InteractionManager.hoveredBox) {
+                const cameraPos = new THREE.Vector3();
+                SceneManager.camera.getWorldPosition(cameraPos);
+                const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
+                
+                if (dist <= CONFIG.CLICK_DISTANCE) {
+                  if (InteractionManager.hoveredBox.userData.isDoomArcade) {
+                    AboutApp.showDoomPopup();
+                  } else if (InteractionManager.hoveredBox.userData.isDisplay) {
+                    AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
+                  }
+                }
+              }
+            }
+          }
+        }
+        
+        this.activeTouches.delete(touch.identifier);
+      });
+      
+      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
+      if (!hasCameraTouch) {
+        this.mobileLookDelta.x = 0;
+        this.mobileLookDelta.y = 0;
       }
     });
     
-    document.addEventListener('click', () => {
-      if (!this.pointerLocked && !AboutApp.menuOpen) {
-        document.body.requestPointerLock();
+    document.addEventListener('touchcancel', (e) => {
+      Array.from(e.changedTouches).forEach(touch => {
+        this.activeTouches.delete(touch.identifier);
+      });
+      
+      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
+      if (!hasCameraTouch) {
+        this.mobileLookDelta.x = 0;
+        this.mobileLookDelta.y = 0;
       }
     });
+    
+    const menuBtn = document.getElementById('mobile-menu-btn');
+    menuBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      AboutApp.toggleMenu();
+    });
+  },
+  
+  initJoystick(id, callback) {
+    const joystick = document.getElementById(id);
+    const stick = joystick.querySelector('.joystick-stick');
+    const base = joystick.querySelector('.joystick-base');
+    
+    let activeTouch = null;
+    
+    const handleStart = (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches.length > 0) {
+        activeTouch = e.touches[0].identifier;
+      }
+    };
+    
+    const handleMove = (e) => {
+      if (activeTouch === null) return;
+      e.preventDefault();
+      
+      let touch = null;
+      if (e.touches) {
+        for (let i = 0; i < e.touches.length; i++) {
+          if (e.touches[i].identifier === activeTouch) {
+            touch = e.touches[i];
+            break;
+          }
+        }
+      }
+      if (!touch) return;
+      
+      const rect = base.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+      
+      let deltaX = touch.clientX - centerX;
+      let deltaY = touch.clientY - centerY;
+      
+      const maxDistance = rect.width / 2 - 25;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      if (distance > maxDistance) {
+        deltaX = (deltaX / distance) * maxDistance;
+        deltaY = (deltaY / distance) * maxDistance;
+      }
+      
+      stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
+      
+      const normalizedX = deltaX / maxDistance;
+      const normalizedY = deltaY / maxDistance;
+      callback(normalizedX, normalizedY);
+    };
+    
+    const handleEnd = (e) => {
+      e.preventDefault();
+      activeTouch = null;
+      stick.style.transform = 'translate(-50%, -50%)';
+      callback(0, 0);
+    };
+    
+    joystick.addEventListener('touchstart', handleStart, { passive: false });
+    joystick.addEventListener('touchmove', handleMove, { passive: false });
+    joystick.addEventListener('touchend', handleEnd, { passive: false });
+    joystick.addEventListener('touchcancel', handleEnd, { passive: false });
   },
   
   isKeyPressed(code) {
     return this.keys[code] || false;
+  },
+  
+  getMovementInput() {
+    if (CONFIG.IS_MOBILE) {
+      return {
+        x: this.mobileMovement.x,
+        z: this.mobileMovement.z
+      };
+    } else {
+      return {
+        x: (this.isKeyPressed('KeyD') || this.isKeyPressed('ArrowRight') ? 1 : 0) - 
+           (this.isKeyPressed('KeyA') || this.isKeyPressed('ArrowLeft') ? 1 : 0),
+        z: (this.isKeyPressed('KeyS') || this.isKeyPressed('ArrowDown') ? 1 : 0) - 
+           (this.isKeyPressed('KeyW') || this.isKeyPressed('ArrowUp') ? 1 : 0)
+      };
+    }
   }
 };
 
@@ -199,7 +952,10 @@ const SceneManager = {
   yaw: null,
   pitch: null,
   objects: [],
+  boxes: [],
   bigbox: null,
+  doomArcade: null,
+  displayBox: null,
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -212,7 +968,7 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, 700);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, 500);
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
@@ -221,12 +977,12 @@ const SceneManager = {
     dirLight.castShadow = true;
     dirLight.shadow.mapSize.width = 2048;
     dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left = -200;
-    dirLight.shadow.camera.right = 200;
-    dirLight.shadow.camera.top = 400;
-    dirLight.shadow.camera.bottom = -400;
+    dirLight.shadow.camera.left = -150;
+    dirLight.shadow.camera.right = 150;
+    dirLight.shadow.camera.top = 300;
+    dirLight.shadow.camera.bottom = -300;
     dirLight.shadow.camera.near = 1;
-    dirLight.shadow.camera.far = 500;
+    dirLight.shadow.camera.far = 400;
     this.scene.add(dirLight);
     this.scene.add(this.yaw);
     
@@ -289,35 +1045,100 @@ const SceneManager = {
   },
   
   createEnvironment() {
-    const floorGeo = this.createDeformedGeometry(new THREE.PlaneGeometry(200, 500, 20, 40), 2);
+    const floorGeo = this.createDeformedGeometry(new THREE.PlaneGeometry(100, 200, 10, 20), 2);
     floorGeo.rotateX(-Math.PI / 2);
     const tex = this.createCheckeredTexture();
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
     tex.repeat.set(2, 2);
     const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }));
-    floor.position.set(0, 4, 200);
+    floor.position.set(0, 4, 100);
     floor.receiveShadow = true;
     this.scene.add(floor);
     this.objects.push(floor);
     
     const walls = [
-      this.createWall(500, 200, [20, 40], [-100, -1, 200], [0, Math.PI/2, -0.15]),
-      this.createWall(500, 200, [20, 40], [90, 4, 200], [0, Math.PI/2, 0.15]),
-      this.createWall(200, 200, [20, 40], [0, 4, 400], [0.15, 0, 0]),
-      this.createWall(200, 200, [20, 40], [0, 4, 0], [-0.15, 0, 0])
+      this.createWall(220, 100, [10, 20], [-50, -1, 100], [0, Math.PI/2, -0.15]),
+      this.createWall(220, 100, [10, 20], [50, 4, 100], [0, Math.PI/2, 0.15]),
+      this.createWall(120, 100, [10, 20], [0, 4, 200], [0.15, 0, 0]),
+      this.createWall(120, 100, [10, 20], [0, 4, 0], [-0.15, 0, 0])
     ];
     walls.forEach(wall => {
       this.scene.add(wall);
       this.objects.push(wall);
     });
     
-    const geometry = new THREE.BoxGeometry(90, 90, 90);
+    // Cube moved to back of room
+    const geometry = new THREE.BoxGeometry(30, 30, 30);
     const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
     this.bigbox = new THREE.Mesh(geometry, material);
-    this.bigbox.position.set(0, 50, 175);
+    this.bigbox.position.set(0, 20, 180);
     this.bigbox.castShadow = true;
     this.bigbox.receiveShadow = true;
     this.scene.add(this.bigbox);
+    
+    // Create 16x9 display box on left wall with temp project data
+    const displayGeometry = new THREE.BoxGeometry(60, 35, 5);
+    const displayMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    this.displayBox = new THREE.Mesh(displayGeometry, displayMaterial);
+    this.displayBox.position.set(-45, 25, 100);
+    this.displayBox.rotation.y = Math.PI / 2;
+    this.displayBox.castShadow = true;
+    this.displayBox.receiveShadow = true;
+    this.displayBox.userData.isDisplay = true;
+    this.displayBox.userData.projectData = {
+      title: "About Me",
+      description: "This is a temporary description about me and my work. Lorem ipsum dolor sit amet, consectetur adipiscing elit. I love creating interactive 3D experiences and working with web technologies.",
+      media: [
+        { type: "image", src: "https://via.placeholder.com/800x600/1976D2/FFFFFF?text=Image+1" },
+        { type: "image", src: "https://via.placeholder.com/600x800/FFD600/000000?text=Image+2" },
+        { type: "image", src: "https://via.placeholder.com/800x600/44aa88/FFFFFF?text=Image+3" }
+      ]
+    };
+    this.scene.add(this.displayBox);
+    this.boxes.push(this.displayBox);
+    
+    // Create DOOM arcade on right wall - only on PC
+    if (!CONFIG.IS_MOBILE) {
+      const arcadeGeometry = new THREE.BoxGeometry(12, 16, 3);
+      
+      // Load DOOMCOVER.PNG texture
+      const textureLoader = new THREE.TextureLoader();
+      const doomTexture = textureLoader.load('assets/DOOMCOVER.PNG');
+      
+      const arcadeMaterial = new THREE.MeshStandardMaterial({ 
+        map: doomTexture
+      });
+      this.doomArcade = new THREE.Mesh(arcadeGeometry, arcadeMaterial);
+      this.doomArcade.position.set(45, 18, 100);
+      this.doomArcade.rotation.y = -Math.PI / 2;
+      this.doomArcade.castShadow = true;
+      this.doomArcade.receiveShadow = true;
+      this.doomArcade.userData.isDoomArcade = true;
+      this.scene.add(this.doomArcade);
+      this.boxes.push(this.doomArcade);
+      
+      // Add text above arcade
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 128;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#ffffff';
+      ctx.font = 'bold 40px monospace';
+      ctx.textAlign = 'center';
+      ctx.fillText('CLICK TO PLAY', 256, 75);
+      
+      const textTexture = new THREE.CanvasTexture(canvas);
+      const textGeometry = new THREE.PlaneGeometry(12, 4);
+      const textMaterial = new THREE.MeshBasicMaterial({ 
+        map: textTexture, 
+        transparent: true,
+        side: THREE.DoubleSide
+      });
+      const textMesh = new THREE.Mesh(textGeometry, textMaterial);
+      textMesh.position.set(45, 28, 100);
+      textMesh.rotation.y = -Math.PI / 2;
+      this.scene.add(textMesh);
+    }
   }
 };
 
@@ -331,8 +1152,8 @@ const PhysicsManager = {
   update(delta) {
     const yaw = SceneManager.yaw;
     
-    yaw.position.x = Math.max(-95, Math.min(85, yaw.position.x));
-    yaw.position.z = Math.max(5, Math.min(395, yaw.position.z));
+    yaw.position.x = Math.max(-45, Math.min(45, yaw.position.x));
+    yaw.position.z = Math.max(5, Math.min(195, yaw.position.z));
     
     this.raycaster.ray.origin.copy(yaw.position);
     this.raycaster.ray.origin.y += 1;
@@ -344,16 +1165,13 @@ const PhysicsManager = {
     this.velocity.z -= this.velocity.z * 8 * delta;
     this.velocity.y -= 5 * 200 * delta;
     
-    this.direction.set(
-      (InputManager.isKeyPressed('KeyD') || InputManager.isKeyPressed('ArrowRight') ? 1 : 0) - 
-      (InputManager.isKeyPressed('KeyA') || InputManager.isKeyPressed('ArrowLeft') ? 1 : 0),
-      0,
-      (InputManager.isKeyPressed('KeyS') || InputManager.isKeyPressed('ArrowDown') ? 1 : 0) - 
-      (InputManager.isKeyPressed('KeyW') || InputManager.isKeyPressed('ArrowUp') ? 1 : 0)
-    ).normalize();
+    const input = InputManager.getMovementInput();
+    this.direction.set(input.x, 0, input.z).normalize();
     
-    if (this.direction.z) this.velocity.z -= this.direction.z * CONFIG.MOVEMENT_SPEED * delta;
-    if (this.direction.x) this.velocity.x += this.direction.x * CONFIG.MOVEMENT_SPEED * delta;
+    const moveSpeed = CONFIG.IS_MOBILE ? CONFIG.MOBILE_MOVEMENT_SPEED : CONFIG.MOVEMENT_SPEED;
+    
+    if (this.direction.z) this.velocity.z -= this.direction.z * moveSpeed * delta;
+    if (this.direction.x) this.velocity.x += this.direction.x * moveSpeed * delta;
     
     if (!onGround) {
       const speed = Math.sqrt(this.velocity.x * this.velocity.x + this.velocity.z * this.velocity.z);
@@ -389,18 +1207,185 @@ const PhysicsManager = {
 // ===== INTERACTION MANAGER MODULE =====
 const InteractionManager = {
   reticle: null,
+  raycaster: new THREE.Raycaster(),
+  hoveredBox: null,
   
   init() {
     this.reticle = document.getElementById('reticle');
     
-    document.addEventListener('mousemove', (e) => {
-      if (InputManager.pointerLocked && !AboutApp.menuOpen) {
-        SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
-        SceneManager.pitch.rotation.x = Math.max(
-          -Math.PI/2, 
-          Math.min(Math.PI/2, SceneManager.pitch.rotation.x - e.movementY * CONFIG.MOUSE_SENSITIVITY)
-        );
+    if (!CONFIG.IS_MOBILE) {
+      document.addEventListener('mousemove', (e) => {
+        if (InputManager.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+          SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
+          SceneManager.pitch.rotation.x = Math.max(
+            -Math.PI/2, 
+            Math.min(Math.PI/2, SceneManager.pitch.rotation.x - e.movementY * CONFIG.MOUSE_SENSITIVITY)
+          );
+        }
+      });
+      
+      document.addEventListener('click', () => {
+        ShotgunGif.play();
+        
+        if (AboutApp.doomPopupVisible || AboutApp.popupVisible) {
+          return;
+        }
+        
+        if (!InputManager.pointerLocked || AboutApp.menuOpen) return;
+        
+        if (this.hoveredBox) {
+          const cameraPos = new THREE.Vector3();
+          SceneManager.camera.getWorldPosition(cameraPos);
+          const dist = cameraPos.distanceTo(this.hoveredBox.position);
+          
+          if (dist <= CONFIG.CLICK_DISTANCE) {
+            if (this.hoveredBox.userData.isDoomArcade) {
+              AboutApp.showDoomPopup();
+            } else if (this.hoveredBox.userData.isDisplay) {
+              AboutApp.showPopup(this.hoveredBox.userData.projectData);
+            }
+          }
+        }
+      });
+    }
+  },
+  
+  update() {
+    // Handle mobile look controls
+    if (CONFIG.IS_MOBILE && (InputManager.mobileLookDelta.x !== 0 || InputManager.mobileLookDelta.y !== 0)) {
+      SceneManager.yaw.rotation.y -= InputManager.mobileLookDelta.x * CONFIG.MOBILE_LOOK_SENSITIVITY;
+      SceneManager.pitch.rotation.x = Math.max(
+        -Math.PI/2,
+        Math.min(Math.PI/2, SceneManager.pitch.rotation.x - InputManager.mobileLookDelta.y * CONFIG.MOBILE_LOOK_SENSITIVITY)
+      );
+    }
+    
+    // Check for hovering over boxes
+    if ((!CONFIG.IS_MOBILE && !InputManager.pointerLocked) || AboutApp.popupVisible || AboutApp.menuOpen || AboutApp.doomPopupVisible) {
+      this.reticle.classList.remove('hover');
+      this.hoveredBox = null;
+      return;
+    }
+    
+    this.raycaster.setFromCamera(new THREE.Vector2(0, 0), SceneManager.camera);
+    const intersects = this.raycaster.intersectObjects(SceneManager.boxes);
+    
+    if (intersects.length > 0) {
+      const obj = intersects[0].object;
+      if (obj.userData.isDoomArcade || obj.userData.isDisplay) {
+        const cameraPos = new THREE.Vector3();
+        SceneManager.camera.getWorldPosition(cameraPos);
+        const dist = cameraPos.distanceTo(obj.position);
+        
+        if (dist <= CONFIG.HOVER_DISTANCE) {
+          this.reticle.classList.add('hover');
+          this.hoveredBox = obj;
+        } else {
+          this.reticle.classList.remove('hover');
+          this.hoveredBox = null;
+        }
       }
+    } else {
+      this.reticle.classList.remove('hover');
+      this.hoveredBox = null;
+    }
+  }
+};
+
+// ===== POPUP MANAGER MODULE =====
+const PopupManager = {
+  generateHTML(project) {
+    const mediaContent = project.media.map(m =>
+      m.type === "video"
+        ? `<video src="${m.src}" controls playsinline style="width:100%;height:auto;object-fit:contain;"></video>`
+        : `<img src="${m.src}" alt="${project.title}" onclick="AboutApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`
+    ).join('');
+    
+    return `
+      <div class="popup-content-layout">
+        <div class="popup-left">
+          <h2>${project.title}</h2>
+          <p>${project.description}</p>
+        </div>
+        <div class="popup-right">
+          <div class="popup-images-scroll">
+            ${mediaContent}
+          </div>
+        </div>
+      </div>
+    `;
+  },
+  
+  layoutMedia(root) {
+    const scrollContainer = root.querySelector('.popup-images-scroll');
+    if (!scrollContainer) return;
+    
+    const mediaElems = Array.from(scrollContainer.querySelectorAll('img, video'));
+    if (mediaElems.length === 0) return;
+    
+    const promises = mediaElems.map(elem => new Promise(resolve => {
+      if (elem.tagName === 'IMG') {
+        if (elem.complete && elem.naturalWidth) {
+          resolve({ elem, w: elem.naturalWidth, h: elem.naturalHeight });
+        } else {
+          const onLoad = () => {
+            elem.removeEventListener('load', onLoad);
+            resolve({ elem, w: elem.naturalWidth, h: elem.naturalHeight });
+          };
+          elem.addEventListener('load', onLoad);
+        }
+      } else {
+        if (elem.readyState >= 1 && elem.videoWidth) {
+          resolve({ elem, w: elem.videoWidth, h: elem.videoHeight });
+        } else {
+          const onMeta = () => {
+            elem.removeEventListener('loadedmetadata', onMeta);
+            resolve({ elem, w: elem.videoWidth, h: elem.videoHeight });
+          };
+          elem.addEventListener('loadedmetadata', onMeta);
+        }
+      }
+    }));
+    
+    Promise.all(promises).then(results => {
+      scrollContainer.innerHTML = '';
+      let pendingRow = null;
+      
+      results.forEach(({ elem, w, h }) => {
+        elem.style.maxWidth = '100%';
+        elem.style.display = 'block';
+        elem.style.height = 'auto';
+        elem.style.objectFit = 'contain';
+        
+        const isPortrait = h > w;
+        
+        if (isPortrait) {
+          if (!pendingRow) {
+            pendingRow = document.createElement('div');
+            pendingRow.className = 'image-row';
+          }
+          pendingRow.appendChild(elem);
+          if (pendingRow.children.length === 2) {
+            scrollContainer.appendChild(pendingRow);
+            pendingRow = null;
+          }
+        } else {
+          if (pendingRow) {
+            scrollContainer.appendChild(pendingRow);
+            pendingRow = null;
+          }
+          scrollContainer.appendChild(elem);
+        }
+      });
+      
+      if (pendingRow) {
+        const spacer = document.createElement('div');
+        spacer.style.flex = '1';
+        pendingRow.appendChild(spacer);
+        scrollContainer.appendChild(pendingRow);
+      }
+    }).catch(e => {
+      console.warn('Error in layout popup media:', e);
     });
   }
 };
@@ -408,13 +1393,17 @@ const InteractionManager = {
 // ===== MAIN APP MODULE =====
 const AboutApp = {
   menuOpen: false,
+  popupVisible: false,
+  doomPopupVisible: false,
   animationId: null,
   prevTime: performance.now(),
+  dosboxInstance: null,
   
   init() {
     InputManager.init();
     SceneManager.init();
     InteractionManager.init();
+    ShotgunGif.init();
     
     document.querySelectorAll('.menu-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -424,26 +1413,20 @@ const AboutApp = {
       });
     });
     
-    document.getElementById('top-menu').addEventListener('click', (e) => {
-      if (e.target.id === 'top-menu' || e.target.id === 'menu-info') {
-        this.closeMenu();
-      }
-    });
-    
     this.animate();
   },
   
+  handleMenuClick(event) {
+    if (event.target.id === 'top-menu') {
+      this.closeMenu();
+    }
+  },
+  
   toggleMenu() {
-    this.menuOpen = !this.menuOpen;
-    const menu = document.getElementById('top-menu');
-    menu.style.display = this.menuOpen ? 'flex' : 'none';
-    
     if (this.menuOpen) {
-      if (document.pointerLockElement) {
-        document.exitPointerLock();
-      }
+      this.closeMenu();
     } else {
-      document.body.requestPointerLock();
+      this.openMenu();
     }
   },
   
@@ -452,6 +1435,17 @@ const AboutApp = {
     this.menuOpen = true;
     const menu = document.getElementById('top-menu');
     menu.style.display = 'flex';
+    
+    if (CONFIG.IS_MOBILE) {
+      const gifImg = document.getElementById('menu-random-gif');
+      const randomGif = CONFIG.gifUrls[Math.floor(Math.random() * CONFIG.gifUrls.length)];
+      gifImg.src = randomGif;
+      gifImg.style.display = 'block';
+    }
+    
+    if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
   },
   
   closeMenu() {
@@ -459,7 +1453,87 @@ const AboutApp = {
     this.menuOpen = false;
     const menu = document.getElementById('top-menu');
     menu.style.display = 'none';
-    document.body.requestPointerLock();
+    
+    if (CONFIG.IS_MOBILE) {
+      const gifImg = document.getElementById('menu-random-gif');
+      gifImg.style.display = 'none';
+      gifImg.src = '';
+    }
+    
+    if (!CONFIG.IS_MOBILE) {
+      document.body.requestPointerLock();
+    }
+  },
+  
+  showPopup(project) {
+    const popup = document.getElementById('popup');
+    const popupContent = document.getElementById('popup-content');
+    const html = PopupManager.generateHTML(project);
+    popupContent.innerHTML = html;
+    requestAnimationFrame(() => PopupManager.layoutMedia(popupContent));
+    popup.style.display = 'flex';
+    popup.style.opacity = '1';
+    this.popupVisible = true;
+    
+    if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  },
+  
+  hidePopup() {
+    const popup = document.getElementById('popup');
+    popup.style.display = 'none';
+    popup.style.opacity = '0';
+    this.popupVisible = false;
+    
+    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+      document.body.requestPointerLock();
+    }
+  },
+  
+  showDoomPopup() {
+    const popup = document.getElementById('doom-popup');
+    popup.style.display = 'flex';
+    this.doomPopupVisible = true;
+    
+    if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+    
+    // Initialize DOOM if not already
+    if (!this.dosboxInstance) {
+      this.dosboxInstance = new Dosbox({
+        id: "dosbox",
+        onload: function (dosbox) {
+          dosbox.run("https://js-dos.com/cdn/upload/DOOM-@evilution.zip", "./DOOM/DOOM.EXE");
+        },
+        onrun: function (dosbox, app) {
+          console.log("App '" + app + "' is running");
+        }
+      });
+    }
+  },
+  
+  hideDoomPopup() {
+    const popup = document.getElementById('doom-popup');
+    popup.style.display = 'none';
+    this.doomPopupVisible = false;
+    
+    // Force reload the entire page to kill DOOM audio
+    window.location.reload();
+  },
+  
+  openImageModal(imgElem) {
+    event.stopPropagation();
+    document.getElementById('modal-img').src = imgElem.src;
+    document.getElementById('image-modal').style.display = 'flex';
+  },
+  
+  closeImageModal(event) {
+    if (event.target.id === 'image-modal' || event.target.className === 'modal-close-btn') {
+      document.getElementById('image-modal').style.display = 'none';
+      document.getElementById('modal-img').src = '';
+    }
   },
   
   animate() {
@@ -469,8 +1543,9 @@ const AboutApp = {
     const delta = (time - this.prevTime) / 1000;
     this.prevTime = time;
     
-    if (!this.menuOpen) {
+    if (!this.menuOpen && !this.popupVisible && !this.doomPopupVisible) {
       PhysicsManager.update(delta);
+      InteractionManager.update();
       
       if (SceneManager.bigbox) {
         SceneManager.bigbox.rotation.y += 0.0003;

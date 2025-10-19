@@ -1,26 +1,194 @@
 [
-  { "src": "assets2/1.webp", "width": 800, "height": 1270 },
-  { "src": "assets2/2.webp", "width": 1920, "height": 1080 },
-  { "src": "assets2/3.webp", "width": 1200, "height": 800 },
-  { "src": "assets2/4.webp", "width": 800, "height": 1000 },
+  {
+    "src": "assets2/1hollisvinyl.webp",
+    "title": "Hollis Vinyl"
+  },
+  {
+    "src": "assets2/2hollisposter.webp",
+    "title": "Hollis Poster"
+  },
+  {
+    "src": "assets2/beachlife.webp",
+    "title": "Beach Life"
+  },
+  {
+    "src": "assets2/bigsteppers.webp",
+    "title": "Big Steppers"
+  },
+  {
+    "src": "assets2/blobs.mp4",
+    "type": "video",
+    "title": "Blobs"
+  },
+  {
+    "src": "assets2/braidmain.webp",
+    "title": "Braid Main"
+  },
+  {
+    "src": "assets2/braidteaser.webp",
+    "title": "Braid Teaser"
+  },
+  {
+    "src": "assets2/cartimockup.webp",
+    "title": "Carti Mockup"
+  },
+  {
+    "src": "assets2/charlotte.webp",
+    "title": "Charlotte"
+  },
+    {
+    "src": "assets2/clock.webp",
+    "title": "Clock"
+  },
+  {
+    "src": "assets2/clock.mp4",
+    "type": "video",
+    "title": "Clock"
+  },
 
-  { "src": "assets2/5.webp", "width": 800, "height": 1270 },
-  { "src": "assets2/6.webp", "width": 1920, "height": 1080 },
-  { "src": "assets2/7.webp", "width": 1200, "height": 800 },
-  { "src": "assets2/8.webp", "width": 800, "height": 1000 },
-
-  { "src": "assets2/9.webp", "width": 800, "height": 1270 },
-  { "src": "assets2/10.webp", "width": 1920, "height": 1080 },
-  { "src": "assets2/11.webp", "width": 1200, "height": 800 },
-  { "src": "assets2/12.webp", "width": 800, "height": 1000 },
-
-  { "src": "assets2/13.webp", "width": 800, "height": 1270 },
-  { "src": "assets2/14.webp", "width": 1920, "height": 1080 },
-  { "src": "assets2/15.webp", "width": 1200, "height": 800 },
-  { "src": "assets2/16.webp", "width": 800, "height": 1000 },
-
-  { "src": "assets2/17.webp", "width": 800, "height": 1270 },
-  { "src": "assets2/18.webp", "width": 1920, "height": 1080 },
-  { "src": "assets2/19.webp", "width": 1200, "height": 800 },
-  { "src": "assets2/20.webp", "width": 800, "height": 1000 }
+  {
+    "src": "assets2/collageposters.webp",
+    "title": "Collage Posters"
+  },
+  {
+    "src": "assets2/dance.webp",
+    "title": "Dance"
+  },
+  {
+    "src": "assets2/dance2.webp",
+    "title": "Dance 2"
+  },
+  {
+    "src": "assets2/dune.webp",
+    "title": "Dune"
+  },
+  {
+    "src": "assets2/frankmiyazaki.webp",
+    "title": "Frank Miyazaki"
+  },
+  {
+    "src": "assets2/halloweenmockup.webp",
+    "title": "Halloween Mockup"
+  },
+  {
+    "src": "assets2/heliotrope.webp",
+    "title": "Heliotrope"
+  },
+  {
+    "src": "assets2/heliotrope2.webp",
+    "title": "Heliotrope 2"
+  },
+  {
+    "src": "assets2/heliotrope3.webp",
+    "title": "Heliotrope 3"
+  },
+  {
+    "src": "assets2/ken.webp",
+    "title": "Ken"
+  },
+  {
+    "src": "assets2/lookdown.webp",
+    "title": "Look Down"
+  },
+  {
+    "src": "assets2/lookup.webp",
+    "title": "Look Up"
+  },
+  {
+    "src": "assets2/maliciousmade.webp",
+    "title": "Malicious Made"
+  },
+  {
+    "src": "assets2/max.webp",
+    "title": "Max"
+  },
+  {
+    "src": "assets2/maxi1.webp",
+    "title": "Maxi 1"
+  },
+  {
+    "src": "assets2/maxi2.webp",
+    "title": "Maxi 2"
+  },
+  {
+    "src": "assets2/mfdoom.webp",
+    "title": "MF DOOM"
+  },
+  {
+    "src": "assets2/nas.webp",
+    "title": "Nas"
+  },
+  {
+    "src": "assets2/peggy.webp",
+    "title": "Peggy"
+  },
+  {
+    "src": "assets2/reevox1.webp",
+    "title": "Reevox 1"
+  },
+  {
+    "src": "assets2/reevox2.webp",
+    "title": "Reevox 2"
+  },
+  {
+    "src": "assets2/reevox4.webp",
+    "title": "Reevox 4"
+  },
+  {
+    "src": "assets2/reevox5.webp",
+    "title": "Reevox 5"
+  },
+  {
+    "src": "assets2/standing.webp",
+    "title": "Standing"
+  },
+  {
+    "src": "assets2/supercroix.webp",
+    "title": "Supercroix"
+  },
+  {
+    "src": "assets2/surrealismmockup.webp",
+    "title": "Surrealism Mockup"
+  },
+  {
+    "src": "assets2/surrealism.mp4",
+    "type": "video",
+    "title": "Surrealism"
+  },
+  {
+    "src": "assets2/yeat.webp",
+    "title": "Yeat"
+  },
+  {
+    "src": "assets2/yoann.webp",
+    "title": "Yoann"
+  },
+  {
+    "src": "assets2/yoannjuju.webp",
+    "title": "Yoann Juju"
+  },
+  {
+    "src": "assets2/yoannjuju2.webp",
+    "title": "Yoann Juju 2"
+  },
+  {
+    "src": "assets2/yoannjuju3.webp",
+    "title": "Yoann Juju 3"
+  },
+  {
+    "src": "assets2/yoannjuju5.webp",
+    "title": "Yoann Juju 5"
+  },
+  {
+    "src": "assets2/yoannjuju6.webp",
+    "title": "Yoann Juju 6"
+  },
+  {
+    "src": "assets2/zabio.webp",
+    "title": "Zabio"
+  },
+  {
+    "src": "assets2/zabio2.webp",
+    "title": "Zabio 2"
+  }
 ]
