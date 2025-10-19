@@ -105,6 +105,13 @@ body {
   color: rgb(34, 255, 0);
 }
 
+#menu-info {
+  margin-top: 40px;
+  font-family: 'monospace821';
+  color: #fff;
+  font-size: 1.5em;
+}
+
 /* Popup */
 #popup {
   display: none;
@@ -309,7 +316,7 @@ body {
   image-rendering: pixelated;
   image-rendering: -moz-crisp-edges;
   image-rendering: crisp-edges;
-   clip-path: polygon(
+  clip-path: polygon(
     0px calc(100% - 20px),
     4px calc(100% - 20px),
     4px calc(100% - 12px),
@@ -434,6 +441,10 @@ body {
     width: 100%;
     gap: 10px;
   }
+
+  #menu-info {
+    display: none;
+  }
   
   #menu-random-gif {
     display: block;
@@ -518,6 +529,7 @@ body {
     <button class="menu-btn" data-url="home.html">HOME</button>
     <button class="menu-btn" data-url="about.html">ABOUT</button>
     <button class="menu-btn" data-url="gallery.html">GALLERY</button>
+    <div id="menu-info">// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU // CLICK=SELECT //</div>
   </div>
   <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
 </div>
@@ -587,11 +599,17 @@ const CONFIG = {
   IS_MOBILE: IS_MOBILE,
   HOVER_DISTANCE: 80,
   CLICK_DISTANCE: 150,
-  MOVEMENT_SPEED: 300,
-  MOBILE_MOVEMENT_SPEED: 500,
+  MOVEMENT_SPEED: 150,
+  MOBILE_MOVEMENT_SPEED: 300,
   JUMP_FORCE: 275,
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.006,
+  
+  // Mobile optimizations
+  MOBILE_MAX_TEXTURE_SIZE: 512,
+  MOBILE_REDUCE_QUALITY: IS_MOBILE,
+  MOBILE_DISABLE_SHADOWS: IS_MOBILE,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 'assets/gifs/dancingdino.gif',
@@ -654,6 +672,7 @@ const InputManager = {
       this.mobileMovement.z = y;
     });
     
+    // Multi-touch support for simultaneous joystick and camera control
     document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
@@ -862,29 +881,39 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, 700);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
-    const dirLight = new THREE.DirectionalLight(0xffffff, 1);
-    dirLight.position.set(0, 300, 50);
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 2048;
-    dirLight.shadow.mapSize.height = 2048;
-    dirLight.shadow.camera.left = -200;
-    dirLight.shadow.camera.right = 200;
-    dirLight.shadow.camera.top = 400;
-    dirLight.shadow.camera.bottom = -400;
-    dirLight.shadow.camera.near = 1;
-    dirLight.shadow.camera.far = 500;
-    this.scene.add(dirLight);
+    // Only add directional light and shadows on desktop
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      const dirLight = new THREE.DirectionalLight(0xffffff, 1);
+      dirLight.position.set(0, 300, 50);
+      dirLight.castShadow = true;
+      dirLight.shadow.mapSize.width = 2048;
+      dirLight.shadow.mapSize.height = 2048;
+      dirLight.shadow.camera.left = -200;
+      dirLight.shadow.camera.right = 200;
+      dirLight.shadow.camera.top = 400;
+      dirLight.shadow.camera.bottom = -400;
+      dirLight.shadow.camera.near = 1;
+      dirLight.shadow.camera.far = 500;
+      this.scene.add(dirLight);
+    }
     this.scene.add(this.yaw);
     
-    this.renderer = new THREE.WebGLRenderer({ antialias: true });
-    this.renderer.setPixelRatio(window.devicePixelRatio);
+    this.renderer = new THREE.WebGLRenderer({ 
+      antialias: !CONFIG.IS_MOBILE,
+      powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance"
+    });
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
-    this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    
+    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+      this.renderer.shadowMap.enabled = true;
+      this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    }
+    
     document.body.appendChild(this.renderer.domElement);
     
     window.addEventListener('resize', () => {
@@ -997,6 +1026,12 @@ const SceneManager = {
             videoElem.loop = true;
             videoElem.playsInline = true;
             
+            // Reduce video quality on mobile
+            if (CONFIG.IS_MOBILE) {
+              videoElem.setAttribute('playsinline', '');
+              videoElem.setAttribute('webkit-playsinline', '');
+            }
+            
             videoElem.play().catch(() => {
               document.body.addEventListener("click", () => {
                 videoElem.play().catch(() => {});
@@ -1011,8 +1046,8 @@ const SceneManager = {
             this.videos.push(videoElem);
             this.videoElements[project.id] = videoElem;
             material = new THREE.MeshStandardMaterial({ map: videoTexture });
-          } else if (isGif) {
-            // Load GIF using gifler
+          } else if (isGif && !CONFIG.IS_MOBILE) {
+            // Skip GIFs on mobile for performance
             const canvas = document.createElement('canvas');
             const tempImg = new Image();
             tempImg.src = `assets/${project.thumbnail}`;
@@ -1054,6 +1089,23 @@ const SceneManager = {
               map: textureLoader.load(`assets/${project.thumbnail}`)
             });
           } else {
+            // Reduce texture size on mobile
+            const loadTexture = (src, callback) => {
+              textureLoader.load(src, texture => {
+                if (CONFIG.IS_MOBILE && texture.image) {
+                  const canvas = document.createElement('canvas');
+                  const maxSize = CONFIG.MOBILE_MAX_TEXTURE_SIZE;
+                  const scale = Math.min(1, maxSize / Math.max(texture.image.width, texture.image.height));
+                  canvas.width = texture.image.width * scale;
+                  canvas.height = texture.image.height * scale;
+                  const ctx = canvas.getContext('2d');
+                  ctx.drawImage(texture.image, 0, 0, canvas.width, canvas.height);
+                  texture = new THREE.CanvasTexture(canvas);
+                }
+                callback(texture);
+              });
+            };
+            
             material = new THREE.MeshStandardMaterial({
               map: textureLoader.load(`assets/${project.thumbnail}`)
             });
@@ -1068,8 +1120,12 @@ const SceneManager = {
           
           const box = new THREE.Mesh(geometry, material);
           box.position.set(project.x, project.y, project.z);
-          box.castShadow = true;
-          box.receiveShadow = true;
+          
+          if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+            box.castShadow = true;
+            box.receiveShadow = true;
+          }
+          
           box.userData.projectId = project.id;
           box.userData.projectData = project;
           
@@ -1092,7 +1148,7 @@ const SceneManager = {
     const minDistance = 30;
     const rectWidth = 150;
     const rectCenterZ = roomLength / 2, rectCenterX = 0;
-    const numPlanes = 100;
+    const numPlanes = CONFIG.IS_MOBILE ? 30 : 100; // Reduce on mobile
     const minY = 10, maxY = 80;
     
     for (let i = 0; i < numPlanes; i++) {
@@ -1121,6 +1177,14 @@ const SceneManager = {
       this.scene.add(plane);
       
       const gifUrl = CONFIG.gifUrls[i % CONFIG.gifUrls.length];
+      
+      // Skip GIF loading on mobile
+      if (CONFIG.IS_MOBILE) {
+        plane.material.color.set(0xff00ff);
+        plane.material.needsUpdate = true;
+        continue;
+      }
+      
       try {
         gifler(gifUrl).get((anim) => {
           const canvas = document.createElement('canvas');
@@ -1187,6 +1251,7 @@ const SceneManager = {
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
+  canJump: false,
   raycaster: new THREE.Raycaster(),
   
   update(delta) {
@@ -1296,6 +1361,7 @@ const InteractionManager = {
   },
   
   update() {
+    // Handle mobile look controls
     if (CONFIG.IS_MOBILE && (InputManager.mobileLookDelta.x !== 0 || InputManager.mobileLookDelta.y !== 0)) {
       SceneManager.yaw.rotation.y -= InputManager.mobileLookDelta.x * CONFIG.MOBILE_LOOK_SENSITIVITY;
       SceneManager.pitch.rotation.x = Math.max(
