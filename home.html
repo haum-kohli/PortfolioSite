@@ -1145,10 +1145,15 @@ const SceneManager = {
   },
   
   createGifPlanes(roomLength) {
+    // Skip GIF planes entirely on mobile
+    if (CONFIG.IS_MOBILE) {
+      return;
+    }
+    
     const minDistance = 30;
     const rectWidth = 150;
     const rectCenterZ = roomLength / 2, rectCenterX = 0;
-    const numPlanes = CONFIG.IS_MOBILE ? 30 : 100; // Reduce on mobile
+    const numPlanes = 100;
     const minY = 10, maxY = 80;
     
     for (let i = 0; i < numPlanes; i++) {
@@ -1177,13 +1182,6 @@ const SceneManager = {
       this.scene.add(plane);
       
       const gifUrl = CONFIG.gifUrls[i % CONFIG.gifUrls.length];
-      
-      // Skip GIF loading on mobile
-      if (CONFIG.IS_MOBILE) {
-        plane.material.color.set(0xff00ff);
-        plane.material.needsUpdate = true;
-        continue;
-      }
       
       try {
         gifler(gifUrl).get((anim) => {
