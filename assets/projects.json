@@ -89,13 +89,13 @@
     "width": 30,
     "height": 20,
     "media": [
-      { "type": "img", "src": "assets/Wizard/WizardOfOz1.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz2.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz3.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz5.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz6.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz7.webp" },
-      { "type": "img", "src": "assets/Wizard/WizardOfOz9.webp" }
+      { "type": "img", "src": "assets/WOZ/WizardOfOz1.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz2.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz3.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz5.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz6.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz7.webp" },
+      { "type": "img", "src": "assets/WOZ/WizardOfOz9.webp" }
     ]
   },
   {
