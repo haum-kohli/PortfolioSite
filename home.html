@@ -51,7 +51,6 @@ body {
 .loading-text {
   font-size: 3em;
   margin-bottom: 40px;
-  text-shadow: 0 0 10px rgba(255,255,255,0.5);
 }
 
 .loading-bar-container {
@@ -65,7 +64,7 @@ body {
 
 .loading-bar {
   height: 100%;
-  background: linear-gradient(90deg, #1976D2, #FFD600);
+  background: #fff;
   width: 0%;
   transition: width 0.3s ease;
 }
@@ -1015,10 +1014,22 @@ const SceneManager = {
         let maxZ = 0;
         const textureLoader = new THREE.TextureLoader();
         
-        // Count total assets for loading bar
-        let totalAssets = projects.length * 2; // thumbnail + media
-        projects.forEach(p => totalAssets += (p.media ? p.media.length : 0));
+        // Count total assets more accurately
+        let totalAssets = 0;
+        projects.forEach(p => {
+          totalAssets++; // thumbnail
+          if (p.media) {
+            totalAssets += p.media.length;
+          }
+        });
+        
         LoadingManager.setTotal(totalAssets);
+        
+        let loadedCount = 0;
+        const incrementLoader = () => {
+          loadedCount++;
+          LoadingManager.increment();
+        };
         
         projects.forEach((project, idx) => {
           const isVideo = project.type === 'video';
@@ -1038,7 +1049,9 @@ const SceneManager = {
               videoElem.setAttribute('webkit-playsinline', '');
             }
             
-            videoElem.addEventListener('loadeddata', () => LoadingManager.increment());
+            videoElem.addEventListener('loadeddata', incrementLoader, { once: true });
+            videoElem.addEventListener('error', incrementLoader, { once: true });
+            
             videoElem.play().catch(() => {
               document.body.addEventListener("click", () => {
                 videoElem.play().catch(() => {});
@@ -1085,15 +1098,15 @@ const SceneManager = {
                   anim.stop = () => { animationRunning = false; };
                   anim.play = () => { animationRunning = true; };
                   
-                  LoadingManager.increment();
+                  incrementLoader();
                 });
               } catch (e) {
                 console.error('Error loading GIF:', e);
-                LoadingManager.increment();
+                incrementLoader();
               }
             };
             
-            tempImg.onerror = () => LoadingManager.increment();
+            tempImg.onerror = incrementLoader;
             
             material = new THREE.MeshStandardMaterial({
               map: textureLoader.load(`assets/${project.thumbnail}`)
@@ -1102,9 +1115,9 @@ const SceneManager = {
             material = new THREE.MeshStandardMaterial({
               map: textureLoader.load(
                 `assets/${project.thumbnail}`,
-                () => LoadingManager.increment(),
+                incrementLoader,
                 undefined,
-                () => LoadingManager.increment()
+                incrementLoader
               )
             });
           }
@@ -1135,11 +1148,12 @@ const SceneManager = {
             project.media.forEach(m => {
               if (m.type === 'image') {
                 const img = new Image();
-                img.onload = () => LoadingManager.increment();
-                img.onerror = () => LoadingManager.increment();
+                img.onload = incrementLoader;
+                img.onerror = incrementLoader;
                 img.src = m.src;
-              } else {
-                LoadingManager.increment();
+              } else if (m.type === 'video') {
+                // For videos in popups, just count them as loaded immediately
+                incrementLoader();
               }
             });
           }
@@ -1149,6 +1163,14 @@ const SceneManager = {
         if (!CONFIG.IS_MOBILE) {
           this.createGifPlanes(maxZ + 100);
         }
+        
+        // Fallback: if loading takes too long, force complete after 10 seconds
+        setTimeout(() => {
+          if (loadedCount < totalAssets) {
+            console.log(`Loading timeout: ${loadedCount}/${totalAssets} assets loaded`);
+            LoadingManager.complete();
+          }
+        }, 10000);
       })
       .catch(err => {
         console.error('Failed to load projects JSON', err);
