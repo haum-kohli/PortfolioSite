@@ -5,6 +5,11 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" />
   <title>Portfolio</title>
   <style>
+  @font-face {
+  font-family: 'MacklinSansBold';
+  src: url('assets/fonts/MacklinSans-Bold.ttf') format('truetype');
+  font-weight: bold;
+}
 @font-face {
   font-family: 'Monospace821Bold';
   src: url('assets/fonts/MONOSPACE821BOLDBT.TTF') format('truetype');
@@ -219,7 +224,7 @@ body {
 }
 
 #popup .popup-left h2 {
-  font-family: 'monospace821Bold';
+  font-family: 'MacklinSansBold', 'monospace821Bold', sans-serif;
   margin-top: 0;
   margin-bottom: 10px;
 }
@@ -461,6 +466,28 @@ body {
   .loading-bar-container {
     width: 80%;
   }
+  
+  /* Mobile popup layout - single column */
+  #popup .popup-content-layout {
+    flex-direction: column !important;
+  }
+  
+  #popup .popup-left {
+    width: 100% !important;
+    max-height: none !important;
+    border-right: none !important;
+    border-bottom: 1.5px solid #e0e0e0 !important;
+    padding: 60px 24px 24px 24px !important;
+    flex-shrink: 0 !important;
+  }
+  
+  #popup .popup-right {
+    width: 100% !important;
+  }
+  
+  #popup .popup-images-scroll {
+    overflow-y: auto !important;
+  }
 }
 
 @media (min-width: 769px) {
@@ -474,19 +501,19 @@ body {
   }
   
   #popup .popup-content-layout {
-    flex-direction: row;
+    flex-direction: row !important;
   }
   
   #popup .popup-left {
-    width: 30%;
-    max-height: 100%;
-    border-right: 1.5px solid #e0e0e0;
-    border-bottom: none;
-    padding: 24px 20px 24px 24px;
+    width: 30% !important;
+    max-height: 100% !important;
+    border-right: 1.5px solid #e0e0e0 !important;
+    border-bottom: none !important;
+    padding: 24px 20px 24px 24px !important;
   }
   
   #popup .popup-right {
-    width: 70%;
+    width: 70% !important;
   }
   
   #menu-logo {
@@ -634,10 +661,9 @@ const LoadingManager = {
     this.updateProgress();
   },
   
-  updateProgress() {
+updateProgress() {
     const actualPercentage = (this.loadedAssets / this.totalAssets) * 100;
-    // Map actual progress to 0-95%, reserve 95-100% for final completion
-    this.targetPercentage = Math.min(95, actualPercentage * 0.95);
+    this.targetPercentage = actualPercentage;
     
     if (this.loadedAssets >= this.totalAssets) {
       this.targetPercentage = 100;
@@ -1037,28 +1063,45 @@ const SceneManager = {
     });
   },
   
-  loadProjects() {
+loadProjects() {
     fetch('assets/projects.json')
       .then(res => res.json())
       .then(projects => {
         let maxZ = 0;
         const textureLoader = new THREE.TextureLoader();
         
-        // Count total assets more accurately
+        // Count total assets accurately
         let totalAssets = 0;
         projects.forEach(p => {
-          totalAssets++; // thumbnail
+          totalAssets++; // thumbnail or video
           if (p.media) {
-            totalAssets += p.media.length;
+            totalAssets += p.media.length; // popup media
           }
         });
         
-        LoadingManager.setTotal(totalAssets);
+        // Add GIF planes count (only on desktop)
+      // Add GIF planes count (only on desktop)
+if (!CONFIG.IS_MOBILE) {
+  totalAssets += 100; // GIF planes
+}
+
+// Don't count Vimeo videos in popup media as they load separately
+projects.forEach(p => {
+  if (p.media) {
+    p.media.forEach(m => {
+      if (m.type === 'video' && m.src.includes('vimeo.com')) {
+        totalAssets--; // Subtract Vimeo videos from count
+      }
+    });
+  }
+});
+
+LoadingManager.setTotal(totalAssets);
+        console.log('Total assets to load:', totalAssets, 'Is Mobile:', CONFIG.IS_MOBILE);
         
-        let loadedCount = 0;
-        const incrementLoader = () => {
-          loadedCount++;
+        const incrementLoader = (assetName = 'unknown') => {
           LoadingManager.increment();
+          console.log('Asset loaded:', assetName, '|', LoadingManager.loadedAssets, '/', LoadingManager.totalAssets);
         };
         
         projects.forEach((project, idx) => {
@@ -1067,20 +1110,47 @@ const SceneManager = {
           
           let material;
           
-          if (isVideo) {
-            const videoElem = document.createElement('video');
-            videoElem.src = project.videoSrc;
-            videoElem.muted = true;
-            videoElem.loop = true;
-            videoElem.playsInline = true;
-            
-            if (CONFIG.IS_MOBILE) {
-              videoElem.setAttribute('playsinline', '');
-              videoElem.setAttribute('webkit-playsinline', '');
-            }
-            
-            videoElem.addEventListener('loadeddata', incrementLoader, { once: true });
-            videoElem.addEventListener('error', incrementLoader, { once: true });
+         if (isVideo) {
+  const videoElem = document.createElement('video');
+  videoElem.src = project.videoSrc;
+  videoElem.muted = true;
+  videoElem.loop = true;
+  videoElem.playsInline = true;
+  
+  if (CONFIG.IS_MOBILE) {
+    videoElem.setAttribute('playsinline', '');
+    videoElem.setAttribute('webkit-playsinline', '');
+  }
+  
+  // Track if this specific video has been counted
+  let videoCounted = false;
+  
+  const markVideoLoaded = (reason) => {
+    if (!videoCounted) {
+      videoCounted = true;
+      incrementLoader(`video-${reason}: ${project.videoSrc}`);
+    }
+  };
+  
+  // Use canplay instead of loadeddata for better mobile compatibility
+  videoElem.addEventListener('canplay', () => {
+    markVideoLoaded('loaded');
+  }, { once: true });
+  
+  // Also try 'loadedmetadata' as backup
+  videoElem.addEventListener('loadedmetadata', () => {
+    markVideoLoaded('metadata');
+  }, { once: true });
+
+  videoElem.addEventListener('error', (e) => {
+    console.error('Video failed to load:', project.videoSrc, e);
+    markVideoLoaded('error');
+  }, { once: true });
+
+  // Fallback timeout in case events don't fire (increased for mobile)
+  setTimeout(() => {
+    markVideoLoaded('timeout');
+  }, CONFIG.IS_MOBILE ? 5000 : 3000);
             
             videoElem.play().catch(() => {
               document.body.addEventListener("click", () => {
@@ -1097,57 +1167,60 @@ const SceneManager = {
             material = new THREE.MeshStandardMaterial({ map: videoTexture });
           } else if (isGif) {
             const canvas = document.createElement('canvas');
-            const tempImg = new Image();
-            tempImg.src = `assets/${project.thumbnail}`;
+            canvas.width = 512;
+            canvas.height = 512;
             
-            tempImg.onload = () => {
-              canvas.width = tempImg.width;
-              canvas.height = tempImg.height;
-              
-              try {
-                gifler(`assets/${project.thumbnail}`).get((anim) => {
-                  const texture = new THREE.CanvasTexture(canvas);
-                  const box = this.boxes.find(b => b.userData.projectId === project.id);
-                  if (box) {
-                    box.material.map = texture;
-                    box.material.needsUpdate = true;
+            try {
+              gifler(`assets/${project.thumbnail}`).get((anim) => {
+                canvas.width = anim.width;
+                canvas.height = anim.height;
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const box = this.boxes.find(b => b.userData.projectId === project.id);
+                if (box) {
+                  box.material.map = texture;
+                  box.material.needsUpdate = true;
+                }
+                
+                this.gifAnimations.push(anim);
+                anim.animateInCanvas(canvas);
+                
+                let animationRunning = true;
+                const updateTexture = () => {
+                  if (animationRunning && !PortfolioApp.menuOpen) {
+                    texture.needsUpdate = true;
                   }
-                  
-                  this.gifAnimations.push(anim);
-                  anim.animateInCanvas(canvas);
-                  
-                  let animationRunning = true;
-                  const updateTexture = () => {
-                    if (animationRunning && !PortfolioApp.menuOpen) {
-                      texture.needsUpdate = true;
-                    }
-                    requestAnimationFrame(updateTexture);
-                  };
-                  updateTexture();
-                  
-                  anim.stop = () => { animationRunning = false; };
-                  anim.play = () => { animationRunning = true; };
-                  
-                  incrementLoader();
-                });
-              } catch (e) {
-                console.error('Error loading GIF:', e);
-                incrementLoader();
-              }
-            };
+                  requestAnimationFrame(updateTexture);
+                };
+                updateTexture();
+                
+                anim.stop = () => { animationRunning = false; };
+                anim.play = () => { animationRunning = true; };
+                
+                incrementLoader(`gif: ${project.thumbnail}`);
+              }).catch((e) => {
+                console.error('GIF failed to load:', project.thumbnail, e);
+                incrementLoader(`gif-error: ${project.thumbnail}`);
+              });
+            } catch (e) {
+              console.error('GIF init error:', project.thumbnail, e);
+              incrementLoader(`gif-init-error: ${project.thumbnail}`);
+            }
             
-            tempImg.onerror = incrementLoader;
-            
+            // Placeholder material while GIF loads
             material = new THREE.MeshStandardMaterial({
-              map: textureLoader.load(`assets/${project.thumbnail}`)
+              color: 0x888888
             });
           } else {
             material = new THREE.MeshStandardMaterial({
               map: textureLoader.load(
                 `assets/${project.thumbnail}`,
-                incrementLoader,
+                () => incrementLoader(`image: ${project.thumbnail}`),
                 undefined,
-                incrementLoader
+                (e) => {
+                  console.error('Image failed to load:', project.thumbnail, e);
+                  incrementLoader(`image-error: ${project.thumbnail}`);
+                }
               )
             });
           }
@@ -1178,12 +1251,15 @@ const SceneManager = {
             project.media.forEach(m => {
               if (m.type === 'image') {
                 const img = new Image();
-                img.onload = incrementLoader;
-                img.onerror = incrementLoader;
+                img.onload = () => incrementLoader(`popup-image: ${m.src}`);
+                img.onerror = (e) => {
+                  console.error('Popup image failed to load:', m.src, e);
+                  incrementLoader(`popup-image-error: ${m.src}`);
+                };
                 img.src = m.src;
               } else if (m.type === 'video') {
                 // For videos in popups, just count them as loaded immediately
-                incrementLoader();
+                incrementLoader(`popup-video: ${m.src}`);
               }
             });
           }
@@ -1193,14 +1269,6 @@ const SceneManager = {
         if (!CONFIG.IS_MOBILE) {
           this.createGifPlanes(maxZ + 100);
         }
-        
-        // Fallback: if loading takes too long, force complete after 10 seconds
-        setTimeout(() => {
-          if (loadedCount < totalAssets) {
-            console.log(`Loading timeout: ${loadedCount}/${totalAssets} assets loaded`);
-            LoadingManager.complete();
-          }
-        }, 10000);
       })
       .catch(err => {
         console.error('Failed to load projects JSON', err);
@@ -1244,7 +1312,7 @@ const SceneManager = {
       
       const gifUrl = CONFIG.gifUrls[i % CONFIG.gifUrls.length];
       
-      try {
+try {
         gifler(gifUrl).get((anim) => {
           const canvas = document.createElement('canvas');
           canvas.width = anim.width;
@@ -1269,13 +1337,17 @@ const SceneManager = {
           
           anim.stop = () => { animationRunning = false; };
           anim.play = () => { animationRunning = true; };
+          
+          LoadingManager.increment();
         }).catch(() => {
           plane.material.color.set(0xff00ff);
           plane.material.needsUpdate = true;
+          LoadingManager.increment();
         });
       } catch (e) {
         plane.material.color.set(0xffffff);
         plane.material.needsUpdate = true;
+        LoadingManager.increment();
       }
     }
   },
@@ -1460,11 +1532,29 @@ const InteractionManager = {
 // ===== POPUP MANAGER =====
 const PopupManager = {
   generateHTML(project) {
-    const mediaContent = project.media.map(m =>
-      m.type === "video"
-        ? `<video src="${m.src}" controls playsinline style="width:100%;height:100vh;object-fit:cover;display:block;"></video>`
-        : `<img src="${m.src}" alt="${project.title}" onclick="PortfolioApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`
-    ).join('');
+    const mediaContent = project.media.map(m => {
+      if (m.type === "video") {
+        // Check if it's a Vimeo URL
+        const vimeoMatch = m.src.match(/vimeo\.com\/(\d+)/);
+        if (vimeoMatch) {
+          const videoId = vimeoMatch[1];
+          return `<div style="padding:56.25% 0 0 0;position:relative;width:100%;height:100vh;">
+            <iframe src="https://player.vimeo.com/video/${videoId}?badge=0&autopause=0&player_id=0&app_id=58479&autoplay=0&loop=0&title=0&byline=0&portrait=0" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture; clipboard-write" 
+                    style="position:absolute;top:0;left:0;width:100%;height:100%;" 
+                    title="${project.title}">
+            </iframe>
+          </div>
+          <script src="https://player.vimeo.com/api/player.js"><\/script>`;
+        } else {
+          // Regular video file
+          return `<video src="${m.src}" controls playsinline style="width:100%;height:100vh;object-fit:cover;display:block;"></video>`;
+        }
+      } else {
+        return `<img src="${m.src}" alt="${project.title}" onclick="PortfolioApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`;
+      }
+    }).join('');
     
     return `
       <div class="popup-content-layout">
@@ -1556,7 +1646,7 @@ const PortfolioApp = {
     }
   },
   
-  showPopup(project) {
+showPopup(project) {
     const popup = document.getElementById('popup');
     const popupContent = document.getElementById('popup-content');
     popupContent.innerHTML = PopupManager.generateHTML(project);
