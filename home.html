@@ -443,11 +443,7 @@ body {
     width: 100px;
     margin-bottom: 30px;
   }
-  #menu-pages {
-    position: absolute;
-    top: 40px;
-    left: 40px;
-  }
+  
   #menu-random-gif {
     display: block;
     margin-top: 30px;
@@ -499,6 +495,12 @@ body {
     right: 40px;
     width: 150px;
     margin-bottom: 0;
+  }
+  
+  #menu-pages {
+    position: absolute;
+    top: 40px;
+    left: 40px;
   }
   
   .menu-btn {
@@ -586,6 +588,7 @@ const CONFIG = {
   ]
 };
 
+// ===== LOADING MANAGER =====
 const LoadingManager = {
   totalAssets: 0,
   loadedAssets: 0,
@@ -705,11 +708,26 @@ const InputManager = {
     }
   },
   
-document.addEventListener('click', () => {
+  initDesktopControls() {
+    document.addEventListener('pointerlockchange', () => {
+      const wasLocked = this.pointerLocked;
+      this.pointerLocked = document.pointerLockElement === document.body;
+      
+      if (this.pointerLocked) {
+        document.getElementById('click-prompt').style.display = 'none';
+      }
+      
+      if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible) {
+        PortfolioApp.openMenu();
+      }
+    });
+    
+    document.addEventListener('click', () => {
       if (!this.pointerLocked && !PortfolioApp.popupVisible && !PortfolioApp.menuOpen && !LoadingManager.isLoading) {
         document.body.requestPointerLock();
       }
     });
+  },
   
   initMobileControls() {
     this.initJoystick('movement-joystick', (x, y) => {
