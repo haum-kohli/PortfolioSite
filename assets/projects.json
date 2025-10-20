@@ -13,7 +13,7 @@
     "height": 20,
     "depth": 30,
     "media": [
-      { "type": "video", "src": "assets/Carti/CartiFinal.mp4" }
+      { "type": "video", "src": "https://vimeo.com/1128965040" }
     ]
   },
   {
@@ -37,7 +37,6 @@
       { "type": "img", "src": "assets/asfalt/asfaltmockup3.webp" },
       { "type": "img", "src": "assets/asfalt/AsfaltFront10.webp" },
       { "type": "img", "src": "assets/asfalt/AsfaltFront21.webp" }
-    
     ]
   },
   {
@@ -74,7 +73,7 @@
     "height": 30,
     "depth": 30,
     "media": [
-      { "type": "video", "src": "assets/Hollis/HollisFinal.mp4" }
+      { "type": "video", "src": "https://vimeo.com/1128965421" }
     ]
   },
   {
@@ -116,8 +115,7 @@
       { "type": "img", "src": "assets/HUGO/HUGO6.webp" },
       { "type": "img", "src": "assets/HUGO/HUGO4.webp" },
       { "type": "img", "src": "assets/HUGO/HUGO5.webp" },
-        { "type": "img", "src": "assets/HUGO/hugo.gif" }
-
+      { "type": "img", "src": "assets/HUGO/hugo.gif" }
     ]
   },
   {
@@ -134,7 +132,7 @@
     "height": 30,
     "depth": 30,
     "media": [
-      { "type": "video", "src": "assets/Kendrick/KendrickFinal.mp4" }
+      { "type": "video", "src": "https://vimeo.com/1128965801" }
     ]
   }
 ]
