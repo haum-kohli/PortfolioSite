@@ -25,6 +25,56 @@ body {
   user-select: none;
 }
 
+/* Loading Screen */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Monospace821Bold', monospace;
+  color: #fff;
+  transition: opacity 0.5s ease;
+}
+
+#loading-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-text {
+  font-size: 3em;
+  margin-bottom: 40px;
+  text-shadow: 0 0 10px rgba(255,255,255,0.5);
+}
+
+.loading-bar-container {
+  width: 60%;
+  max-width: 500px;
+  height: 30px;
+  border: 3px solid #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-bar {
+  height: 100%;
+  background: linear-gradient(90deg, #1976D2, #FFD600);
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.loading-percentage {
+  font-size: 2em;
+  margin-top: 20px;
+}
+
 /* Reticle */
 #reticle {
   position: fixed;
@@ -51,7 +101,8 @@ body {
 #top-menu {
   display: none;
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.85);
@@ -59,19 +110,18 @@ body {
   z-index: 9999;
   padding: 40px;
   box-sizing: border-box;
-  overflow-y: auto;
-  align-items: flex-start;
-  justify-content: flex-start;
+  overflow: hidden;
+  align-items: center;
+  justify-content: center;
   flex-direction: column;
 }
 
 #menu-logo {
-  width: 150px;    
+  width: 150px;
   height: auto;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   cursor: pointer;
-  transition: transform 0.3s ease, filter 0.3s ease;
-  align-self: flex-start;
+  transition: transform 0.3s ease;
 }
 
 #menu-logo img {
@@ -82,9 +132,9 @@ body {
 #menu-pages {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: flex-start;
-  gap: 20px;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
 }
 
 .menu-btn {
@@ -95,10 +145,11 @@ body {
   color: #ffffff;
   cursor: pointer;
   border: none;
-  text-align: left;
+  text-align: center;
   text-decoration: underline;
-  padding: 10px 0;
+  padding: 5px 0;
   transition: color 0.2s;
+  line-height: 1;
 }
 
 .menu-btn:hover {
@@ -116,12 +167,11 @@ body {
 #popup {
   display: none;
   position: fixed;
-  left: 0; 
+  left: 0;
   top: 0;
-  width: 100vw; 
+  width: 100vw;
   height: 100vh;
   background: rgba(255,255,255,0.97);
-  border: none;
   color: #222;
   font-family: 'Monospace821';
   z-index: 10001;
@@ -133,7 +183,8 @@ body {
 
 #popup .close-btn {
   position: absolute;
-  top: 18px; right: 28px;
+  top: 18px;
+  right: 28px;
   font-size: 2em;
   color: #ff0000;
   background: none;
@@ -143,7 +194,9 @@ body {
   transition: color 0.2s;
 }
 
-#popup .close-btn:hover { color: #222; }
+#popup .close-btn:hover { 
+  color: #222; 
+}
 
 #popup .popup-content-layout {
   display: flex;
@@ -153,13 +206,13 @@ body {
 }
 
 #popup .popup-left {
-  width: 100%; 
+  width: 100%;
   padding: 60px 24px 24px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   border-bottom: 1.5px solid #e0e0e0;
-  overflow-y: auto; 
+  overflow-y: auto;
   position: relative;
   z-index: 1;
   max-height: 25%;
@@ -198,7 +251,10 @@ body {
   scrollbar-width: none;
 }
 
-#popup .popup-images-scroll::-webkit-scrollbar { width: 0; height: 0; }
+#popup .popup-images-scroll::-webkit-scrollbar { 
+  width: 0; 
+  height: 0; 
+}
 
 #popup .popup-images-scroll img {
   display: block;
@@ -220,8 +276,10 @@ body {
   display: none;
   position: fixed;
   z-index: 10002;
-  left: 0; top: 0;
-  width: 100vw; height: 100vh;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.85);
   align-items: center;
   justify-content: center;
@@ -237,7 +295,8 @@ body {
 
 #image-modal .modal-close-btn {
   position: absolute;
-  top: 32px; right: 48px;
+  top: 32px;
+  right: 48px;
   font-size: 3em;
   color: #fff;
   background: none;
@@ -247,7 +306,9 @@ body {
   text-shadow: 0 2px 8px #000;
 }
 
-#image-modal .modal-close-btn:hover { color: #FFD600; }
+#image-modal .modal-close-btn:hover { 
+  color: #FFD600; 
+}
 
 /* Click prompt */
 #click-prompt {
@@ -298,8 +359,6 @@ body {
   border-radius: 50%;
   position: relative;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
 .joystick-stick {
@@ -314,45 +373,17 @@ body {
   transform: translate(-50%, -50%);
   transition: none;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   clip-path: polygon(
-    0px calc(100% - 20px),
-    4px calc(100% - 20px),
-    4px calc(100% - 12px),
-    8px calc(100% - 12px),
-    8px calc(100% - 8px),
-    12px calc(100% - 8px),
-    12px calc(100% - 4px),
-    20px calc(100% - 4px),
-    20px 100%,
-    calc(100% - 20px) 100%,
-    calc(100% - 20px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 20px),
-    100% calc(100% - 20px),
-    100% 20px,
-    calc(100% - 4px) 20px,
-    calc(100% - 4px) 12px,
-    calc(100% - 8px) 12px,
-    calc(100% - 8px) 8px,
-    calc(100% - 12px) 8px,
-    calc(100% - 12px) 4px,
-    calc(100% - 20px) 4px,
-    calc(100% - 20px) 0px,
-    20px 0px,
-    20px 4px,
-    12px 4px,
-    12px 8px,
-    8px 8px,
-    8px 12px,
-    4px 12px,
-    4px 20px,
-    0px 20px
+    0px calc(100% - 20px), 4px calc(100% - 20px), 4px calc(100% - 12px), 8px calc(100% - 12px),
+    8px calc(100% - 8px), 12px calc(100% - 8px), 12px calc(100% - 4px), 20px calc(100% - 4px),
+    20px 100%, calc(100% - 20px) 100%, calc(100% - 20px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 20px),
+    100% calc(100% - 20px), 100% 20px, calc(100% - 4px) 20px, calc(100% - 4px) 12px,
+    calc(100% - 8px) 12px, calc(100% - 8px) 8px, calc(100% - 12px) 8px,
+    calc(100% - 12px) 4px, calc(100% - 20px) 4px, calc(100% - 20px) 0px, 20px 0px,
+    20px 4px, 12px 4px, 12px 8px, 8px 8px, 8px 12px, 4px 12px, 4px 20px, 0px 20px
   );
 }
 
@@ -368,8 +399,6 @@ body {
   z-index: 999;
   pointer-events: none;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
 #mobile-menu-btn {
@@ -393,14 +422,6 @@ body {
   border-radius: 4px;
 }
 
-/* Hidden video elements for texture */
-.hidden-video {
-  position: absolute;
-  left: -9999px;
-  top: -9999px;
-  visibility: hidden;
-}
-
 @media (max-width: 768px) {
   #mobile-controls {
     display: block;
@@ -414,41 +435,32 @@ body {
     display: none !important;
   }
   
-  #reticle {
-    display: block;
-  }
-  
   .menu-btn {
-    font-size: 12vw;
+    font-size: 10vw;
     width: 100%;
   }
   
   #menu-logo {
-    width: 120px;
-    margin-bottom: 40px;
-  }
-  
-  #top-menu {
-    padding: 40px;
-    padding-top: 60px;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-  
-  #menu-pages {
-    align-items: flex-start;
-    width: 100%;
-    gap: 10px;
+    width: 100px;
+    margin-bottom: 30px;
   }
   
   #menu-random-gif {
     display: block;
-    margin-top: 40px;
-    width: 80%;
-    max-width: 400px;
+    margin-top: 30px;
+    width: 70%;
+    max-width: 300px;
     height: auto;
     border: 3px solid #fff;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
+  }
+  
+  .loading-text {
+    font-size: 2em;
+  }
+  
+  .loading-bar-container {
+    width: 80%;
   }
 }
 
@@ -481,23 +493,13 @@ body {
   #menu-logo {
     position: absolute;
     top: 40px;
-    right: 150px;
-    width: 200px;
+    right: 40px;
+    width: 150px;
     margin-bottom: 0;
   }
   
-  #menu-pages {
-    align-items: flex-start;
-  }
-  
   .menu-btn {
-    font-size: 15em;
-    text-align: left;
-  }
-  
-  #top-menu {
-    align-items: flex-start;
-    justify-content: flex-start;
+    font-size: 12em;
   }
   
   #menu-random-gif {
@@ -510,9 +512,16 @@ body {
 </head>
 <body>
 
-<div id="reticle"></div>
+<div id="loading-screen">
+  <div class="loading-text">|| LOADING ||</div>
+  <div class="loading-bar-container">
+    <div class="loading-bar" id="loading-bar"></div>
+  </div>
+  <div class="loading-percentage" id="loading-percentage">0%</div>
+</div>
 
-<div id="click-prompt">|| CLICK_TO_START ||  ESC=MENU</div>
+<div id="reticle"></div>
+<div id="click-prompt">|| CLICK_TO_START || ESC=MENU</div>
 
 <div id="top-menu" onclick="PortfolioApp.handleMenuClick(event)">
   <div id="menu-logo">
@@ -539,7 +548,6 @@ body {
 </div>
 
 <button id="mobile-menu-btn">+</button>
-
 <img id="shotgun-gif" src="assets/POVSHOTGUN_static.png" alt="Shotgun">
 
 <div id="mobile-controls">
@@ -550,13 +558,73 @@ body {
   </div>
 </div>
 
-<div id="hidden-videos-container"></div>
-
 <script>
-// Detect mobile
 const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
 
-// ===== SHOTGUN GIF MANAGER =====
+// ===== CONFIG =====
+const CONFIG = {
+  IS_MOBILE,
+  HOVER_DISTANCE: 80,
+  CLICK_DISTANCE: 150,
+  MOVEMENT_SPEED: 150,
+  MOBILE_MOVEMENT_SPEED: 300,
+  JUMP_FORCE: 275,
+  MOUSE_SENSITIVITY: 0.002,
+  MOBILE_LOOK_SENSITIVITY: 0.010,
+  MOBILE_MAX_TEXTURE_SIZE: 512,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
+  
+  gifUrls: [
+    'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
+    'assets/gifs/dancingdino.gif', 'assets/gifs/dragonmouth.gif', 'assets/gifs/elemental.gif', 
+    'assets/gifs/greendragon.gif', 'assets/gifs/jackhammer.gif', 'assets/gifs/legorun.gif', 
+    'assets/gifs/orangedino.gif', 'assets/gifs/pinkydemon.gif', 'assets/gifs/shotgunblast.gif',
+    'assets/gifs/skullfire.gif', 'assets/gifs/whitedragon.gif', 'assets/gifs/yellowdragon.gif'
+  ]
+};
+
+// ===== LOADING MANAGER =====
+const LoadingManager = {
+  totalAssets: 0,
+  loadedAssets: 0,
+  loadingScreen: null,
+  loadingBar: null,
+  loadingPercentage: null,
+  
+  init() {
+    this.loadingScreen = document.getElementById('loading-screen');
+    this.loadingBar = document.getElementById('loading-bar');
+    this.loadingPercentage = document.getElementById('loading-percentage');
+  },
+  
+  setTotal(total) {
+    this.totalAssets = total;
+  },
+  
+  increment() {
+    this.loadedAssets++;
+    this.updateProgress();
+  },
+  
+  updateProgress() {
+    const percentage = Math.round((this.loadedAssets / this.totalAssets) * 100);
+    this.loadingBar.style.width = percentage + '%';
+    this.loadingPercentage.textContent = percentage + '%';
+    
+    if (this.loadedAssets >= this.totalAssets) {
+      setTimeout(() => this.complete(), 500);
+    }
+  },
+  
+  complete() {
+    this.loadingScreen.classList.add('fade-out');
+    setTimeout(() => {
+      this.loadingScreen.style.display = 'none';
+    }, 500);
+  }
+};
+
+// ===== SHOTGUN GIF =====
 const ShotgunGif = {
   imgElement: null,
   isPlaying: false,
@@ -566,54 +634,22 @@ const ShotgunGif = {
   init() {
     this.imgElement = document.getElementById('shotgun-gif');
     this.imgElement.src = this.staticFrameUrl;
-    console.log('Shotgun GIF initialized with static frame');
   },
   
   play() {
-    if (this.isPlaying || !this.imgElement) {
-      console.log('Shotgun already playing or not loaded');
-      return;
-    }
+    if (this.isPlaying || !this.imgElement) return;
     
-    console.log('Playing shotgun animation!');
     this.isPlaying = true;
-    
     this.imgElement.src = this.animatedUrl + '?' + Math.random();
     
     setTimeout(() => {
       this.imgElement.src = this.staticFrameUrl;
       this.isPlaying = false;
-      console.log('Animation complete, back to static');
     }, 1500);
   }
 };
 
-// ===== CONFIG MODULE =====
-const CONFIG = {
-  IS_MOBILE: IS_MOBILE,
-  HOVER_DISTANCE: 80,
-  CLICK_DISTANCE: 150,
-  MOVEMENT_SPEED: 150,
-  MOBILE_MOVEMENT_SPEED: 300,
-  JUMP_FORCE: 275,
-  MOUSE_SENSITIVITY: 0.002,
-  MOBILE_LOOK_SENSITIVITY: 0.010,
-  
-  // Mobile optimizations
-  MOBILE_MAX_TEXTURE_SIZE: 512,
-  MOBILE_REDUCE_QUALITY: IS_MOBILE,
-  MOBILE_DISABLE_SHADOWS: IS_MOBILE,
-  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
-  
-  gifUrls: [
-    'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 'assets/gifs/dancingdino.gif',
-    'assets/gifs/dragonmouth.gif', 'assets/gifs/elemental.gif', 'assets/gifs/greendragon.gif', 'assets/gifs/jackhammer.gif',
-    'assets/gifs/legorun.gif', 'assets/gifs/orangedino.gif', 'assets/gifs/pinkydemon.gif', 'assets/gifs/shotgunblast.gif',
-    'assets/gifs/skullfire.gif', 'assets/gifs/whitedragon.gif', 'assets/gifs/yellowdragon.gif'
-  ]
-};
-
-// ===== INPUT MANAGER MODULE =====
+// ===== INPUT MANAGER =====
 const InputManager = {
   keys: {},
   pointerLocked: false,
@@ -636,28 +672,32 @@ const InputManager = {
     });
     
     if (!CONFIG.IS_MOBILE) {
-      document.addEventListener('pointerlockchange', () => {
-        const wasLocked = this.pointerLocked;
-        this.pointerLocked = document.pointerLockElement === document.body;
-        
-        if (this.pointerLocked) {
-          document.getElementById('click-prompt').style.display = 'none';
-        }
-        
-        if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible) {
-          PortfolioApp.openMenu();
-        }
-      });
-      
-      document.addEventListener('click', () => {
-        if (!this.pointerLocked && !PortfolioApp.popupVisible && !PortfolioApp.menuOpen) {
-          document.body.requestPointerLock();
-        }
-      });
+      this.initDesktopControls();
     } else {
       this.initMobileControls();
       document.getElementById('click-prompt').style.display = 'none';
     }
+  },
+  
+  initDesktopControls() {
+    document.addEventListener('pointerlockchange', () => {
+      const wasLocked = this.pointerLocked;
+      this.pointerLocked = document.pointerLockElement === document.body;
+      
+      if (this.pointerLocked) {
+        document.getElementById('click-prompt').style.display = 'none';
+      }
+      
+      if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible) {
+        PortfolioApp.openMenu();
+      }
+    });
+    
+    document.addEventListener('click', () => {
+      if (!this.pointerLocked && !PortfolioApp.popupVisible && !PortfolioApp.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    });
   },
   
   initMobileControls() {
@@ -666,17 +706,11 @@ const InputManager = {
       this.mobileMovement.z = y;
     });
     
-    // Multi-touch support for simultaneous joystick and camera control
     document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        
         const isOnJoystick = target && target.closest('#movement-joystick');
-        const isOnUI = target && (
-          target.closest('#mobile-menu-btn') || 
-          target.closest('#popup') ||
-          target.closest('#top-menu')
-        );
+        const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
         
         this.activeTouches.set(touch.identifier, {
           startX: touch.clientX,
@@ -695,18 +729,12 @@ const InputManager = {
       
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
-        if (!touchData) return;
+        if (!touchData || !touchData.isCameraControl) return;
         
-        if (touchData.isCameraControl) {
-          const deltaX = touch.clientX - touchData.lastX;
-          const deltaY = touch.clientY - touchData.lastY;
-          
-          this.mobileLookDelta.x = deltaX;
-          this.mobileLookDelta.y = deltaY;
-          
-          touchData.lastX = touch.clientX;
-          touchData.lastY = touch.clientY;
-        }
+        this.mobileLookDelta.x = touch.clientX - touchData.lastX;
+        this.mobileLookDelta.y = touch.clientY - touchData.lastY;
+        touchData.lastX = touch.clientX;
+        touchData.lastY = touch.clientY;
       });
     });
     
@@ -723,15 +751,13 @@ const InputManager = {
           if (distMoved < 20) {
             ShotgunGif.play();
             
-            if (!PortfolioApp.popupVisible && !PortfolioApp.menuOpen) {
-              if (InteractionManager.hoveredBox) {
-                const cameraPos = new THREE.Vector3();
-                SceneManager.camera.getWorldPosition(cameraPos);
-                const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
-                
-                if (dist <= CONFIG.CLICK_DISTANCE) {
-                  PortfolioApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
-                }
+            if (!PortfolioApp.popupVisible && !PortfolioApp.menuOpen && InteractionManager.hoveredBox) {
+              const cameraPos = new THREE.Vector3();
+              SceneManager.camera.getWorldPosition(cameraPos);
+              const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
+              
+              if (dist <= CONFIG.CLICK_DISTANCE) {
+                PortfolioApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
               }
             }
           }
@@ -740,8 +766,7 @@ const InputManager = {
         this.activeTouches.delete(touch.identifier);
       });
       
-      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
-      if (!hasCameraTouch) {
+      if (!Array.from(this.activeTouches.values()).some(t => t.isCameraControl)) {
         this.mobileLookDelta.x = 0;
         this.mobileLookDelta.y = 0;
       }
@@ -752,15 +777,13 @@ const InputManager = {
         this.activeTouches.delete(touch.identifier);
       });
       
-      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
-      if (!hasCameraTouch) {
+      if (!Array.from(this.activeTouches.values()).some(t => t.isCameraControl)) {
         this.mobileLookDelta.x = 0;
         this.mobileLookDelta.y = 0;
       }
     });
     
-    const menuBtn = document.getElementById('mobile-menu-btn');
-    menuBtn.addEventListener('click', (e) => {
+    document.getElementById('mobile-menu-btn').addEventListener('click', (e) => {
       e.preventDefault();
       PortfolioApp.toggleMenu();
     });
@@ -770,15 +793,7 @@ const InputManager = {
     const joystick = document.getElementById(id);
     const stick = joystick.querySelector('.joystick-stick');
     const base = joystick.querySelector('.joystick-base');
-    
     let activeTouch = null;
-    
-    const handleStart = (e) => {
-      e.preventDefault();
-      if (e.touches && e.touches.length > 0) {
-        activeTouch = e.touches[0].identifier;
-      }
-    };
     
     const handleMove = (e) => {
       if (activeTouch === null) return;
@@ -811,10 +826,7 @@ const InputManager = {
       }
       
       stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-      
-      const normalizedX = deltaX / maxDistance;
-      const normalizedY = deltaY / maxDistance;
-      callback(normalizedX, normalizedY);
+      callback(deltaX / maxDistance, deltaY / maxDistance);
     };
     
     const handleEnd = (e) => {
@@ -824,34 +836,30 @@ const InputManager = {
       callback(0, 0);
     };
     
-    joystick.addEventListener('touchstart', handleStart, { passive: false });
+    joystick.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches.length > 0) {
+        activeTouch = e.touches[0].identifier;
+      }
+    }, { passive: false });
+    
     joystick.addEventListener('touchmove', handleMove, { passive: false });
     joystick.addEventListener('touchend', handleEnd, { passive: false });
     joystick.addEventListener('touchcancel', handleEnd, { passive: false });
   },
   
-  isKeyPressed(code) {
-    return this.keys[code] || false;
-  },
-  
   getMovementInput() {
     if (CONFIG.IS_MOBILE) {
-      return {
-        x: this.mobileMovement.x,
-        z: this.mobileMovement.z
-      };
-    } else {
-      return {
-        x: (this.isKeyPressed('KeyD') || this.isKeyPressed('ArrowRight') ? 1 : 0) - 
-           (this.isKeyPressed('KeyA') || this.isKeyPressed('ArrowLeft') ? 1 : 0),
-        z: (this.isKeyPressed('KeyS') || this.isKeyPressed('ArrowDown') ? 1 : 0) - 
-           (this.isKeyPressed('KeyW') || this.isKeyPressed('ArrowUp') ? 1 : 0)
-      };
+      return { x: this.mobileMovement.x, z: this.mobileMovement.z };
     }
+    return {
+      x: (this.keys.KeyD || this.keys.ArrowRight ? 1 : 0) - (this.keys.KeyA || this.keys.ArrowLeft ? 1 : 0),
+      z: (this.keys.KeyS || this.keys.ArrowDown ? 1 : 0) - (this.keys.KeyW || this.keys.ArrowUp ? 1 : 0)
+    };
   }
 };
 
-// ===== SCENE MANAGER MODULE =====
+// ===== SCENE MANAGER =====
 const SceneManager = {
   scene: null,
   camera: null,
@@ -861,8 +869,8 @@ const SceneManager = {
   objects: [],
   boxes: [],
   videos: [],
-  videoElements: {},
   gifAnimations: [],
+  boxRotationSpeeds: [],
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -876,11 +884,11 @@ const SceneManager = {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
     this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+    
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
-    // Only add directional light and shadows on desktop
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
       dirLight.position.set(0, 300, 50);
       dirLight.castShadow = true;
@@ -903,7 +911,7 @@ const SceneManager = {
     this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
@@ -915,8 +923,6 @@ const SceneManager = {
       this.camera.updateProjectionMatrix();
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
-    
-    this.loadProjects();
   },
   
   createCheckeredTexture(size = 1024, squares = 32) {
@@ -963,12 +969,13 @@ const SceneManager = {
   },
   
   extendRoom(newLength) {
-    this.objects.forEach(obj => {
+    this.objects = this.objects.filter(obj => {
       if (obj.userData.type === 'floorOrWall') {
         this.scene.remove(obj);
+        return false;
       }
+      return true;
     });
-    this.objects = this.objects.filter(obj => obj.userData.type !== 'floorOrWall');
     
     const floorGeo = this.createDeformedGeometry(
       new THREE.PlaneGeometry(200, newLength, 20, Math.max(2, Math.ceil(newLength / 10))),
@@ -994,6 +1001,7 @@ const SceneManager = {
       this.createWall(200, 200, [20, 40], [0, 4, newLength], [0.15, 0, 0]),
       this.createWall(200, 200, [20, 40], [0, 4, 0], [-0.15, 0, 0])
     ];
+    
     walls.forEach(w => {
       this.scene.add(w);
       this.objects.push(w);
@@ -1006,12 +1014,17 @@ const SceneManager = {
       .then(projects => {
         let maxZ = 0;
         const textureLoader = new THREE.TextureLoader();
-        const rotationSpeeds = [];
+        
+        // Count total assets for loading bar
+        let totalAssets = projects.length * 2; // thumbnail + media
+        projects.forEach(p => totalAssets += (p.media ? p.media.length : 0));
+        LoadingManager.setTotal(totalAssets);
         
         projects.forEach((project, idx) => {
-          let material;
           const isVideo = project.type === 'video';
           const isGif = project.thumbnail && project.thumbnail.toLowerCase().endsWith('.gif');
+          
+          let material;
           
           if (isVideo) {
             const videoElem = document.createElement('video');
@@ -1020,12 +1033,12 @@ const SceneManager = {
             videoElem.loop = true;
             videoElem.playsInline = true;
             
-            // Reduce video quality on mobile
             if (CONFIG.IS_MOBILE) {
               videoElem.setAttribute('playsinline', '');
               videoElem.setAttribute('webkit-playsinline', '');
             }
             
+            videoElem.addEventListener('loadeddata', () => LoadingManager.increment());
             videoElem.play().catch(() => {
               document.body.addEventListener("click", () => {
                 videoElem.play().catch(() => {});
@@ -1038,13 +1051,12 @@ const SceneManager = {
             videoTexture.format = THREE.RGBFormat;
             
             this.videos.push(videoElem);
-            this.videoElements[project.id] = videoElem;
             material = new THREE.MeshStandardMaterial({ map: videoTexture });
-          } else if (isGif && !CONFIG.IS_MOBILE) {
-            // Skip GIFs on mobile for performance - EXCEPT for project boxes
+          } else if (isGif) {
             const canvas = document.createElement('canvas');
             const tempImg = new Image();
             tempImg.src = `assets/${project.thumbnail}`;
+            
             tempImg.onload = () => {
               canvas.width = tempImg.width;
               canvas.height = tempImg.height;
@@ -1052,7 +1064,7 @@ const SceneManager = {
               try {
                 gifler(`assets/${project.thumbnail}`).get((anim) => {
                   const texture = new THREE.CanvasTexture(canvas);
-                  const box = SceneManager.boxes.find(b => b.userData.projectId === project.id);
+                  const box = this.boxes.find(b => b.userData.projectId === project.id);
                   if (box) {
                     box.material.map = texture;
                     box.material.needsUpdate = true;
@@ -1062,102 +1074,49 @@ const SceneManager = {
                   anim.animateInCanvas(canvas);
                   
                   let animationRunning = true;
-                  function updateTexture() {
+                  const updateTexture = () => {
                     if (animationRunning && !PortfolioApp.menuOpen) {
                       texture.needsUpdate = true;
                     }
                     requestAnimationFrame(updateTexture);
-                  }
+                  };
                   updateTexture();
                   
                   anim.stop = () => { animationRunning = false; };
                   anim.play = () => { animationRunning = true; };
+                  
+                  LoadingManager.increment();
                 });
               } catch (e) {
                 console.error('Error loading GIF:', e);
+                LoadingManager.increment();
               }
             };
             
-            // Use placeholder material initially
-            material = new THREE.MeshStandardMaterial({
-              map: textureLoader.load(`assets/${project.thumbnail}`)
-            });
-          } else if (isGif && CONFIG.IS_MOBILE) {
-            // On mobile, load GIFs for project boxes (they're important content)
-            const canvas = document.createElement('canvas');
-            const tempImg = new Image();
-            tempImg.src = `assets/${project.thumbnail}`;
-            tempImg.onload = () => {
-              canvas.width = tempImg.width;
-              canvas.height = tempImg.height;
-              
-              try {
-                gifler(`assets/${project.thumbnail}`).get((anim) => {
-                  const texture = new THREE.CanvasTexture(canvas);
-                  const box = SceneManager.boxes.find(b => b.userData.projectId === project.id);
-                  if (box) {
-                    box.material.map = texture;
-                    box.material.needsUpdate = true;
-                  }
-                  
-                  this.gifAnimations.push(anim);
-                  anim.animateInCanvas(canvas);
-                  
-                  let animationRunning = true;
-                  function updateTexture() {
-                    if (animationRunning && !PortfolioApp.menuOpen) {
-                      texture.needsUpdate = true;
-                    }
-                    requestAnimationFrame(updateTexture);
-                  }
-                  updateTexture();
-                  
-                  anim.stop = () => { animationRunning = false; };
-                  anim.play = () => { animationRunning = true; };
-                });
-              } catch (e) {
-                console.error('Error loading GIF:', e);
-              }
-            };
+            tempImg.onerror = () => LoadingManager.increment();
             
-            // Use placeholder material initially
             material = new THREE.MeshStandardMaterial({
               map: textureLoader.load(`assets/${project.thumbnail}`)
             });
           } else {
-            // Reduce texture size on mobile
-            const loadTexture = (src, callback) => {
-              textureLoader.load(src, texture => {
-                if (CONFIG.IS_MOBILE && texture.image) {
-                  const canvas = document.createElement('canvas');
-                  const maxSize = CONFIG.MOBILE_MAX_TEXTURE_SIZE;
-                  const scale = Math.min(1, maxSize / Math.max(texture.image.width, texture.image.height));
-                  canvas.width = texture.image.width * scale;
-                  canvas.height = texture.image.height * scale;
-                  const ctx = canvas.getContext('2d');
-                  ctx.drawImage(texture.image, 0, 0, canvas.width, canvas.height);
-                  texture = new THREE.CanvasTexture(canvas);
-                }
-                callback(texture);
-              });
-            };
-            
             material = new THREE.MeshStandardMaterial({
-              map: textureLoader.load(`assets/${project.thumbnail}`)
+              map: textureLoader.load(
+                `assets/${project.thumbnail}`,
+                () => LoadingManager.increment(),
+                undefined,
+                () => LoadingManager.increment()
+              )
             });
           }
           
-          let geometry;
-          if (isVideo) {
-            geometry = new THREE.BoxGeometry(project.width, project.height, project.depth);
-          } else {
-            geometry = new THREE.BoxGeometry(project.width, project.height, 0.5);
-          }
+          const geometry = isVideo 
+            ? new THREE.BoxGeometry(project.width, project.height, project.depth)
+            : new THREE.BoxGeometry(project.width, project.height, 0.5);
           
           const box = new THREE.Mesh(geometry, material);
           box.position.set(project.x, project.y, project.z);
           
-          if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+          if (!CONFIG.IS_MOBILE) {
             box.castShadow = true;
             box.receiveShadow = true;
           }
@@ -1167,28 +1126,42 @@ const SceneManager = {
           
           this.scene.add(box);
           this.boxes.push(box);
-          
-          rotationSpeeds.push((Math.random() - 0.5) * 0.04);
+          this.boxRotationSpeeds.push((Math.random() - 0.5) * 0.04);
           
           maxZ = Math.max(maxZ, project.z);
+          
+          // Preload popup media
+          if (project.media) {
+            project.media.forEach(m => {
+              if (m.type === 'image') {
+                const img = new Image();
+                img.onload = () => LoadingManager.increment();
+                img.onerror = () => LoadingManager.increment();
+                img.src = m.src;
+              } else {
+                LoadingManager.increment();
+              }
+            });
+          }
         });
         
-        this.boxRotationSpeeds = rotationSpeeds;
         this.extendRoom(maxZ + 100);
-        this.createGifPlanes(maxZ + 100);
+        if (!CONFIG.IS_MOBILE) {
+          this.createGifPlanes(maxZ + 100);
+        }
       })
-      .catch(err => console.error('Failed to load projects JSON', err));
+      .catch(err => {
+        console.error('Failed to load projects JSON', err);
+        LoadingManager.complete();
+      });
   },
   
   createGifPlanes(roomLength) {
-    // Skip GIF planes entirely on mobile
-    if (CONFIG.IS_MOBILE) {
-      return;
-    }
+    if (CONFIG.IS_MOBILE) return;
     
     const minDistance = 30;
     const rectWidth = 150;
-    const rectCenterZ = roomLength / 2, rectCenterX = 0;
+    const rectCenterZ = roomLength / 2;
     const numPlanes = 100;
     const minY = 10, maxY = 80;
     
@@ -1200,7 +1173,7 @@ const SceneManager = {
       
       let x, y, z, attempts = 0;
       do {
-        x = rectCenterX + (Math.random() - 0.5) * rectWidth;
+        x = (Math.random() - 0.5) * rectWidth;
         z = rectCenterZ + (Math.random() - 0.5) * roomLength;
         y = Math.random() * (maxY - minY) + minY;
         attempts++;
@@ -1234,12 +1207,12 @@ const SceneManager = {
           anim.animateInCanvas(canvas);
           
           let animationRunning = true;
-          function updateTexture() {
+          const updateTexture = () => {
             if (animationRunning && !PortfolioApp.menuOpen) {
               texture.needsUpdate = true;
             }
             requestAnimationFrame(updateTexture);
-          }
+          };
           updateTexture();
           
           anim.stop = () => { animationRunning = false; };
@@ -1281,7 +1254,7 @@ const SceneManager = {
   }
 };
 
-// ===== PHYSICS MANAGER MODULE =====
+// ===== PHYSICS MANAGER =====
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
@@ -1325,7 +1298,7 @@ const PhysicsManager = {
       this.canJump = true;
     }
     
-    if (InputManager.isKeyPressed('Space') && this.canJump) {
+    if (InputManager.keys.Space && this.canJump) {
       this.velocity.y += CONFIG.JUMP_FORCE;
       this.canJump = false;
     }
@@ -1344,7 +1317,7 @@ const PhysicsManager = {
   }
 };
 
-// ===== INTERACTION MANAGER MODULE =====
+// ===== INTERACTION MANAGER =====
 const InteractionManager = {
   raycaster: new THREE.Raycaster(),
   reticle: null,
@@ -1395,7 +1368,6 @@ const InteractionManager = {
   },
   
   update() {
-    // Handle mobile look controls
     if (CONFIG.IS_MOBILE && (InputManager.mobileLookDelta.x !== 0 || InputManager.mobileLookDelta.y !== 0)) {
       SceneManager.yaw.rotation.y -= InputManager.mobileLookDelta.x * CONFIG.MOBILE_LOOK_SENSITIVITY;
       SceneManager.pitch.rotation.x = Math.max(
@@ -1433,7 +1405,7 @@ const InteractionManager = {
   }
 };
 
-// ===== POPUP MANAGER MODULE =====
+// ===== POPUP MANAGER =====
 const PopupManager = {
   generateHTML(project) {
     const mediaContent = project.media.map(m =>
@@ -1458,7 +1430,7 @@ const PopupManager = {
   }
 };
 
-// ===== MAIN APP MODULE =====
+// ===== MAIN APP =====
 const PortfolioApp = {
   menuOpen: false,
   popupVisible: false,
@@ -1466,10 +1438,13 @@ const PortfolioApp = {
   prevTime: performance.now(),
   
   init() {
+    LoadingManager.init();
     InputManager.init();
     SceneManager.init();
     InteractionManager.init();
     ShotgunGif.init();
+    
+    SceneManager.loadProjects();
     
     document.querySelectorAll('.menu-btn').forEach(btn => {
       btn.addEventListener('click', (e) => {
@@ -1489,11 +1464,7 @@ const PortfolioApp = {
   },
   
   toggleMenu() {
-    if (this.menuOpen) {
-      this.closeMenu();
-    } else {
-      this.openMenu();
-    }
+    this.menuOpen ? this.closeMenu() : this.openMenu();
   },
   
   openMenu() {
@@ -1536,8 +1507,7 @@ const PortfolioApp = {
   showPopup(project) {
     const popup = document.getElementById('popup');
     const popupContent = document.getElementById('popup-content');
-    const html = PopupManager.generateHTML(project);
-    popupContent.innerHTML = html;
+    popupContent.innerHTML = PopupManager.generateHTML(project);
     popup.style.display = 'flex';
     popup.style.opacity = '1';
     this.popupVisible = true;
@@ -1583,7 +1553,7 @@ const PortfolioApp = {
       InteractionManager.update();
       
       SceneManager.boxes.forEach((box, i) => {
-        if (SceneManager.boxRotationSpeeds && SceneManager.boxRotationSpeeds[i] !== undefined) {
+        if (SceneManager.boxRotationSpeeds[i] !== undefined) {
           box.rotation.y += SceneManager.boxRotationSpeeds[i];
         }
       });
