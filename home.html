@@ -131,8 +131,8 @@ body {
 #menu-pages {
   display: flex;
   flex-direction: column;
-  align-items: left;
-  justify-content: left;
+  align-items: flex-start;
+  justify-content: flex-start;
   gap: 10px;
 }
 
@@ -443,7 +443,11 @@ body {
     width: 100px;
     margin-bottom: 30px;
   }
-  
+  #menu-pages {
+    position: absolute;
+    top: 40px;
+    left: 40px;
+  }
   #menu-random-gif {
     display: block;
     margin-top: 30px;
@@ -582,18 +586,40 @@ const CONFIG = {
   ]
 };
 
-// ===== LOADING MANAGER =====
 const LoadingManager = {
   totalAssets: 0,
   loadedAssets: 0,
   loadingScreen: null,
   loadingBar: null,
   loadingPercentage: null,
+  isLoading: true,
+  displayedPercentage: 0,
+  targetPercentage: 0,
+  smoothingInterval: null,
   
   init() {
     this.loadingScreen = document.getElementById('loading-screen');
     this.loadingBar = document.getElementById('loading-bar');
     this.loadingPercentage = document.getElementById('loading-percentage');
+    this.startSmoothProgress();
+  },
+  
+  startSmoothProgress() {
+    this.smoothingInterval = setInterval(() => {
+      if (this.displayedPercentage < this.targetPercentage) {
+        this.displayedPercentage = Math.min(
+          this.targetPercentage,
+          this.displayedPercentage + Math.max(1, (this.targetPercentage - this.displayedPercentage) * 0.1)
+        );
+        this.loadingBar.style.width = Math.round(this.displayedPercentage) + '%';
+        this.loadingPercentage.textContent = Math.round(this.displayedPercentage) + '%';
+        
+        if (this.displayedPercentage >= 100) {
+          clearInterval(this.smoothingInterval);
+          setTimeout(() => this.complete(), 500);
+        }
+      }
+    }, 50);
   },
   
   setTotal(total) {
@@ -606,16 +632,17 @@ const LoadingManager = {
   },
   
   updateProgress() {
-    const percentage = Math.round((this.loadedAssets / this.totalAssets) * 100);
-    this.loadingBar.style.width = percentage + '%';
-    this.loadingPercentage.textContent = percentage + '%';
+    const actualPercentage = (this.loadedAssets / this.totalAssets) * 100;
+    // Map actual progress to 0-95%, reserve 95-100% for final completion
+    this.targetPercentage = Math.min(95, actualPercentage * 0.95);
     
     if (this.loadedAssets >= this.totalAssets) {
-      setTimeout(() => this.complete(), 500);
+      this.targetPercentage = 100;
     }
   },
   
   complete() {
+    this.isLoading = false;
     this.loadingScreen.classList.add('fade-out');
     setTimeout(() => {
       this.loadingScreen.style.display = 'none';
@@ -678,26 +705,11 @@ const InputManager = {
     }
   },
   
-  initDesktopControls() {
-    document.addEventListener('pointerlockchange', () => {
-      const wasLocked = this.pointerLocked;
-      this.pointerLocked = document.pointerLockElement === document.body;
-      
-      if (this.pointerLocked) {
-        document.getElementById('click-prompt').style.display = 'none';
-      }
-      
-      if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible) {
-        PortfolioApp.openMenu();
-      }
-    });
-    
-    document.addEventListener('click', () => {
-      if (!this.pointerLocked && !PortfolioApp.popupVisible && !PortfolioApp.menuOpen) {
+document.addEventListener('click', () => {
+      if (!this.pointerLocked && !PortfolioApp.popupVisible && !PortfolioApp.menuOpen && !LoadingManager.isLoading) {
         document.body.requestPointerLock();
       }
     });
-  },
   
   initMobileControls() {
     this.initJoystick('movement-joystick', (x, y) => {
