@@ -677,7 +677,7 @@ const InputManager = {
           Math.pow(touch.clientY - touchData.startY, 2)
         );
         
-        if (moveDistance > 15) {
+        if (moveDistance > 25) {
           touchData.hasMoved = true;
         }
         
@@ -959,39 +959,80 @@ const SceneManager = {
   loadMobileCategories() {
     LoadingManager.setTotal(CONFIG.mobileCategories.length);
     
+    const textureLoader = new THREE.TextureLoader();
+    
     CONFIG.mobileCategories.forEach((cat, idx) => {
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext('2d');
+      let texturePath = '';
       
-      ctx.fillStyle = '#000';
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.fillStyle = '#fff';
-      ctx.font = 'bold 48px monospace';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(cat.title, 256, 256);
+      if (cat.category === 'photo') {
+        texturePath = 'assets/photo.webp';
+      } else if (cat.category === 'posters') {
+        texturePath = 'assets/posters.webp';
+      } else if (cat.category === 'video') {
+        texturePath = 'assets/video.webp';
+      } else if (cat.category === 'misc') {
+        texturePath = 'assets/misc.webp';
+      }
       
-      const texture = new THREE.CanvasTexture(canvas);
-      const geometry = new THREE.BoxGeometry(30, 30, 30);
-      const material = new THREE.MeshStandardMaterial({ 
-        map: texture,
-        metalness: 0,
-        roughness: 1,
-        color: 0x888888
-      });
-      
-      const box = new THREE.Mesh(geometry, material);
-      box.position.set(cat.x, cat.y, cat.z);
-      
-      box.userData.categoryData = cat;
-      box.userData.isMobileCategory = true;
-      
-      this.scene.add(box);
-      this.boxes.push(box);
-      
-      LoadingManager.increment();
+      textureLoader.load(
+        texturePath,
+        (texture) => {
+          const geometry = new THREE.BoxGeometry(30, 30, 30);
+          const material = new THREE.MeshStandardMaterial({ 
+            map: texture,
+            metalness: 0,
+            roughness: 1
+          });
+          
+          const box = new THREE.Mesh(geometry, material);
+          box.position.set(cat.x, cat.y, cat.z);
+          
+          box.userData.categoryData = cat;
+          box.userData.isMobileCategory = true;
+          
+          this.scene.add(box);
+          this.boxes.push(box);
+          
+          LoadingManager.increment();
+        },
+        undefined,
+        (err) => {
+          console.error('Failed to load texture:', texturePath, err);
+          
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          const ctx = canvas.getContext('2d');
+          
+          ctx.fillStyle = '#000';
+          ctx.fillRect(0, 0, 512, 512);
+          ctx.fillStyle = '#fff';
+          ctx.font = 'bold 48px monospace';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(cat.title, 256, 256);
+          
+          const texture = new THREE.CanvasTexture(canvas);
+          const geometry = new THREE.BoxGeometry(30, 30, 30);
+          const material = new THREE.MeshStandardMaterial({ 
+            map: texture,
+            metalness: 0,
+            roughness: 1,
+            color: 0x888888
+          });
+          
+          const box = new THREE.Mesh(geometry, material);
+          box.position.set(cat.x, cat.y, cat.z);
+          
+          box.userData.categoryData = cat;
+          box.userData.isMobileCategory = true;
+          
+          this.scene.add(box);
+          this.boxes.push(box);
+          
+          LoadingManager.increment();
+        }
+      );
     });
     
     this.createRoom();
