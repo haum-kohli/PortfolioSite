@@ -585,11 +585,11 @@ const CONFIG = {
   JUMP_FORCE: 350,
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
-  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 300 : 700,
-  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 200 : 999, // Distance to start loading items
-  MAX_MOBILE_GIFS: IS_MOBILE ? 15 : 999, // Increased from 10
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 250 : 700,
+  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 250 : 999,
+  MAX_MOBILE_GIFS: IS_MOBILE ? 20 : 999,
   MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999,
-  INITIAL_MOBILE_LOAD: IS_MOBILE ? 20 : 999, // Increased from 5 to 20
+  INITIAL_MOBILE_LOAD: IS_MOBILE ? 25 : 999,
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -641,7 +641,7 @@ const LoadingManager = {
   },
   
   setTotal(total) {
-    this.totalAssets = Math.max(1, total); // Ensure at least 1
+    this.totalAssets = Math.max(1, total);
   },
   
   increment() {
@@ -906,8 +906,8 @@ const SceneManager = {
   videos: [],
   gifAnimations: [],
   gifCount: 0,
-  pendingItems: [], // Items waiting to be loaded
-  loadedItemPositions: new Set(), // Track loaded item positions
+  pendingItems: [],
+  loadedItemPositions: new Set(),
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -920,8 +920,7 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    // Heavier fog on mobile for lazy loading
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.IS_MOBILE ? 250 : CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
     
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
@@ -946,7 +945,7 @@ const SceneManager = {
       antialias: !CONFIG.IS_MOBILE,
       powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance"
     });
-    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 0.75 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     
     if (!CONFIG.IS_MOBILE) {
@@ -1053,7 +1052,6 @@ const SceneManager = {
         return res.json();
       })
       .then(items => {
-        // Filter out videos ONLY on mobile
         if (CONFIG.IS_MOBILE) {
           items = items.filter(item => {
             const isVideo = item.type === 'video' || 
@@ -1066,21 +1064,18 @@ const SceneManager = {
             return !isVideo;
           });
           
-          // Limit total items on mobile
           if (items.length > CONFIG.MAX_MOBILE_ITEMS) {
             items = items.slice(0, CONFIG.MAX_MOBILE_ITEMS);
             console.log(`Limited to ${CONFIG.MAX_MOBILE_ITEMS} items for mobile performance`);
           }
         }
         
-        // Set loading total to initial load count for quick startup
         LoadingManager.setTotal(CONFIG.IS_MOBILE ? CONFIG.INITIAL_MOBILE_LOAD : items.length);
         
         const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
         const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
         let lastZ = 0;
         
-        // Calculate positions for all items first
         const itemPositions = [];
         let tempGlobalIndex = 0, tempRowIndex = 0, tempCeilingRowIndex = 0;
         
@@ -1093,7 +1088,7 @@ const SceneManager = {
               y: 6 + j * (maxDimension + 2),
               z: currentZ,
               maxDim: maxDimension,
-              rotationY: -Math.PI / 2, // Changed from Math.PI / 2 to flip the left wall
+              rotationY: Math.PI / 2,
               isCeiling: false
             });
             lastZ = Math.max(lastZ, currentZ);
@@ -1106,7 +1101,7 @@ const SceneManager = {
               y: 6 + j * (maxDimension + 2),
               z: currentZ,
               maxDim: maxDimension,
-              rotationY: Math.PI / 2,
+              rotationY: Math.PI / -2,
               isCeiling: false
             });
             lastZ = Math.max(lastZ, currentZ);
@@ -1128,10 +1123,8 @@ const SceneManager = {
           tempCeilingRowIndex++;
         }
         
-        // Store all items for lazy loading
-        this.pendingItems = [...itemPositions]; // Copy array
+        this.pendingItems = [...itemPositions];
         
-        // Load initial items on mobile, all items on desktop
         const initialLoadCount = CONFIG.IS_MOBILE ? Math.min(CONFIG.INITIAL_MOBILE_LOAD, itemPositions.length) : itemPositions.length;
         
         for (let i = 0; i < initialLoadCount; i++) {
@@ -1140,7 +1133,6 @@ const SceneManager = {
           this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
         }
         
-        // Remove loaded items from pending
         if (CONFIG.IS_MOBILE) {
           this.pendingItems = this.pendingItems.slice(initialLoadCount);
         } else {
@@ -1160,18 +1152,15 @@ const SceneManager = {
   addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
-    // Check if it's a video
-    const isVideo = !CONFIG.IS_MOBILE && (item.type === 'video' || 
+    const isVideo = item.type === 'video' || 
                    (item.src && (
                      item.src.toLowerCase().endsWith('.mp4') || 
                      item.src.toLowerCase().endsWith('.webm') || 
                      item.src.toLowerCase().endsWith('.ogv')
-                   )));
+                   ));
     
-    // Check if it's a Vimeo embed
-    const isVimeo = !CONFIG.IS_MOBILE && item.vimeoUrl;
+    const isVimeo = item.vimeoUrl;
     
-    // Filter videos on mobile
     if (CONFIG.IS_MOBILE && (isVideo || isVimeo)) {
       if (countForLoading) LoadingManager.increment();
       return;
@@ -1179,7 +1168,6 @@ const SceneManager = {
     
     const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
     
-    // Handle VIDEO files
     if (isVideo) {
       const video = document.createElement('video');
       video.src = item.src;
@@ -1239,9 +1227,8 @@ const SceneManager = {
       return;
     }
     
-    // Handle VIMEO embeds
     if (isVimeo) {
-      const aspect = 16 / 9; // Standard video aspect ratio
+      const aspect = 16 / 9;
       let boxWidth, boxHeight;
       if (aspect >= 1) {
         boxWidth = maxDim;
@@ -1251,7 +1238,6 @@ const SceneManager = {
         boxWidth = maxDim * aspect;
       }
       
-      // Create a canvas to show a placeholder
       const canvas = document.createElement('canvas');
       canvas.width = 512;
       canvas.height = 512;
@@ -1290,7 +1276,6 @@ const SceneManager = {
       return;
     }
     
-    // Limit GIFs on mobile
     if (CONFIG.IS_MOBILE && isGif) {
       if (this.gifCount >= CONFIG.MAX_MOBILE_GIFS) {
         if (countForLoading) LoadingManager.increment();
@@ -1299,10 +1284,9 @@ const SceneManager = {
       this.gifCount++;
     }
     
-    // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
-      const maxCanvasSize = CONFIG.IS_MOBILE ? 512 : 1024;
+      const maxCanvasSize = CONFIG.IS_MOBILE ? 256 : 1024;
       canvas.width = maxCanvasSize;
       canvas.height = maxCanvasSize;
       
@@ -1370,7 +1354,7 @@ const SceneManager = {
           
           let animationRunning = true;
           let lastUpdate = 0;
-          const fps = CONFIG.IS_MOBILE ? 15 : 30;
+          const fps = CONFIG.IS_MOBILE ? 12 : 30;
           const frameDelay = 1000 / fps;
           
           const updateTexture = (timestamp) => {
@@ -1409,7 +1393,6 @@ const SceneManager = {
         if (countForLoading) LoadingManager.increment();
       }
     } else {
-      // Regular image
       const loadTimeout = setTimeout(() => {
         console.warn('Image load timeout:', item.src);
         if (countForLoading) LoadingManager.increment();
@@ -1471,9 +1454,8 @@ const SceneManager = {
     let loadedThisFrame = 0;
     const maxLoadPerFrame = 3;
     
-    // Check pending items and load those within range
     this.pendingItems = this.pendingItems.filter(pos => {
-      if (loadedThisFrame >= maxLoadPerFrame) return true; // Keep in pending
+      if (loadedThisFrame >= maxLoadPerFrame) return true;
       
       const distance = Math.sqrt(
         Math.pow(playerPos.x - pos.x, 2) +
@@ -1487,11 +1469,11 @@ const SceneManager = {
           this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, false);
           this.loadedItemPositions.add(posKey);
           loadedThisFrame++;
-          return false; // Remove from pending
+          return false;
         }
       }
       
-      return true; // Keep in pending
+      return true;
     });
     
     if (loadedThisFrame > 0) {
@@ -1518,7 +1500,6 @@ const SceneManager = {
   },
   
   cleanup() {
-    // Dispose of textures and geometries
     this.boxes.forEach(box => {
       if (box.geometry) box.geometry.dispose();
       if (box.material) {
@@ -1527,13 +1508,11 @@ const SceneManager = {
       }
     });
     
-    // Clear animations
     this.gifAnimations.forEach(anim => {
       if (anim.stop) anim.stop();
     });
     this.gifAnimations = [];
     
-    // Clear videos
     this.videos.forEach(video => {
       video.pause();
       video.src = '';
@@ -1543,6 +1522,7 @@ const SceneManager = {
     console.log('Scene cleanup complete');
   }
 };
+
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
@@ -1822,7 +1802,7 @@ const GalleryApp = {
     if (!this.menuOpen) {
       PhysicsManager.update(delta);
       InteractionManager.update();
-       SceneManager.checkLazyLoad();
+      SceneManager.checkLazyLoad();
     }
     
     SceneManager.renderer.render(SceneManager.scene, SceneManager.camera);
