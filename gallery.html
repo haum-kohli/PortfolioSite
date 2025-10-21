@@ -1077,11 +1077,12 @@ const SceneManager = {
               boxWidth = maxDim * aspect;
             }
             
-            const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
-            const material = new THREE.MeshStandardMaterial({ 
-              map: videoTexture,
-              color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff
-            });
+const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+const material = new THREE.MeshStandardMaterial({ 
+  map: videoTexture,
+  color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff,
+  side: THREE.DoubleSide
+});
             const box = new THREE.Mesh(geometry, material);
             
             if (isCeiling) {
@@ -1126,8 +1127,8 @@ const SceneManager = {
                   boxWidth = maxDim * aspect;
                 }
                 
-                const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
-                const material = new THREE.MeshStandardMaterial({ map: texture });
+          const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
                 const box = new THREE.Mesh(geometry, material);
                 
                 if (isCeiling) {
@@ -1183,8 +1184,8 @@ const SceneManager = {
                   boxWidth = maxDim * aspect;
                 }
                 
-                const geometry = new THREE.BoxGeometry(boxWidth, boxHeight, 0.5);
-                const material = new THREE.MeshStandardMaterial({ map: texture });
+const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
                 const box = new THREE.Mesh(geometry, material);
                 
                 if (isCeiling) {
