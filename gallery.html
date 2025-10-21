@@ -1001,19 +1001,21 @@ const SceneManager = {
     });
   },
   
- loadGallery() {
+loadGallery() {
   fetch('assets/gallery.json')
     .then(res => res.json())
     .then(items => {
-      // Skip videos on mobile
+      // Skip videos on mobile AND anything with vimeoUrl
       if (CONFIG.IS_MOBILE) {
         items = items.filter(item => {
-          const isVideo = item.type === 'video' || (item.src && (
-            item.src.endsWith('.mp4') || 
-            item.src.endsWith('.webm') || 
-            item.src.endsWith('.ogv')
-          ));
-          return !isVideo;
+          const isVideo = item.type === 'video' || 
+                         item.vimeoUrl || 
+                         (item.src && (
+                           item.src.endsWith('.mp4') || 
+                           item.src.endsWith('.webm') || 
+                           item.src.endsWith('.ogv')
+                         ));
+          return !isVideo; // Return false for videos, true for images/gifs
         });
       }
       
@@ -1027,6 +1029,20 @@ const SceneManager = {
       const loader = new THREE.TextureLoader();
       
       const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
+      // Extra safety check - skip videos on mobile
+  if (CONFIG.IS_MOBILE) {
+    const isVideo = item.type === 'video' || 
+                   item.vimeoUrl || 
+                   (item.src && (
+                     item.src.endsWith('.mp4') || 
+                     item.src.endsWith('.webm') || 
+                     item.src.endsWith('.ogv')
+                   ));
+    if (isVideo) {
+      LoadingManager.increment();
+      return;
+    }
+  }
         const isVideo = item.type === 'video' || (item.src && (
           item.src.endsWith('.mp4') || 
           item.src.endsWith('.webm') || 
