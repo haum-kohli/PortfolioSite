@@ -575,6 +575,7 @@ window.addEventListener('unhandledrejection', (e) => {
   console.error('Unhandled promise rejection:', e.reason);
   e.preventDefault();
 });
+
 const CONFIG = {
   IS_MOBILE,
   HOVER_DISTANCE: 160,
@@ -584,11 +585,11 @@ const CONFIG = {
   JUMP_FORCE: 350,
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
-  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 300 : 700, // Reduced from 400
-  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 250 : 999, // NEW: Distance to start loading items
-  MAX_MOBILE_GIFS: IS_MOBILE ? 10 : 999,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 300 : 700,
+  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 200 : 999, // Distance to start loading items
+  MAX_MOBILE_GIFS: IS_MOBILE ? 15 : 999, // Increased from 10
   MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999,
-  INITIAL_MOBILE_LOAD: IS_MOBILE ? 5 : 999, // NEW: Initial items to load
+  INITIAL_MOBILE_LOAD: IS_MOBILE ? 20 : 999, // Increased from 5 to 20
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -905,8 +906,8 @@ const SceneManager = {
   videos: [],
   gifAnimations: [],
   gifCount: 0,
-  pendingItems: [], // NEW: Items waiting to be loaded
-  loadedItemPositions: new Set(), // NEW: Track loaded item positions
+  pendingItems: [], // Items waiting to be loaded
+  loadedItemPositions: new Set(), // Track loaded item positions
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -1052,7 +1053,7 @@ const SceneManager = {
         return res.json();
       })
       .then(items => {
-        // Filter out videos and vimeo content on mobile
+        // Filter out videos ONLY on mobile
         if (CONFIG.IS_MOBILE) {
           items = items.filter(item => {
             const isVideo = item.type === 'video' || 
@@ -1077,7 +1078,7 @@ const SceneManager = {
         
         const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
         const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
-        let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
+        let lastZ = 0;
         
         // Calculate positions for all items first
         const itemPositions = [];
@@ -1128,14 +1129,14 @@ const SceneManager = {
         }
         
         // Store all items for lazy loading
-        this.pendingItems = itemPositions;
+        this.pendingItems = [...itemPositions]; // Copy array
         
         // Load initial items on mobile, all items on desktop
-        const initialLoadCount = CONFIG.IS_MOBILE ? CONFIG.INITIAL_MOBILE_LOAD : itemPositions.length;
+        const initialLoadCount = CONFIG.IS_MOBILE ? Math.min(CONFIG.INITIAL_MOBILE_LOAD, itemPositions.length) : itemPositions.length;
         
-        for (let i = 0; i < initialLoadCount && i < itemPositions.length; i++) {
+        for (let i = 0; i < initialLoadCount; i++) {
           const pos = itemPositions[i];
-          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling);
+          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, true);
           this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
         }
         
@@ -1156,10 +1157,10 @@ const SceneManager = {
       });
   },
   
-  addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false) {
+  addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
-    // Safety check
+    // Only filter videos on mobile
     if (CONFIG.IS_MOBILE) {
       const isVideo = item.type === 'video' || 
                      item.vimeoUrl || 
@@ -1169,7 +1170,7 @@ const SceneManager = {
                        item.src.toLowerCase().endsWith('.ogv')
                      ));
       if (isVideo) {
-        LoadingManager.increment();
+        if (countForLoading) LoadingManager.increment();
         return;
       }
     }
@@ -1179,7 +1180,7 @@ const SceneManager = {
     // Limit GIFs on mobile
     if (CONFIG.IS_MOBILE && isGif) {
       if (this.gifCount >= CONFIG.MAX_MOBILE_GIFS) {
-        LoadingManager.increment();
+        if (countForLoading) LoadingManager.increment();
         return;
       }
       this.gifCount++;
@@ -1193,7 +1194,7 @@ const SceneManager = {
       
       const loadTimeout = setTimeout(() => {
         console.warn('GIF load timeout:', item.src);
-        LoadingManager.increment();
+        if (countForLoading) LoadingManager.increment();
       }, 8000);
       
       try {
@@ -1282,22 +1283,22 @@ const SceneManager = {
           anim.stop = () => { animationRunning = false; };
           anim.play = () => { animationRunning = true; lastUpdate = 0; };
           
-          LoadingManager.increment();
+          if (countForLoading) LoadingManager.increment();
         }).catch((err) => {
           clearTimeout(loadTimeout);
           console.error('GIF error:', item.src, err);
-          LoadingManager.increment();
+          if (countForLoading) LoadingManager.increment();
         });
       } catch (e) {
         clearTimeout(loadTimeout);
         console.error('GIF exception:', item.src, e);
-        LoadingManager.increment();
+        if (countForLoading) LoadingManager.increment();
       }
     } else {
       // Regular image
       const loadTimeout = setTimeout(() => {
         console.warn('Image load timeout:', item.src);
-        LoadingManager.increment();
+        if (countForLoading) LoadingManager.increment();
       }, 5000);
       
       loader.load(
@@ -1336,13 +1337,13 @@ const SceneManager = {
           this.scene.add(box);
           this.boxes.push(box);
           
-          LoadingManager.increment();
+          if (countForLoading) LoadingManager.increment();
         },
         undefined,
         (err) => {
           clearTimeout(loadTimeout);
           console.error('Image load error:', item.src, err);
-          LoadingManager.increment();
+          if (countForLoading) LoadingManager.increment();
         }
       );
     }
@@ -1354,7 +1355,7 @@ const SceneManager = {
     const playerPos = this.yaw.position;
     const loadDistance = CONFIG.MOBILE_LOAD_DISTANCE;
     let loadedThisFrame = 0;
-    const maxLoadPerFrame = 2; // Load max 2 items per frame to avoid stuttering
+    const maxLoadPerFrame = 3; // Increased from 2 to 3
     
     // Check pending items and load those within range
     this.pendingItems = this.pendingItems.filter(pos => {
@@ -1369,7 +1370,7 @@ const SceneManager = {
         const posKey = `${pos.x},${pos.y},${pos.z}`;
         if (!this.loadedItemPositions.has(posKey)) {
           console.log(`Lazy loading item at distance ${Math.round(distance)}`);
-          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling);
+          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, false);
           this.loadedItemPositions.add(posKey);
           loadedThisFrame++;
           return false; // Remove from pending
