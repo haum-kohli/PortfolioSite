@@ -1093,7 +1093,7 @@ const SceneManager = {
               y: 6 + j * (maxDimension + 2),
               z: currentZ,
               maxDim: maxDimension,
-              rotationY: Math.PI / 2,
+              rotationY: -Math.PI / 2, // Changed from Math.PI / 2 to flip the left wall
               isCeiling: false
             });
             lastZ = Math.max(lastZ, currentZ);
@@ -1160,22 +1160,135 @@ const SceneManager = {
   addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
-    // Only filter videos on mobile
-    if (CONFIG.IS_MOBILE) {
-      const isVideo = item.type === 'video' || 
-                     item.vimeoUrl || 
-                     (item.src && (
-                       item.src.toLowerCase().endsWith('.mp4') || 
-                       item.src.toLowerCase().endsWith('.webm') || 
-                       item.src.toLowerCase().endsWith('.ogv')
-                     ));
-      if (isVideo) {
-        if (countForLoading) LoadingManager.increment();
-        return;
-      }
+    // Check if it's a video
+    const isVideo = !CONFIG.IS_MOBILE && (item.type === 'video' || 
+                   (item.src && (
+                     item.src.toLowerCase().endsWith('.mp4') || 
+                     item.src.toLowerCase().endsWith('.webm') || 
+                     item.src.toLowerCase().endsWith('.ogv')
+                   )));
+    
+    // Check if it's a Vimeo embed
+    const isVimeo = !CONFIG.IS_MOBILE && item.vimeoUrl;
+    
+    // Filter videos on mobile
+    if (CONFIG.IS_MOBILE && (isVideo || isVimeo)) {
+      if (countForLoading) LoadingManager.increment();
+      return;
     }
     
     const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
+    
+    // Handle VIDEO files
+    if (isVideo) {
+      const video = document.createElement('video');
+      video.src = item.src;
+      video.loop = true;
+      video.muted = true;
+      video.playsInline = true;
+      video.crossOrigin = 'anonymous';
+      
+      video.addEventListener('loadedmetadata', () => {
+        const aspect = video.videoWidth / video.videoHeight;
+        let boxWidth, boxHeight;
+        if (aspect >= 1) {
+          boxWidth = maxDim;
+          boxHeight = maxDim / aspect;
+        } else {
+          boxHeight = maxDim;
+          boxWidth = maxDim * aspect;
+        }
+        
+        const texture = new THREE.VideoTexture(video);
+        texture.minFilter = THREE.LinearFilter;
+        texture.magFilter = THREE.LinearFilter;
+        
+        const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+        const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+        const box = new THREE.Mesh(geometry, material);
+        
+        if (isCeiling) {
+          box.position.set(x, y, z);
+          box.rotation.x = -Math.PI / 2;
+        } else {
+          box.position.set(x, y + boxHeight / 2, z);
+          box.rotation.y = rotationY;
+        }
+        
+        box.castShadow = true;
+        box.receiveShadow = true;
+        
+        box.userData.galleryItem = item;
+        box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
+        box.userData.video = video;
+        
+        this.scene.add(box);
+        this.boxes.push(box);
+        this.videos.push(video);
+        
+        video.play().catch(e => console.warn('Video autoplay failed:', e));
+        
+        if (countForLoading) LoadingManager.increment();
+      });
+      
+      video.addEventListener('error', (e) => {
+        console.error('Video load error:', item.src, e);
+        if (countForLoading) LoadingManager.increment();
+      });
+      
+      return;
+    }
+    
+    // Handle VIMEO embeds
+    if (isVimeo) {
+      const aspect = 16 / 9; // Standard video aspect ratio
+      let boxWidth, boxHeight;
+      if (aspect >= 1) {
+        boxWidth = maxDim;
+        boxHeight = maxDim / aspect;
+      } else {
+        boxHeight = maxDim;
+        boxWidth = maxDim * aspect;
+      }
+      
+      // Create a canvas to show a placeholder
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      ctx.fillStyle = '#1a1a1a';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = '#00adef';
+      ctx.font = 'bold 48px Arial';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText('VIMEO', 256, 256);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+      const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+      const box = new THREE.Mesh(geometry, material);
+      
+      if (isCeiling) {
+        box.position.set(x, y, z);
+        box.rotation.x = -Math.PI / 2;
+      } else {
+        box.position.set(x, y + boxHeight / 2, z);
+        box.rotation.y = rotationY;
+      }
+      
+      box.castShadow = true;
+      box.receiveShadow = true;
+      
+      box.userData.galleryItem = item;
+      box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+      
+      this.scene.add(box);
+      this.boxes.push(box);
+      
+      if (countForLoading) LoadingManager.increment();
+      return;
+    }
     
     // Limit GIFs on mobile
     if (CONFIG.IS_MOBILE && isGif) {
@@ -1186,6 +1299,7 @@ const SceneManager = {
       this.gifCount++;
     }
     
+    // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
       const maxCanvasSize = CONFIG.IS_MOBILE ? 512 : 1024;
@@ -1355,7 +1469,7 @@ const SceneManager = {
     const playerPos = this.yaw.position;
     const loadDistance = CONFIG.MOBILE_LOAD_DISTANCE;
     let loadedThisFrame = 0;
-    const maxLoadPerFrame = 3; // Increased from 2 to 3
+    const maxLoadPerFrame = 3;
     
     // Check pending items and load those within range
     this.pendingItems = this.pendingItems.filter(pos => {
@@ -1389,11 +1503,17 @@ const SceneManager = {
     this.gifAnimations.forEach(anim => {
       if (anim.stop) anim.stop();
     });
+    this.videos.forEach(video => {
+      video.pause();
+    });
   },
   
   resumeAllAnimations() {
     this.gifAnimations.forEach(anim => {
       if (anim.play) anim.play();
+    });
+    this.videos.forEach(video => {
+      video.play().catch(e => console.warn('Video resume failed:', e));
     });
   },
   
@@ -1414,12 +1534,15 @@ const SceneManager = {
     this.gifAnimations = [];
     
     // Clear videos
+    this.videos.forEach(video => {
+      video.pause();
+      video.src = '';
+    });
     this.videos = [];
     
     console.log('Scene cleanup complete');
   }
 };
-
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
