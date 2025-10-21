@@ -1101,7 +1101,7 @@ const SceneManager = {
               y: 6 + j * (maxDimension + 2),
               z: currentZ,
               maxDim: maxDimension,
-              rotationY: Math.PI / -2,
+              rotationY: -Math.PI / 2,
               isCeiling: false
             });
             lastZ = Math.max(lastZ, currentZ);
@@ -1152,23 +1152,28 @@ const SceneManager = {
   addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
+    // Check if it's a video - include all video detection logic
     const isVideo = item.type === 'video' || 
+                   item.vimeoUrl || 
                    (item.src && (
                      item.src.toLowerCase().endsWith('.mp4') || 
                      item.src.toLowerCase().endsWith('.webm') || 
                      item.src.toLowerCase().endsWith('.ogv')
                    ));
     
+    // Separate check for Vimeo
     const isVimeo = item.vimeoUrl;
     
-    if (CONFIG.IS_MOBILE && (isVideo || isVimeo)) {
+    // Filter videos on mobile ONLY
+    if (CONFIG.IS_MOBILE && isVideo) {
       if (countForLoading) LoadingManager.increment();
       return;
     }
     
     const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
     
-    if (isVideo) {
+    // Handle VIDEO files (not Vimeo embeds)
+    if (isVideo && !isVimeo && item.src) {
       const video = document.createElement('video');
       video.src = item.src;
       video.loop = true;
@@ -1209,6 +1214,7 @@ const SceneManager = {
         box.userData.galleryItem = item;
         box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
         box.userData.video = video;
+        box.userData.isVideo = true;
         
         this.scene.add(box);
         this.boxes.push(box);
@@ -1217,6 +1223,8 @@ const SceneManager = {
         video.play().catch(e => console.warn('Video autoplay failed:', e));
         
         if (countForLoading) LoadingManager.increment();
+        
+        console.log('Video loaded successfully:', item.src);
       });
       
       video.addEventListener('error', (e) => {
@@ -1224,9 +1232,12 @@ const SceneManager = {
         if (countForLoading) LoadingManager.increment();
       });
       
+      video.load();
+      
       return;
     }
     
+    // Handle VIMEO embeds
     if (isVimeo) {
       const aspect = 16 / 9;
       let boxWidth, boxHeight;
