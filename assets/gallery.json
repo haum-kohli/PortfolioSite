@@ -39,7 +39,7 @@
   {
     "src": "assets2/cartimockup.webp",
     "title": "Carti Mockup",
-    "category": "misc"
+    "category": "posters"
   },
   {
     "src": "assets2/charlotte.webp",
@@ -83,22 +83,22 @@
   {
     "src": "assets2/halloweenmockup.webp",
     "title": "Halloween Mockup",
-    "category": "misc"
+    "category": "posters"
   },
   {
     "src": "assets2/heliotrope.webp",
     "title": "Heliotrope",
-    "category": "photo"
+    "category": "misc"
   },
   {
     "src": "assets2/heliotrope2.webp",
     "title": "Heliotrope 2",
-    "category": "photo"
+    "category": "misc"
   },
   {
     "src": "assets2/heliotrope3.webp",
     "title": "Heliotrope 3",
-    "category": "photo"
+    "category": "misc"
   },
   {
     "type": "video",
@@ -135,22 +135,22 @@
   {
     "src": "assets2/maxi1.webp",
     "title": "Maxi 1",
-    "category": "photo"
+    "category": "misc"
   },
   {
     "src": "assets2/maxi2.webp",
     "title": "Maxi 2",
-    "category": "photo"
+    "category": "misc"
   },
   {
     "src": "assets2/mfdoom.webp",
     "title": "MF DOOM",
-    "category": "posters"
+    "category": "misc"
   },
   {
     "src": "assets2/nas.webp",
     "title": "Nas",
-    "category": "posters"
+    "category": "misc"
   },
   {
     "src": "assets2/peggy.webp",
@@ -185,7 +185,7 @@
   {
     "src": "assets2/supercroix.webp",
     "title": "Supercroix",
-    "category": "misc"
+    "category": "photo"
   },
   {
     "type": "video",
