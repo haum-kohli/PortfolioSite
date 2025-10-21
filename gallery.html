@@ -484,7 +484,6 @@
     }
   }
 
-  /* Hidden video elements for texture */
   .hidden-video {
     position: absolute;
     left: -9999px;
@@ -497,7 +496,6 @@
 </head>
 <body>
 
-<!-- ===== LOADING SCREEN ===== -->
 <div id="loading-screen">
   <div class="loading-text">|| LOADING ||</div>
   <div class="loading-bar-container">
@@ -506,13 +504,9 @@
   <div class="loading-percentage" id="loading-percentage">0%</div>
 </div>
 
-<!-- ===== RETICLE ===== -->
 <div id="reticle"></div>
-
-<!-- ===== CLICK PROMPT ===== -->
 <div id="click-prompt">|| CLICK_TO_START || ESC=MENU</div>
 
-<!-- ===== MENU ===== -->
 <div id="top-menu" onclick="GalleryApp.handleMenuClick(event)">
   <button id="mobile-menu-close" onclick="GalleryApp.closeMenu()">&times;</button>
   <div id="menu-logo">
@@ -528,25 +522,19 @@
   <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
 </div>
 
-<!-- ===== POPUP ===== -->
 <div id="popup" onclick="GalleryApp.handlePopupClick(event)">
   <button id="popup-close-btn" onclick="GalleryApp.hidePopup()">×</button>
   <div id="popup-content"></div>
 </div>
 
-<!-- ===== IMAGE MODAL ===== -->
 <div id="image-modal" onclick="GalleryApp.closeImageModal(event)">
   <button class="modal-close-btn" onclick="GalleryApp.closeImageModal(event)">&times;</button>
   <img id="modal-img" src="" alt="Popup Image">
 </div>
 
-<!-- ===== MOBILE MENU BUTTON ===== -->
 <button id="mobile-menu-btn">+</button>
-
-<!-- ===== SHOTGUN GIF ===== -->
 <img id="shotgun-gif" src="assets/POVSHOTGUN_static.png" alt="Shotgun">
 
-<!-- ===== MOBILE CONTROLS ===== -->
 <div id="mobile-controls">
   <div id="movement-joystick" class="mobile-joystick">
     <div class="joystick-base">
@@ -560,7 +548,6 @@
 <script>
 const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
 
-// ===== CONFIG =====
 const CONFIG = {
   IS_MOBILE,
   HOVER_DISTANCE: 160,
@@ -571,6 +558,7 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
   MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
+  MAX_MOBILE_GIFS: IS_MOBILE ? 5 : 999, // Limit GIFs on mobile
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -581,7 +569,6 @@ const CONFIG = {
   ]
 };
 
-// ===== LOADING MANAGER =====
 const LoadingManager = {
   totalAssets: 0,
   loadedAssets: 0,
@@ -589,12 +576,19 @@ const LoadingManager = {
   displayedPercentage: 0,
   targetPercentage: 0,
   smoothingInterval: null,
+  timeoutId: null,
   
   init() {
     this.loadingScreen = document.getElementById('loading-screen');
     this.loadingBar = document.getElementById('loading-bar');
     this.loadingPercentage = document.getElementById('loading-percentage');
     this.startSmoothProgress();
+    
+    // Failsafe: force complete after 15 seconds
+    this.timeoutId = setTimeout(() => {
+      console.warn('Loading timeout - forcing completion');
+      this.forceComplete();
+    }, 15000);
   },
   
   startSmoothProgress() {
@@ -616,24 +610,42 @@ const LoadingManager = {
   },
   
   setTotal(total) {
-    this.totalAssets = total;
+    this.totalAssets = Math.max(1, total); // Ensure at least 1
   },
   
   increment() {
     this.loadedAssets++;
-    const actualPercentage = (this.loadedAssets / this.totalAssets) * 100;
+    const actualPercentage = Math.min(100, (this.loadedAssets / this.totalAssets) * 100);
     this.targetPercentage = actualPercentage;
-    if (this.loadedAssets >= this.totalAssets) this.targetPercentage = 100;
+    
+    if (this.loadedAssets >= this.totalAssets) {
+      this.targetPercentage = 100;
+    }
+  },
+  
+  forceComplete() {
+    this.targetPercentage = 100;
+    this.displayedPercentage = 100;
+    this.loadingBar.style.width = '100%';
+    this.loadingPercentage.textContent = '100%';
+    setTimeout(() => this.complete(), 500);
   },
   
   complete() {
+    if (this.timeoutId) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+    if (this.smoothingInterval) {
+      clearInterval(this.smoothingInterval);
+      this.smoothingInterval = null;
+    }
     this.isLoading = false;
     this.loadingScreen.classList.add('fade-out');
     setTimeout(() => this.loadingScreen.style.display = 'none', 500);
   }
 };
 
-// ===== SHOTGUN GIF =====
 const ShotgunGif = {
   imgElement: null,
   isPlaying: false,
@@ -656,7 +668,6 @@ const ShotgunGif = {
   }
 };
 
-// ===== INPUT MANAGER =====
 const InputManager = {
   keys: {},
   pointerLocked: false,
@@ -853,7 +864,6 @@ const InputManager = {
   }
 };
 
-// ===== SCENE MANAGER =====
 const SceneManager = {
   scene: null,
   camera: null,
@@ -864,6 +874,7 @@ const SceneManager = {
   boxes: [],
   videos: [],
   gifAnimations: [],
+  gifCount: 0,
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -1001,307 +1012,244 @@ const SceneManager = {
     });
   },
   
-loadGallery() {
-  fetch('assets/gallery.json')
-    .then(res => res.json())
-    .then(items => {
-      // Skip videos on mobile AND anything with vimeoUrl
-      if (CONFIG.IS_MOBILE) {
-        items = items.filter(item => {
-          const isVideo = item.type === 'video' || 
-                         item.vimeoUrl || 
-                         (item.src && (
-                           item.src.endsWith('.mp4') || 
-                           item.src.endsWith('.webm') || 
-                           item.src.endsWith('.ogv')
-                         ));
-          return !isVideo; // Return false for videos, true for images/gifs
-        });
-      }
-      
-      // Count total assets for loading
-      let totalAssets = items.length;
-      LoadingManager.setTotal(totalAssets);
-      
-      const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
-      const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
-      let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
-      const loader = new THREE.TextureLoader();
-      
-      const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
-      // Extra safety check - skip videos on mobile
-  if (CONFIG.IS_MOBILE) {
-    const isVideo = item.type === 'video' || 
-                   item.vimeoUrl || 
-                   (item.src && (
-                     item.src.endsWith('.mp4') || 
-                     item.src.endsWith('.webm') || 
-                     item.src.endsWith('.ogv')
-                   ));
-    if (isVideo) {
-      LoadingManager.increment();
-      return;
-    }
-  }
-        const isVideo = item.type === 'video' || (item.src && (
-          item.src.endsWith('.mp4') || 
-          item.src.endsWith('.webm') || 
-          item.src.endsWith('.ogv')
-        ));
+  loadGallery() {
+    fetch('assets/gallery.json')
+      .then(res => {
+        if (!res.ok) throw new Error('Failed to fetch gallery.json');
+        return res.json();
+      })
+      .then(items => {
+        // Filter out videos and vimeo content on mobile
+        if (CONFIG.IS_MOBILE) {
+          items = items.filter(item => {
+            const isVideo = item.type === 'video' || 
+                           item.vimeoUrl || 
+                           (item.src && (
+                             item.src.toLowerCase().endsWith('.mp4') || 
+                             item.src.toLowerCase().endsWith('.webm') || 
+                             item.src.toLowerCase().endsWith('.ogv')
+                           ));
+            return !isVideo;
+          });
+        }
         
-        const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
+        if (items.length === 0) {
+          console.error('No items to display');
+          LoadingManager.forceComplete();
+          return;
+        }
         
-        if (isVideo) {
-          const video = document.createElement('video');
-          video.src = item.type === 'video' ? item.thumbnail : item.src;
-          video.loop = true;
-          video.muted = true;
-          video.playsInline = true;
-          video.crossOrigin = 'anonymous';
-          video.className = 'hidden-video';
-          
+        LoadingManager.setTotal(items.length);
+        
+        const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
+        const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
+        let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
+        const loader = new THREE.TextureLoader();
+        
+        const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
+          // Safety check
           if (CONFIG.IS_MOBILE) {
-            video.setAttribute('playsinline', '');
-            video.setAttribute('webkit-playsinline', '');
-            video.preload = 'metadata';
-            LoadingManager.increment();
+            const isVideo = item.type === 'video' || 
+                           item.vimeoUrl || 
+                           (item.src && (
+                             item.src.toLowerCase().endsWith('.mp4') || 
+                             item.src.toLowerCase().endsWith('.webm') || 
+                             item.src.toLowerCase().endsWith('.ogv')
+                           ));
+            if (isVideo) {
+              LoadingManager.increment();
+              return;
+            }
+          }
+          
+          const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
+          
+          // Limit GIFs on mobile
+          if (CONFIG.IS_MOBILE && isGif) {
+            if (this.gifCount >= CONFIG.MAX_MOBILE_GIFS) {
+              // Use static image fallback or skip
+              LoadingManager.increment();
+              return;
+            }
+            this.gifCount++;
+          }
+          
+          if (isGif) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 256;
+            canvas.height = 256;
+            
+            const loadTimeout = setTimeout(() => {
+              console.warn('GIF load timeout:', item.src);
+              LoadingManager.increment();
+            }, 5000);
+            
+            try {
+              gifler(item.src).get((anim) => {
+                clearTimeout(loadTimeout);
+                canvas.width = anim.width;
+                canvas.height = anim.height;
+                
+                const texture = new THREE.CanvasTexture(canvas);
+                const aspect = anim.width / anim.height;
+                
+                let boxWidth, boxHeight;
+                if (aspect >= 1) {
+                  boxWidth = maxDim;
+                  boxHeight = maxDim / aspect;
+                } else {
+                  boxHeight = maxDim;
+                  boxWidth = maxDim * aspect;
+                }
+                
+                const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+                const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+                const box = new THREE.Mesh(geometry, material);
+                
+                if (isCeiling) {
+                  box.position.set(x, y, z);
+                  box.rotation.x = -Math.PI / 2;
+                } else {
+                  box.position.set(x, y + boxHeight / 2, z);
+                  box.rotation.y = rotationY;
+                }
+                
+                if (!CONFIG.IS_MOBILE) {
+                  box.castShadow = true;
+                  box.receiveShadow = true;
+                }
+                
+                box.userData.galleryItem = item;
+                box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+                this.scene.add(box);
+                this.boxes.push(box);
+                
+                this.gifAnimations.push(anim);
+                anim.animateInCanvas(canvas);
+                
+                let animationRunning = true;
+                const updateTexture = () => {
+                  if (animationRunning && !GalleryApp.menuOpen) {
+                    texture.needsUpdate = true;
+                  }
+                  requestAnimationFrame(updateTexture);
+                };
+                updateTexture();
+                
+                anim.stop = () => { animationRunning = false; };
+                anim.play = () => { animationRunning = true; };
+                
+                LoadingManager.increment();
+              }).catch((err) => {
+                clearTimeout(loadTimeout);
+                console.error('GIF error:', item.src, err);
+                LoadingManager.increment();
+              });
+            } catch (e) {
+              clearTimeout(loadTimeout);
+              console.error('GIF exception:', item.src, e);
+              LoadingManager.increment();
+            }
+            
           } else {
-            let videoCounted = false;
-            const markLoaded = () => {
-              if (!videoCounted) {
-                videoCounted = true;
+            // Regular image
+            const loadTimeout = setTimeout(() => {
+              console.warn('Image load timeout:', item.src);
+              LoadingManager.increment();
+            }, 5000);
+            
+            loader.load(
+              item.src,
+              texture => {
+                clearTimeout(loadTimeout);
+                const aspect = texture.image.width / texture.image.height;
+                let boxWidth, boxHeight;
+                if (aspect >= 1) {
+                  boxWidth = maxDim;
+                  boxHeight = maxDim / aspect;
+                } else {
+                  boxHeight = maxDim;
+                  boxWidth = maxDim * aspect;
+                }
+                
+                const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+                const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+                const box = new THREE.Mesh(geometry, material);
+                
+                if (isCeiling) {
+                  box.position.set(x, y, z);
+                  box.rotation.x = -Math.PI / 2;
+                } else {
+                  box.position.set(x, y + boxHeight / 2, z);
+                  box.rotation.y = rotationY;
+                }
+                
+                if (!CONFIG.IS_MOBILE) {
+                  box.castShadow = true;
+                  box.receiveShadow = true;
+                }
+                
+                box.userData.galleryItem = item;
+                box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+                this.scene.add(box);
+                this.boxes.push(box);
+                
+                LoadingManager.increment();
+              },
+              undefined,
+              (err) => {
+                clearTimeout(loadTimeout);
+                console.error('Image load error:', item.src, err);
                 LoadingManager.increment();
               }
-            };
-            
-            video.addEventListener('canplay', markLoaded, { once: true });
-            video.addEventListener('loadedmetadata', markLoaded, { once: true });
-            video.addEventListener('error', markLoaded, { once: true });
-            setTimeout(markLoaded, 3000);
+            );
           }
-          
-          document.getElementById('hidden-videos-container').appendChild(video);
-          if (!CONFIG.IS_MOBILE) {
-            video.play().catch(() => {
-              document.body.addEventListener("click", () => video.play().catch(() => {}), { once: true });
-            });
+        };
+        
+        while (globalIndex < items.length) {
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const item = items[globalIndex];
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            lastZ = Math.max(lastZ, currentZ);
+            addBox(item, leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
           }
-          
-          const videoTexture = new THREE.VideoTexture(video);
-          videoTexture.minFilter = THREE.LinearFilter;
-          videoTexture.magFilter = THREE.LinearFilter;
-          videoTexture.format = THREE.RGBFormat;
-          
-          this.videos.push(video);
-          
-          const aspect = video.videoWidth && video.videoHeight 
-            ? video.videoWidth / video.videoHeight 
-            : 16 / 9;
-          
-          let boxWidth, boxHeight;
-          if (aspect >= 1) {
-            boxWidth = maxDim;
-            boxHeight = maxDim / aspect;
-          } else {
-            boxHeight = maxDim;
-            boxWidth = maxDim * aspect;
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const item = items[globalIndex];
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            lastZ = Math.max(lastZ, currentZ);
+            addBox(item, rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
           }
-          
-          const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-          const material = new THREE.MeshStandardMaterial({ 
-            map: videoTexture,
-            color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff,
-            side: THREE.DoubleSide
-          });
-          const box = new THREE.Mesh(geometry, material);
-          
-          if (isCeiling) {
-            box.position.set(x, y, z);
-            box.rotation.x = -Math.PI / 2;
-          } else {
-            box.position.set(x, y + boxHeight / 2, z);
-            box.rotation.y = rotationY;
+          rowIndex++;
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const item = items[globalIndex];
+            const z = ceilingRowIndex * ceilingZSpacing + zOffset;
+            lastZ = Math.max(lastZ, z);
+            addBox(item, ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
           }
-          
-          if (!CONFIG.IS_MOBILE) {
-            box.castShadow = true;
-            box.receiveShadow = true;
-          }
-          
-          box.userData.galleryItem = item;
-          box.userData.popup = item.vimeoUrl 
-            ? `<div class="popup-images-scroll"><iframe src="https://player.vimeo.com/video/${item.vimeoUrl.match(/vimeo\.com\/(\d+)/)[1]}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" title="${item.title || ''}"></iframe></div>`
-            : `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop></video></div>`;
-          this.scene.add(box);
-          this.boxes.push(box);
-          
-        } else if (isGif) {
-          const canvas = document.createElement('canvas');
-          canvas.width = 512;
-          canvas.height = 512;
-          
-          try {
-            gifler(item.src).get((anim) => {
-              canvas.width = anim.width;
-              canvas.height = anim.height;
-              
-              const texture = new THREE.CanvasTexture(canvas);
-              const aspect = anim.width / anim.height;
-              
-              let boxWidth, boxHeight;
-              if (aspect >= 1) {
-                boxWidth = maxDim;
-                boxHeight = maxDim / aspect;
-              } else {
-                boxHeight = maxDim;
-                boxWidth = maxDim * aspect;
-              }
-              
-              const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-              const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-              const box = new THREE.Mesh(geometry, material);
-              
-              if (isCeiling) {
-                box.position.set(x, y, z);
-                box.rotation.x = -Math.PI / 2;
-              } else {
-                box.position.set(x, y + boxHeight / 2, z);
-                box.rotation.y = rotationY;
-              }
-              
-              if (!CONFIG.IS_MOBILE) {
-                box.castShadow = true;
-                box.receiveShadow = true;
-              }
-              
-              box.userData.galleryItem = item;
-              box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
-              this.scene.add(box);
-              this.boxes.push(box);
-              
-              this.gifAnimations.push(anim);
-              anim.animateInCanvas(canvas);
-              
-              let animationRunning = true;
-              const updateTexture = () => {
-                if (animationRunning && !GalleryApp.menuOpen) {
-                  texture.needsUpdate = true;
-                }
-                requestAnimationFrame(updateTexture);
-              };
-              updateTexture();
-              
-              anim.stop = () => { animationRunning = false; };
-              anim.play = () => { animationRunning = true; };
-              
-              LoadingManager.increment();
-            }).catch(() => LoadingManager.increment());
-          } catch (e) {
-            LoadingManager.increment();
-          }
-          
-        } else {
-          loader.load(
-            item.src,
-            texture => {
-              const aspect = texture.image.width / texture.image.height;
-              let boxWidth, boxHeight;
-              if (aspect >= 1) {
-                boxWidth = maxDim;
-                boxHeight = maxDim / aspect;
-              } else {
-                boxHeight = maxDim;
-                boxWidth = maxDim * aspect;
-              }
-              
-              const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-              const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-              const box = new THREE.Mesh(geometry, material);
-              
-              if (isCeiling) {
-                box.position.set(x, y, z);
-                box.rotation.x = -Math.PI / 2;
-              } else {
-                box.position.set(x, y + boxHeight / 2, z);
-                box.rotation.y = rotationY;
-              }
-              
-              if (!CONFIG.IS_MOBILE) {
-                box.castShadow = true;
-                box.receiveShadow = true;
-              }
-              
-              box.userData.galleryItem = item;
-              box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
-              this.scene.add(box);
-              this.boxes.push(box);
-              
-              LoadingManager.increment();
-            },
-            undefined,
-            () => LoadingManager.increment()
-          );
+          ceilingRowIndex++;
         }
-      };
-      
-      while (globalIndex < items.length) {
-        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-          const item = items[globalIndex];
-          const currentZ = rowIndex * rowSpacing + zOffset;
-          lastZ = Math.max(lastZ, currentZ);
-          addBox(item, leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
-        }
-        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-          const item = items[globalIndex];
-          const currentZ = rowIndex * rowSpacing + zOffset;
-          lastZ = Math.max(lastZ, currentZ);
-          addBox(item, rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
-        }
-        rowIndex++;
-        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-          const item = items[globalIndex];
-          const z = ceilingRowIndex * ceilingZSpacing + zOffset;
-          lastZ = Math.max(lastZ, z);
-          addBox(item, ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
-        }
-        ceilingRowIndex++;
-      }
-      
-      this.extendRoom(lastZ + 30);
-    })
-    .catch(err => {
-      console.error('Failed to load gallery JSON', err);
-      LoadingManager.complete();
-    });
-},
+        
+        this.extendRoom(lastZ + 30);
+      })
+      .catch(err => {
+        console.error('Gallery load failed:', err);
+        LoadingManager.forceComplete();
+      });
+  },
   
   pauseAllAnimations() {
-    this.videos.forEach(video => {
-      video.userData = video.userData || {};
-      video.userData.wasPlaying = !video.paused;
-      if (!video.paused) video.pause();
-    });
-    
     this.gifAnimations.forEach(anim => {
       if (anim.stop) anim.stop();
     });
   },
   
   resumeAllAnimations() {
-    this.videos.forEach(video => {
-      if (video.userData && video.userData.wasPlaying) {
-        video.play().catch(() => {});
-        video.userData.wasPlaying = false;
-      }
-    });
-    
     this.gifAnimations.forEach(anim => {
       if (anim.play) anim.play();
     });
   }
 };
 
-// ===== PHYSICS MANAGER =====
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
@@ -1364,7 +1312,6 @@ const PhysicsManager = {
   }
 };
 
-// ===== INTERACTION MANAGER =====
 const InteractionManager = {
   raycaster: new THREE.Raycaster(),
   reticle: null,
@@ -1452,53 +1399,6 @@ const InteractionManager = {
   }
 };
 
-// ===== POPUP MANAGER =====
-const PopupManager = {
-  generateHTML(item) {
-    let mediaContent = '';
-    
-    if (item.vimeoUrl) {
-      const vimeoMatch = item.vimeoUrl.match(/vimeo\.com\/(\d+)/);
-      if (vimeoMatch) {
-        const videoId = vimeoMatch[1];
-        mediaContent = `<div style="width:100%;height:100%;min-height:${CONFIG.IS_MOBILE ? '100vh' : '85vh'};display:flex;align-items:center;justify-content:center;margin:0;background:#000;flex-shrink:0;">
-          <iframe src="https://player.vimeo.com/video/${videoId}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1&sidedock=0" 
-                  frameborder="0" 
-                  allow="autoplay; fullscreen; picture-in-picture" 
-                  style="width:100%;height:100%;" 
-                  title="${item.title || 'Gallery Item'}">
-          </iframe>
-        </div>
-        <script src="https://player.vimeo.com/api/player.js"><\/script>`;
-      }
-    } else if (item.src) {
-      mediaContent = `<img src="${item.src}" alt="${item.title || ''}" onclick="GalleryApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`;
-    }
-    
-    const mobileHeader = CONFIG.IS_MOBILE && item.title ? `
-      <div style="margin-bottom: 20px;">
-        <h2 style="font-family: 'MacklinSansBold', 'monospace821Bold', sans-serif; margin: 0 0 10px 0;">${item.title}</h2>
-        ${item.description ? `<p style="font-family: 'Monospace821'; margin: 0; line-height: 1.5;">${item.description}</p>` : ''}
-      </div>
-    ` : '';
-    
-    return `
-      <div class="popup-content-layout">
-        ${item.title && !CONFIG.IS_MOBILE ? `<div class="popup-left">
-          <h2>${item.title}</h2>
-          ${item.description ? `<p>${item.description}</p>` : ''}
-        </div>` : ''}
-        <div class="popup-right">
-          <div class="popup-images-scroll">
-            ${mobileHeader}${mediaContent}
-          </div>
-        </div>
-      </div>
-    `;
-  }
-};
-
-// ===== MAIN APP =====
 const GalleryApp = {
   menuOpen: false,
   popupVisible: false,
@@ -1532,7 +1432,6 @@ const GalleryApp = {
   },
   
   handlePopupClick(event) {
-    // Close if clicking on the popup background or popup-content wrapper
     if (event.target.id === 'popup' || event.target.className === 'popup-images-scroll') {
       this.hidePopup();
     }
