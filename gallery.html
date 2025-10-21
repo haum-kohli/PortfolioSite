@@ -633,7 +633,11 @@ const InputManager = {
     document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         e.preventDefault();
-        GalleryApp.toggleMenu();
+        if (GalleryApp.popupVisible) {
+          GalleryApp.hidePopup();
+        } else {
+          GalleryApp.toggleMenu();
+        }
         return;
       }
       this.keys[e.code] = true;
@@ -717,7 +721,7 @@ const InputManager = {
           const deltaY = touch.clientY - touchData.lastY;
           
           // Only update camera if there's actual movement (not just thumb tilt)
-          if (Math.abs(deltaX) > 1.5 || Math.abs(deltaY) > 1.5) {
+          if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
             this.mobileLookDelta.x = deltaX;
             this.mobileLookDelta.y = deltaY;
           }
