@@ -635,7 +635,7 @@ const InputManager = {
         e.preventDefault();
         if (GalleryApp.popupVisible) {
           GalleryApp.hidePopup();
-        } else {
+        } else if (!GalleryApp.menuOpen) {
           GalleryApp.toggleMenu();
         }
         return;
@@ -707,21 +707,22 @@ const InputManager = {
         const touchData = this.activeTouches.get(touch.identifier);
         if (!touchData) return;
         
-        const moveDistance = Math.sqrt(
+        const totalMoveDistance = Math.sqrt(
           Math.pow(touch.clientX - touchData.startX, 2) + 
           Math.pow(touch.clientY - touchData.startY, 2)
         );
         
-        if (moveDistance > 25) {
+        if (totalMoveDistance > 25) {
           touchData.hasMoved = true;
         }
         
-        if (touchData.isCameraControl && touchData.hasMoved) {
+        if (touchData.isCameraControl) {
           const deltaX = touch.clientX - touchData.lastX;
           const deltaY = touch.clientY - touchData.lastY;
+          const frameMoveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
           
-          // Only update camera if there's actual movement (not just thumb tilt)
-          if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+          // Only update camera if there's actual drag movement (not just thumb tilt/pressure)
+          if (touchData.hasMoved && frameMoveDistance > 1) {
             this.mobileLookDelta.x = deltaX;
             this.mobileLookDelta.y = deltaY;
           }
