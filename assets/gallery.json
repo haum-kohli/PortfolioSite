@@ -16,8 +16,9 @@
     "title": "Big Steppers"
   },
   {
-    "src": "assets2/blobs.mp4",
     "type": "video",
+    "thumbnail": "assets2/blobscut.mp4",
+    "vimeoUrl": "https://vimeo.com/1128966951",
     "title": "Blobs"
   },
   {
@@ -36,16 +37,12 @@
     "src": "assets2/charlotte.webp",
     "title": "Charlotte"
   },
-    {
-    "src": "assets2/clock.webp",
-    "title": "Clock"
-  },
   {
-    "src": "assets2/clock.mp4",
     "type": "video",
+    "thumbnail": "assets2/clockcut.mp4",
+    "vimeoUrl": "https://vimeo.com/1128966475",
     "title": "Clock"
   },
-
   {
     "src": "assets2/collageposters.webp",
     "title": "Collage Posters"
@@ -63,7 +60,9 @@
     "title": "Dune"
   },
   {
-    "src": "assets2/frankmiyazaki.webp",
+    "type": "video",
+    "thumbnail": "assets2/frankcut.mp4",
+    "vimeoUrl": "https://vimeo.com/1129026743",
     "title": "Frank Miyazaki"
   },
   {
@@ -81,6 +80,12 @@
   {
     "src": "assets2/heliotrope3.webp",
     "title": "Heliotrope 3"
+  },
+  {
+    "type": "video",
+    "thumbnail": "assets2/holliscut.mp4",
+    "vimeoUrl": "https://vimeo.com/1129024390",
+    "title": "Hollis"
   },
   {
     "src": "assets2/ken.webp",
@@ -147,13 +152,16 @@
     "title": "Supercroix"
   },
   {
-    "src": "assets2/surrealismmockup.webp",
-    "title": "Surrealism Mockup"
+    "type": "video",
+    "thumbnail": "assets2/surrealismcut.mp4",
+    "vimeoUrl": "https://vimeo.com/1128966897",
+    "title": "Surrealism"
   },
   {
-    "src": "assets2/surrealism.mp4",
     "type": "video",
-    "title": "Surrealism"
+    "thumbnail": "assets2/titlefightcut.mp4",
+    "vimeoUrl": "https://vimeo.com/1129023114",
+    "title": "Title Fight"
   },
   {
     "src": "assets2/yeat.webp",
