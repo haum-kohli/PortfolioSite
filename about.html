@@ -65,7 +65,7 @@ body {
   height: 30px;
   border: 3px solid #fff;
   position: relative;
-  overflow: dden;
+  overflow: hidden;
 }
 
 .loading-bar {
@@ -115,7 +115,7 @@ body {
   z-index: 9999;
   padding: 40px;
   box-sizing: border-box;
-  overflow: dden;
+  overflow: hidden;
   align-items: left;
   justify-content: left;
   flex-direction: column;
@@ -174,7 +174,7 @@ body {
   box-shadow: 0 8px 32px rgba(0,0,0,0.25);
   font-size: 1em;
   transition: opacity 0.2s;
-  overflow: dden;
+  overflow: hidden;
 }
 
 #popup .close-btn {
@@ -231,13 +231,13 @@ body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  overflow: dden;
+  overflow: hidden;
 }
 
 #popup .popup-images-scroll {
   flex: 1;
   overflow-y: auto;
-  overflow-x: dden;
+  overflow-x: hidden;
   display: flex;
   flex-direction: column;
   scroll-behavior: smooth;
@@ -587,12 +587,13 @@ body {
   
   #popup .popup-right {
     width: 100% !important;
-    padding: 60px 0 24px 0 !important;
+    padding: 60px 0 0 0 !important;
   }
 
   #popup .popup-images-scroll {
     overflow-y: auto !important;
-    padding: 0 24px !important;
+    padding: 0 !important;
+    touch-action: pan-y !important;
   }
 }
 
@@ -1158,7 +1159,6 @@ const SceneManager = {
     const geometry = new THREE.BoxGeometry(30, 30, 30);
     const textureLoader = new THREE.TextureLoader();
     
-    // Load texture for the rotating box
     const boxTexture = textureLoader.load(
       'assets/newvidsoon.webp',
       () => LoadingManager.increment(),
@@ -1192,7 +1192,6 @@ const SceneManager = {
     
     const displayGeometry = new THREE.BoxGeometry(60, 35, 5);
     
-    // Load texture for the display box
     const displayTexture = textureLoader.load(
       'assets/aboutme.webp',
       () => LoadingManager.increment(),
@@ -1454,7 +1453,6 @@ const InteractionManager = {
 // ===== POPUP MANAGER =====
 const PopupManager = {
   generateHTML(project) {
-    // If there's no title and no description, just show the image(s) fullscreen
     const hasContent = project.title || project.description;
     
     const mediaContent = project.media.map(m => {
@@ -1483,7 +1481,6 @@ const PopupManager = {
       }
     }).join('');
     
-    // If no content, return just the image centered
     if (!hasContent) {
       return `
         <div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:#fff;">
@@ -1493,7 +1490,7 @@ const PopupManager = {
     }
     
     const mobileHeader = CONFIG.IS_MOBILE ? `
-      <div style="margin-bottom: 20px;">
+      <div style="margin-bottom: 20px; padding: 0 24px;">
         <h2 style="font-family: 'MacklinSansBold', 'monospace821Bold', sans-serif; margin: 0 0 10px 0;">${project.title}</h2>
         <p style="font-family: 'Monospace821'; margin: 0; line-height: 1.5;">${project.description}</p>
       </div>
@@ -1679,7 +1676,6 @@ const AboutApp = {
   }
 };
 
-// Initialize the app
 AboutApp.init();
 </script>
 </body>
