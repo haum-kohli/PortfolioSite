@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" />
   <title>Gallery</title>
   <style>
-  /* ===== FONTS ===== */
   @font-face {
     font-family: 'MacklinSansBold';
     src: url('assets/fonts/MacklinSans-Bold.ttf') format('truetype');
@@ -22,7 +21,6 @@
     font-weight: normal;
   }
 
-  /* ===== BASE ===== */
   body { 
     margin: 0; 
     overflow: hidden;
@@ -31,7 +29,6 @@
     user-select: none;
   }
 
-  /* ===== LOADING SCREEN ===== */
   #loading-screen {
     position: fixed;
     top: 0;
@@ -80,7 +77,6 @@
     margin-top: 20px;
   }
 
-  /* ===== RETICLE ===== */
   #reticle {
     position: fixed;
     top: 50%;
@@ -102,7 +98,6 @@
     transform: scale(1.3);
   }
 
-  /* ===== MENU ===== */
   #top-menu {
     display: none;
     position: fixed;
@@ -159,7 +154,6 @@
     color: rgb(34, 255, 0);
   }
 
-  /* ===== POPUP ===== */
   #popup {
     display: none;
     position: fixed;
@@ -171,17 +165,6 @@
     z-index: 10001;
     justify-content: center;
     align-items: center;
-    cursor: pointer;
-  }
-
-  #popup-content {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
   }
 
   #popup-close-btn {
@@ -209,83 +192,36 @@
     width: 100%;
     height: 100%;
     display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-  }
-
-  .popup-images-scroll img,
-  .popup-images-scroll video,
-  .popup-images-scroll iframe {
-    pointer-events: auto;
+    flex-direction: column;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding: 60px 20px 20px 20px;
+    box-sizing: border-box;
   }
 
   .popup-images-scroll img {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
+    width: 100%;
     height: auto;
-    object-fit: contain;
     display: block;
+    margin-bottom: 10px;
   }
 
   .popup-images-scroll video {
-    max-width: 100%;
-    max-height: 100%;
-    width: auto;
+    width: 100%;
     height: auto;
-    object-fit: contain;
     display: block;
+    margin-bottom: 10px;
   }
 
   .popup-images-scroll iframe {
-    width: 640px;
-    height: 360px;
-    max-width: 90vw;
-    max-height: 50vh;
+    width: 100%;
+    aspect-ratio: 16/9;
+    display: block;
+    margin-bottom: 10px;
     border: none;
   }
 
-  /* ===== IMAGE MODAL ===== */
-  #image-modal {
-    display: none;
-    position: fixed;
-    z-index: 10002;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.85);
-    align-items: center;
-    justify-content: center;
-    cursor: zoom-out;
-  }
-
-  #image-modal img {
-    max-width: 90vw;
-    max-height: 90vh;
-    box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-    background: #fff;
-  }
-
-  #image-modal .modal-close-btn {
-    position: absolute;
-    top: 32px;
-    right: 48px;
-    font-size: 3em;
-    color: #fff;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 10003;
-    text-shadow: 0 2px 8px #000;
-  }
-
-  #image-modal .modal-close-btn:hover { 
-    color: #FFD600; 
-  }
-
-  /* ===== CLICK PROMPT ===== */
   #click-prompt {
     position: fixed;
     top: 50%;
@@ -302,7 +238,6 @@
     padding: 20px;
   }
 
-  /* ===== MOBILE CONTROLS ===== */
   #mobile-controls {
     display: none;
     position: fixed;
@@ -320,9 +255,6 @@
     height: 120px;
     bottom: 40px;
     pointer-events: auto;
-  }
-
-  #movement-joystick {
     left: 40px;
   }
 
@@ -348,21 +280,8 @@
     transform: translate(-50%, -50%);
     transition: none;
     image-rendering: pixelated;
-    clip-path: polygon(
-      0px calc(100% - 20px), 4px calc(100% - 20px), 4px calc(100% - 12px), 8px calc(100% - 12px),
-      8px calc(100% - 8px), 12px calc(100% - 8px), 12px calc(100% - 4px), 20px calc(100% - 4px),
-      20px 100%, calc(100% - 20px) 100%, calc(100% - 20px) calc(100% - 4px),
-      calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) calc(100% - 8px),
-      calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 12px),
-      calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 20px),
-      100% calc(100% - 20px), 100% 20px, calc(100% - 4px) 20px, calc(100% - 4px) 12px,
-      calc(100% - 8px) 12px, calc(100% - 8px) 8px, calc(100% - 12px) 8px,
-      calc(100% - 12px) 4px, calc(100% - 20px) 4px, calc(100% - 20px) 0px, 20px 0px,
-      20px 4px, 12px 4px, 12px 8px, 8px 8px, 8px 12px, 4px 12px, 4px 20px, 0px 20px
-    );
   }
 
-  /* ===== SHOTGUN GIF ===== */
   #shotgun-gif {
     position: fixed;
     bottom: 0;
@@ -376,7 +295,6 @@
     image-rendering: pixelated;
   }
 
-  /* ===== MOBILE MENU BUTTON ===== */
   #mobile-menu-btn {
     position: fixed;
     top: 20px;
@@ -418,7 +336,6 @@
     line-height: 1;
   }
 
-  /* ===== MOBILE/TABLET RESPONSIVE ===== */
   @media (max-width: 1024px) {
     #mobile-controls {
       display: block;
@@ -461,7 +378,6 @@
     }
   }
 
-  /* ===== DESKTOP RESPONSIVE ===== */
   @media (min-width: 1025px) {
     #menu-logo {
       position: absolute;
@@ -484,13 +400,6 @@
     #menu-random-gif {
       display: none;
     }
-  }
-
-  .hidden-video {
-    position: absolute;
-    left: -9999px;
-    top: -9999px;
-    visibility: hidden;
   }
   </style>
   <script src="https://cdn.jsdelivr.net/npm/gifler@0.1.0/gifler.min.js"></script>
@@ -524,59 +433,24 @@
   <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
 </div>
 
-<div id="popup" onclick="GalleryApp.handlePopupClick(event)">
-  <button id="popup-close-btn" onclick="GalleryApp.hidePopup()">×</button>
+<div id="popup">
+  <button id="popup-close-btn" onclick="GalleryApp.hidePopup()">&times;</button>
   <div id="popup-content"></div>
-</div>
-
-<div id="image-modal" onclick="GalleryApp.closeImageModal(event)">
-  <button class="modal-close-btn" onclick="GalleryApp.closeImageModal(event)">&times;</button>
-  <img id="modal-img" src="" alt="Popup Image">
 </div>
 
 <button id="mobile-menu-btn">+</button>
 <img id="shotgun-gif" src="assets/POVSHOTGUN_static.png" alt="Shotgun">
 
 <div id="mobile-controls">
-  <div id="movement-joystick" class="mobile-joystick">
+  <div class="mobile-joystick">
     <div class="joystick-base">
       <div class="joystick-stick"></div>
     </div>
   </div>
 </div>
 
-<div id="hidden-videos-container"></div>
-
 <script>
 const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
-// Prevent infinite reload loop
-let loadAttempts = parseInt(sessionStorage.getItem('loadAttempts') || '0');
-const MAX_LOAD_ATTEMPTS = 3;
-
-if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
-  document.body.innerHTML = '<div style="padding:20px;font-family:monospace;color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;"><div><h2>Loading Error</h2><p>Unable to load gallery after multiple attempts.</p><button onclick="sessionStorage.removeItem(\'loadAttempts\');location.reload()" style="margin-top:20px;padding:10px 20px;font-size:16px;">Try Again</button></div></div>';
-  throw new Error('Max load attempts reached');
-}
-
-sessionStorage.setItem('loadAttempts', (loadAttempts + 1).toString());
-
-// Clear on successful load
-window.addEventListener('load', () => {
-  setTimeout(() => {
-    sessionStorage.removeItem('loadAttempts');
-  }, 2000);
-});
-
-// Catch all errors
-window.addEventListener('error', (e) => {
-  console.error('Global error caught:', e.message, e.filename, e.lineno);
-  return true; // Prevent default error handling
-});
-
-window.addEventListener('unhandledrejection', (e) => {
-  console.error('Unhandled promise rejection:', e.reason);
-  e.preventDefault();
-});
 
 const CONFIG = {
   IS_MOBILE,
@@ -587,13 +461,7 @@ const CONFIG = {
   JUMP_FORCE: 350,
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
-  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 250 : 700,
-  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 300 : 999,
-  MAX_MOBILE_GIFS: IS_MOBILE ? 15 : 999,
-  MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999,
-  INITIAL_MOBILE_LOAD: IS_MOBILE ? 30 : 999, // Load first 30 immediately
-  BATCH_LOAD_SIZE: IS_MOBILE ? 5 : 999, // Load 5 at a time after initial
-  BATCH_LOAD_INTERVAL: IS_MOBILE ? 200 : 0, // Load batch every 200ms
+  FOG_DISTANCE: IS_MOBILE ? 400 : 700,
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -601,6 +469,14 @@ const CONFIG = {
     'assets/gifs/greendragon.gif', 'assets/gifs/jackhammer.gif', 'assets/gifs/legorun.gif', 
     'assets/gifs/orangedino.gif', 'assets/gifs/pinkydemon.gif', 'assets/gifs/shotgunblast.gif',
     'assets/gifs/skullfire.gif', 'assets/gifs/whitedragon.gif', 'assets/gifs/yellowdragon.gif'
+  ],
+  
+  // Mobile category boxes
+  mobileCategories: [
+    { title: 'PHOTO', x: -30, y: 20, z: 80, category: 'photo' },
+    { title: 'POSTERS', x: 30, y: 20, z: 80, category: 'posters' },
+    { title: 'MISC DESIGN', x: -30, y: 20, z: 140, category: 'misc' },
+    { title: 'VIDEO/MOTION', x: 30, y: 20, z: 140, category: 'video' }
   ]
 };
 
@@ -619,7 +495,6 @@ const LoadingManager = {
     this.loadingPercentage = document.getElementById('loading-percentage');
     this.startSmoothProgress();
     
-    // Failsafe: force complete after 15 seconds
     this.timeoutId = setTimeout(() => {
       console.warn('Loading timeout - forcing completion');
       this.forceComplete();
@@ -709,6 +584,7 @@ const InputManager = {
   mobileMovement: { x: 0, z: 0 },
   mobileLookDelta: { x: 0, y: 0 },
   activeTouches: new Map(),
+  joystickTouchId: null,
   
   init() {
     document.addEventListener('keydown', (e) => {
@@ -752,16 +628,17 @@ const InputManager = {
   },
   
   initMobileControls() {
-    this.initJoystick('movement-joystick', (x, y) => {
-      this.mobileMovement.x = x;
-      this.mobileMovement.z = y;
-    });
+    this.initJoystick();
     
     document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const isOnJoystick = target && target.closest('#movement-joystick');
+        const isOnJoystick = target && target.closest('.mobile-joystick');
         const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
+        
+        if (isOnJoystick) {
+          this.joystickTouchId = touch.identifier;
+        }
         
         this.activeTouches.set(touch.identifier, {
           startX: touch.clientX,
@@ -770,7 +647,8 @@ const InputManager = {
           lastY: touch.clientY,
           isJoystick: isOnJoystick,
           isUI: isOnUI,
-          isCameraControl: !isOnJoystick && !isOnUI
+          isCameraControl: !isOnJoystick && !isOnUI,
+          hasMoved: false
         });
       });
     });
@@ -780,12 +658,23 @@ const InputManager = {
       
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
-        if (!touchData || !touchData.isCameraControl) return;
+        if (!touchData) return;
         
-        this.mobileLookDelta.x = touch.clientX - touchData.lastX;
-        this.mobileLookDelta.y = touch.clientY - touchData.lastY;
-        touchData.lastX = touch.clientX;
-        touchData.lastY = touch.clientY;
+        const moveDistance = Math.sqrt(
+          Math.pow(touch.clientX - touchData.startX, 2) + 
+          Math.pow(touch.clientY - touchData.startY, 2)
+        );
+        
+        if (moveDistance > 10) {
+          touchData.hasMoved = true;
+        }
+        
+        if (touchData.isCameraControl && touchData.hasMoved) {
+          this.mobileLookDelta.x = touch.clientX - touchData.lastX;
+          this.mobileLookDelta.y = touch.clientY - touchData.lastY;
+          touchData.lastX = touch.clientX;
+          touchData.lastY = touch.clientY;
+        }
       });
     });
     
@@ -793,23 +682,24 @@ const InputManager = {
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
         
-        if (touchData && touchData.isCameraControl) {
-          const distMoved = Math.sqrt(
-            Math.pow(touch.clientX - touchData.startX, 2) + 
-            Math.pow(touch.clientY - touchData.startY, 2)
-          );
+        if (touch.identifier === this.joystickTouchId) {
+          this.joystickTouchId = null;
+          const stick = document.querySelector('.joystick-stick');
+          stick.style.transform = 'translate(-50%, -50%)';
+          this.mobileMovement.x = 0;
+          this.mobileMovement.z = 0;
+        }
+        
+        if (touchData && touchData.isCameraControl && !touchData.hasMoved) {
+          ShotgunGif.play();
           
-          if (distMoved < 20) {
-            ShotgunGif.play();
+          if (!GalleryApp.popupVisible && !GalleryApp.menuOpen && InteractionManager.hoveredBox) {
+            const cameraPos = new THREE.Vector3();
+            SceneManager.camera.getWorldPosition(cameraPos);
+            const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
             
-            if (!GalleryApp.popupVisible && !GalleryApp.menuOpen && InteractionManager.hoveredBox) {
-              const cameraPos = new THREE.Vector3();
-              SceneManager.camera.getWorldPosition(cameraPos);
-              const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
-              
-              if (dist <= CONFIG.CLICK_DISTANCE) {
-                GalleryApp.showPopup(InteractionManager.hoveredBox);
-              }
+            if (dist <= CONFIG.CLICK_DISTANCE) {
+              GalleryApp.showPopup(InteractionManager.hoveredBox);
             }
           }
         }
@@ -829,20 +719,19 @@ const InputManager = {
     });
   },
   
-  initJoystick(id, callback) {
-    const joystick = document.getElementById(id);
+  initJoystick() {
+    const joystick = document.querySelector('.mobile-joystick');
     const stick = joystick.querySelector('.joystick-stick');
     const base = joystick.querySelector('.joystick-base');
-    let activeTouch = null;
     
     const handleMove = (e) => {
-      if (activeTouch === null) return;
+      if (this.joystickTouchId === null) return;
       e.preventDefault();
       
       let touch = null;
       if (e.touches) {
         for (let i = 0; i < e.touches.length; i++) {
-          if (e.touches[i].identifier === activeTouch) {
+          if (e.touches[i].identifier === this.joystickTouchId) {
             touch = e.touches[i];
             break;
           }
@@ -866,26 +755,18 @@ const InputManager = {
       }
       
       stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-      callback(deltaX / maxDistance, deltaY / maxDistance);
-    };
-    
-    const handleEnd = (e) => {
-      e.preventDefault();
-      activeTouch = null;
-      stick.style.transform = 'translate(-50%, -50%)';
-      callback(0, 0);
+      this.mobileMovement.x = deltaX / maxDistance;
+      this.mobileMovement.z = deltaY / maxDistance;
     };
     
     joystick.addEventListener('touchstart', (e) => {
       e.preventDefault();
       if (e.touches && e.touches.length > 0) {
-        activeTouch = e.touches[0].identifier;
+        this.joystickTouchId = e.touches[0].identifier;
       }
     }, { passive: false });
     
     joystick.addEventListener('touchmove', handleMove, { passive: false });
-    joystick.addEventListener('touchend', handleEnd, { passive: false });
-    joystick.addEventListener('touchcancel', handleEnd, { passive: false });
   },
   
   getMovementInput() {
@@ -909,11 +790,6 @@ const SceneManager = {
   boxes: [],
   videos: [],
   gifAnimations: [],
-  gifCount: 0,
-  pendingItems: [],
-  loadedItemPositions: new Set(),
-  batchLoadInterval: null,
-  currentBatchIndex: 0,
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -926,8 +802,7 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    // Much lighter fog on mobile
-    this.scene.fog = new THREE.Fog(0xff00ff, 50, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+    this.scene.fog = new THREE.Fog(0xff00ff, 50, CONFIG.FOG_DISTANCE);
     
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, CONFIG.IS_MOBILE ? 0.3 : 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, CONFIG.IS_MOBILE ? 0.4 : 0.5));
@@ -938,22 +813,16 @@ const SceneManager = {
       dirLight.castShadow = true;
       dirLight.shadow.mapSize.width = 2048;
       dirLight.shadow.mapSize.height = 2048;
-      dirLight.shadow.camera.left = -200;
-      dirLight.shadow.camera.right = 200;
-      dirLight.shadow.camera.top = 400;
-      dirLight.shadow.camera.bottom = -400;
-      dirLight.shadow.camera.near = 1;
-      dirLight.shadow.camera.far = 500;
       this.scene.add(dirLight);
     }
     this.scene.add(this.yaw);
     
     this.renderer = new THREE.WebGLRenderer({ 
-      antialias: false, // Disable antialiasing on all devices for performance
+      antialias: false,
       powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance",
       precision: CONFIG.IS_MOBILE ? 'lowp' : 'highp'
     });
-    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 0.6 : window.devicePixelRatio);
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     
     if (!CONFIG.IS_MOBILE) {
@@ -970,13 +839,7 @@ const SceneManager = {
     });
   },
   
-  createCheckeredTexture(size = 1024, squares = 32) {
-    // Smaller textures on mobile
-    if (CONFIG.IS_MOBILE) {
-      size = 512;
-      squares = 16;
-    }
-    
+  createCheckeredTexture(size = 512, squares = 16) {
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -1009,47 +872,17 @@ const SceneManager = {
     return geometry;
   },
   
-  createWall(width, height, segments, position, rotation, deformAmount = 10) {
-    const geometry = this.createDeformedGeometry(
-      new THREE.PlaneGeometry(width, height, segments[0], segments[1]),
-      deformAmount
-    );
-    const texture = this.createCheckeredTexture();
-    texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
-    texture.repeat.set(2, 2);
-    
-    const wall = new THREE.Mesh(
-      geometry, 
-      new THREE.MeshStandardMaterial({ 
-        map: texture, 
-        side: THREE.DoubleSide,
-        metalness: 0,
-        roughness: 1
-      })
-    );
-    wall.position.set(...position);
-    if (rotation) wall.rotation.set(...rotation);
-    wall.userData.type = 'floorOrWall';
-    return wall;
-  },
-  
-  extendRoom(newLength) {
-    this.objects = this.objects.filter(obj => {
-      if (obj.userData.type === 'floorOrWall') {
-        this.scene.remove(obj);
-        return false;
-      }
-      return true;
-    });
+  createRoom() {
+    const roomLength = CONFIG.IS_MOBILE ? 200 : 600;
     
     const floorGeo = this.createDeformedGeometry(
-      new THREE.PlaneGeometry(200, newLength, 20, Math.max(2, Math.ceil(newLength / 10))),
+      new THREE.PlaneGeometry(200, roomLength, 20, Math.max(2, Math.ceil(roomLength / 10))),
       2
     );
     floorGeo.rotateX(-Math.PI / 2);
     const tex = this.createCheckeredTexture();
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(2, Math.max(1, newLength / 50));
+    tex.repeat.set(2, Math.max(1, roomLength / 50));
     const floor = new THREE.Mesh(
       floorGeo,
       new THREE.MeshStandardMaterial({ 
@@ -1059,139 +892,136 @@ const SceneManager = {
         roughness: 1
       })
     );
-    floor.position.set(0, 4, newLength / 2);
-    if (!CONFIG.IS_MOBILE) {
-      floor.receiveShadow = true;
-    }
-    floor.userData.type = 'floorOrWall';
+    floor.position.set(0, 4, roomLength / 2);
+    if (!CONFIG.IS_MOBILE) floor.receiveShadow = true;
     this.scene.add(floor);
     this.objects.push(floor);
     
-    const walls = [
-      this.createWall(newLength, 200, [20, 40], [-100, -1, newLength / 2], [0, Math.PI/2, -0.15]),
-      this.createWall(newLength, 200, [20, 40], [90, 4, newLength / 2], [0, Math.PI/2, 0.15]),
-      this.createWall(200, 200, [20, 40], [0, 4, newLength], [0.15, 0, 0]),
-      this.createWall(200, 200, [20, 40], [0, 4, 0], [-0.15, 0, 0])
-    ];
-    
-    walls.forEach(w => {
-      if (!CONFIG.IS_MOBILE) {
-        w.receiveShadow = true;
-      }
-      this.scene.add(w);
-      this.objects.push(w);
+    const wallGeometry = (w, h, seg) => this.createDeformedGeometry(
+      new THREE.PlaneGeometry(w, h, seg[0], seg[1]), 10
+    );
+    const wallMaterial = (tex) => new THREE.MeshStandardMaterial({ 
+      map: tex, 
+      side: THREE.DoubleSide,
+      metalness: 0,
+      roughness: 1
     });
+    
+    const wallTex1 = this.createCheckeredTexture();
+    wallTex1.wrapS = wallTex1.wrapT = THREE.RepeatWrapping;
+    wallTex1.repeat.set(2, 2);
+    
+    const leftWall = new THREE.Mesh(wallGeometry(roomLength, 200, [20, 40]), wallMaterial(wallTex1));
+    leftWall.position.set(-100, -1, roomLength / 2);
+    leftWall.rotation.set(0, Math.PI/2, -0.15);
+    this.scene.add(leftWall);
+    this.objects.push(leftWall);
+    
+    const rightWall = new THREE.Mesh(wallGeometry(roomLength, 200, [20, 40]), wallMaterial(wallTex1.clone()));
+    rightWall.position.set(90, 4, roomLength / 2);
+    rightWall.rotation.set(0, Math.PI/2, 0.15);
+    this.scene.add(rightWall);
+    this.objects.push(rightWall);
+    
+    const backWall = new THREE.Mesh(wallGeometry(200, 200, [20, 40]), wallMaterial(wallTex1.clone()));
+    backWall.position.set(0, 4, roomLength);
+    backWall.rotation.set(0.15, 0, 0);
+    this.scene.add(backWall);
+    this.objects.push(backWall);
+    
+    const frontWall = new THREE.Mesh(wallGeometry(200, 200, [20, 40]), wallMaterial(wallTex1.clone()));
+    frontWall.position.set(0, 4, 0);
+    frontWall.rotation.set(-0.15, 0, 0);
+    this.scene.add(frontWall);
+    this.objects.push(frontWall);
   },
   
   loadGallery() {
+    if (CONFIG.IS_MOBILE) {
+      this.loadMobileCategories();
+    } else {
+      this.loadDesktopGallery();
+    }
+  },
+  
+  loadMobileCategories() {
+    LoadingManager.setTotal(CONFIG.mobileCategories.length);
+    
+    CONFIG.mobileCategories.forEach((cat, idx) => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 512;
+      canvas.height = 512;
+      const ctx = canvas.getContext('2d');
+      
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, 512, 512);
+      ctx.fillStyle = '#fff';
+      ctx.font = 'bold 48px monospace';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(cat.title, 256, 256);
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      const geometry = new THREE.BoxGeometry(30, 30, 30);
+      const material = new THREE.MeshStandardMaterial({ 
+        map: texture,
+        metalness: 0,
+        roughness: 1,
+        color: 0x888888
+      });
+      
+      const box = new THREE.Mesh(geometry, material);
+      box.position.set(cat.x, cat.y, cat.z);
+      
+      box.userData.categoryData = cat;
+      box.userData.isMobileCategory = true;
+      
+      this.scene.add(box);
+      this.boxes.push(box);
+      
+      LoadingManager.increment();
+    });
+    
+    this.createRoom();
+  },
+  
+  loadDesktopGallery() {
     fetch('assets/gallery.json')
       .then(res => {
         if (!res.ok) throw new Error('Failed to fetch gallery.json');
         return res.json();
       })
       .then(items => {
-        // On mobile, filter out items with video thumbnails for performance
-        if (CONFIG.IS_MOBILE) {
-          items = items.filter(item => {
-            const videoSrc = item.thumbnail || item.src;
-            const hasVideoThumbnail = videoSrc && (
-              videoSrc.toLowerCase().endsWith('.mp4') || 
-              videoSrc.toLowerCase().endsWith('.webm') || 
-              videoSrc.toLowerCase().endsWith('.ogv')
-            );
-            return !hasVideoThumbnail;
-          });
-          
-          if (items.length > CONFIG.MAX_MOBILE_ITEMS) {
-            items = items.slice(0, CONFIG.MAX_MOBILE_ITEMS);
-            console.log(`Limited to ${CONFIG.MAX_MOBILE_ITEMS} items for mobile performance`);
-          }
-        }
-        
-        LoadingManager.setTotal(CONFIG.IS_MOBILE ? CONFIG.INITIAL_MOBILE_LOAD : items.length);
+        LoadingManager.setTotal(items.length);
         
         const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
         const ceilingX = [-30, 30], ceilingZSpacing = 50;
-        const maxDimension = CONFIG.IS_MOBILE ? CONFIG.MOBILE_IMAGE_SIZE : 40;
+        const maxDimension = 40;
         const zOffset = 50;
         let lastZ = 0;
+        let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0;
         
-        const itemPositions = [];
-        let tempGlobalIndex = 0, tempRowIndex = 0, tempCeilingRowIndex = 0;
-        
-        while (tempGlobalIndex < items.length) {
-          for (let j = 0; j < 2 && tempGlobalIndex < items.length; j++, tempGlobalIndex++) {
-            const currentZ = tempRowIndex * rowSpacing + zOffset;
-            itemPositions.push({
-              item: items[tempGlobalIndex],
-              x: leftX,
-              y: 6 + j * (maxDimension + 2),
-              z: currentZ,
-              maxDim: maxDimension,
-              rotationY: Math.PI / 2,
-              isCeiling: false
-            });
+        while (globalIndex < items.length) {
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            this.addBox(items[globalIndex], leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2, false);
             lastZ = Math.max(lastZ, currentZ);
           }
-          for (let j = 0; j < 2 && tempGlobalIndex < items.length; j++, tempGlobalIndex++) {
-            const currentZ = tempRowIndex * rowSpacing + zOffset;
-            itemPositions.push({
-              item: items[tempGlobalIndex],
-              x: rightX,
-              y: 6 + j * (maxDimension + 2),
-              z: currentZ,
-              maxDim: maxDimension,
-              rotationY: -Math.PI / 2,
-              isCeiling: false
-            });
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const currentZ = rowIndex * rowSpacing + zOffset;
+            this.addBox(items[globalIndex], rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, -Math.PI / 2, false);
             lastZ = Math.max(lastZ, currentZ);
           }
-          tempRowIndex++;
-          for (let j = 0; j < 2 && tempGlobalIndex < items.length; j++, tempGlobalIndex++) {
-            const z = tempCeilingRowIndex * ceilingZSpacing + zOffset;
-            itemPositions.push({
-              item: items[tempGlobalIndex],
-              x: ceilingX[j % 2],
-              y: ceilingYOffset,
-              z: z,
-              maxDim: maxDimension,
-              rotationY: -Math.PI / 2,
-              isCeiling: true
-            });
+          rowIndex++;
+          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+            const z = ceilingRowIndex * ceilingZSpacing + zOffset;
+            this.addBox(items[globalIndex], ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
             lastZ = Math.max(lastZ, z);
           }
-          tempCeilingRowIndex++;
+          ceilingRowIndex++;
         }
         
-        // Store all items - sort by distance from start for progressive loading
-        this.pendingItems = [...itemPositions].sort((a, b) => a.z - b.z);
-        
-        const initialLoadCount = CONFIG.IS_MOBILE ? Math.min(CONFIG.INITIAL_MOBILE_LOAD, itemPositions.length) : itemPositions.length;
-        
-        // Load initial batch
-        for (let i = 0; i < initialLoadCount; i++) {
-          const pos = itemPositions[i];
-          console.log(`Loading item ${i+1}/${initialLoadCount}:`, pos.item.src || pos.item.thumbnail);
-          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, true);
-          this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
-        }
-        
-        if (CONFIG.IS_MOBILE) {
-          this.pendingItems = this.pendingItems.slice(initialLoadCount);
-          this.currentBatchIndex = initialLoadCount;
-          
-          // Start progressive batch loading after initial load
-          if (this.pendingItems.length > 0) {
-            console.log(`Initial ${initialLoadCount} loaded. Will load ${this.pendingItems.length} more in batches.`);
-            this.startBatchLoading();
-          }
-        } else {
-          this.pendingItems = [];
-        }
-        
-        this.extendRoom(lastZ + 30);
-        
-        console.log(`Gallery ready: ${initialLoadCount} items loaded`);
+        this.createRoom();
       })
       .catch(err => {
         console.error('Gallery load failed:', err);
@@ -1199,19 +1029,16 @@ const SceneManager = {
       });
   },
   
-  addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
+  addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false) {
     const loader = new THREE.TextureLoader();
-    
-    // Video items use "thumbnail" property for the .mp4 file
     const videoSrc = item.thumbnail || item.src;
     
     if (!videoSrc) {
       console.error('Item has no src or thumbnail:', item);
-      if (countForLoading) LoadingManager.increment();
+      LoadingManager.increment();
       return;
     }
     
-    // Check if item has a video thumbnail
     const hasVideoThumbnail = videoSrc && (
       videoSrc.toLowerCase().endsWith('.mp4') || 
       videoSrc.toLowerCase().endsWith('.webm') || 
@@ -1219,17 +1046,7 @@ const SceneManager = {
     );
     
     const isGif = videoSrc && videoSrc.toLowerCase().endsWith('.gif');
-    const isImage = videoSrc && !hasVideoThumbnail && !isGif;
     
-    console.log('Adding item:', { src: videoSrc, hasVideoThumbnail, isGif, isImage, isMobile: CONFIG.IS_MOBILE });
-    
-    // Skip video thumbnails on mobile for performance
-    if (CONFIG.IS_MOBILE && hasVideoThumbnail) {
-      if (countForLoading) LoadingManager.increment();
-      return;
-    }
-    
-    // Handle VIDEO THUMBNAILS (these play on the wall, click opens Vimeo embed)
     if (hasVideoThumbnail) {
       const video = document.createElement('video');
       video.src = videoSrc;
@@ -1254,9 +1071,7 @@ const SceneManager = {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.format = THREE.RGBFormat;
-        if (CONFIG.IS_MOBILE) {
-          texture.generateMipmaps = false;
-        }
+        texture.generateMipmaps = false;
         
         const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
         const material = new THREE.MeshStandardMaterial({ 
@@ -1283,11 +1098,10 @@ const SceneManager = {
         }
         
         box.userData.galleryItem = item;
-        // If item has vimeoUrl, clicking opens the Vimeo embed. Otherwise, show the video.
         if (item.vimeoUrl) {
-          box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
         } else {
-          box.userData.popup = `<div class="popup-images-scroll"><video src="${videoSrc}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><video src="${videoSrc}" controls autoplay loop></video></div>`;
         }
         box.userData.video = video;
         
@@ -1296,45 +1110,32 @@ const SceneManager = {
         this.videos.push(video);
         
         video.play().catch(e => {
-          console.warn('Video autoplay failed (this is normal):', e);
           setTimeout(() => video.play().catch(() => {}), 100);
         });
         
-        if (countForLoading) LoadingManager.increment();
+        LoadingManager.increment();
       };
       
       const handleError = (e) => {
-        console.error('Video thumbnail load error:', videoSrc, e, video.error);
-        if (countForLoading) LoadingManager.increment();
+        console.error('Video thumbnail load error:', videoSrc, e);
+        LoadingManager.increment();
       };
       
       video.addEventListener('loadedmetadata', handleMetadata);
       video.addEventListener('error', handleError);
-      
       video.load();
-      
       return;
     }
     
-    // Limit GIFs on mobile
-    if (CONFIG.IS_MOBILE && isGif) {
-      if (this.gifCount >= CONFIG.MAX_MOBILE_GIFS) {
-        if (countForLoading) LoadingManager.increment();
-        return;
-      }
-      this.gifCount++;
-    }
-    
-    // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
-      const maxCanvasSize = CONFIG.IS_MOBILE ? 256 : 1024; // Back to 256 for mobile
+      const maxCanvasSize = 512;
       canvas.width = maxCanvasSize;
       canvas.height = maxCanvasSize;
       
       const loadTimeout = setTimeout(() => {
         console.warn('GIF load timeout:', item.src);
-        if (countForLoading) LoadingManager.increment();
+        LoadingManager.increment();
       }, 8000);
       
       try {
@@ -1357,7 +1158,6 @@ const SceneManager = {
           texture.generateMipmaps = false;
           
           const aspect = anim.width / anim.height;
-          
           let boxWidth, boxHeight;
           if (aspect >= 1) {
             boxWidth = maxDim;
@@ -1371,7 +1171,6 @@ const SceneManager = {
           const material = new THREE.MeshStandardMaterial({ 
             map: texture, 
             side: THREE.DoubleSide,
-            // Disable expensive features on mobile
             metalness: 0,
             roughness: 1
           });
@@ -1391,7 +1190,7 @@ const SceneManager = {
           }
           
           box.userData.galleryItem = item;
-          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}" alt="${item.title || ''}"></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}"></div>`;
           this.scene.add(box);
           this.boxes.push(box);
           
@@ -1399,7 +1198,7 @@ const SceneManager = {
           
           let animationRunning = true;
           let lastUpdate = 0;
-          const fps = CONFIG.IS_MOBILE ? 12 : 30;
+          const fps = 30;
           const frameDelay = 1000 / fps;
           
           const updateTexture = (timestamp) => {
@@ -1426,21 +1225,21 @@ const SceneManager = {
           anim.stop = () => { animationRunning = false; };
           anim.play = () => { animationRunning = true; lastUpdate = 0; };
           
-          if (countForLoading) LoadingManager.increment();
+          LoadingManager.increment();
         }).catch((err) => {
           clearTimeout(loadTimeout);
           console.error('GIF error:', item.src, err);
-          if (countForLoading) LoadingManager.increment();
+          LoadingManager.increment();
         });
       } catch (e) {
         clearTimeout(loadTimeout);
         console.error('GIF exception:', item.src, e);
-        if (countForLoading) LoadingManager.increment();
+        LoadingManager.increment();
       }
     } else {
       const loadTimeout = setTimeout(() => {
         console.warn('Image load timeout:', item.src);
-        if (countForLoading) LoadingManager.increment();
+        LoadingManager.increment();
       }, 5000);
       
       loader.load(
@@ -1480,53 +1279,20 @@ const SceneManager = {
           }
           
           box.userData.galleryItem = item;
-          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}" alt="${item.title || ''}"></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}"></div>`;
           this.scene.add(box);
           this.boxes.push(box);
           
-          if (countForLoading) LoadingManager.increment();
+          LoadingManager.increment();
         },
         undefined,
         (err) => {
           clearTimeout(loadTimeout);
           console.error('Image load error:', videoSrc, err);
-          if (countForLoading) LoadingManager.increment();
+          LoadingManager.increment();
         }
       );
     }
-  },
-  
-  startBatchLoading() {
-    if (!CONFIG.IS_MOBILE || this.pendingItems.length === 0) return;
-    
-    // Clear any existing interval
-    if (this.batchLoadInterval) {
-      clearInterval(this.batchLoadInterval);
-    }
-    
-    // Load batches progressively in the background
-    this.batchLoadInterval = setInterval(() => {
-      if (this.pendingItems.length === 0) {
-        clearInterval(this.batchLoadInterval);
-        this.batchLoadInterval = null;
-        console.log('All items loaded!');
-        return;
-      }
-      
-      // Load next batch
-      const batchSize = Math.min(CONFIG.BATCH_LOAD_SIZE, this.pendingItems.length);
-      const batch = this.pendingItems.splice(0, batchSize);
-      
-      batch.forEach(pos => {
-        const posKey = `${pos.x},${pos.y},${pos.z}`;
-        if (!this.loadedItemPositions.has(posKey)) {
-          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, false);
-          this.loadedItemPositions.add(posKey);
-        }
-      });
-      
-      console.log(`Batch loaded: ${batchSize} items, ${this.pendingItems.length} remaining`);
-    }, CONFIG.BATCH_LOAD_INTERVAL);
   },
   
   pauseAllAnimations() {
@@ -1545,35 +1311,6 @@ const SceneManager = {
     this.videos.forEach(video => {
       video.play().catch(e => console.warn('Video resume failed:', e));
     });
-  },
-  
-  cleanup() {
-    // Stop batch loading
-    if (this.batchLoadInterval) {
-      clearInterval(this.batchLoadInterval);
-      this.batchLoadInterval = null;
-    }
-    
-    this.boxes.forEach(box => {
-      if (box.geometry) box.geometry.dispose();
-      if (box.material) {
-        if (box.material.map) box.material.map.dispose();
-        box.material.dispose();
-      }
-    });
-    
-    this.gifAnimations.forEach(anim => {
-      if (anim.stop) anim.stop();
-    });
-    this.gifAnimations = [];
-    
-    this.videos.forEach(video => {
-      video.pause();
-      video.src = '';
-    });
-    this.videos = [];
-    
-    console.log('Scene cleanup complete');
   }
 };
 
@@ -1661,18 +1398,7 @@ const InteractionManager = {
       document.addEventListener('click', (e) => {
         ShotgunGif.play();
         
-        if (GalleryApp.popupVisible) {
-          const popup = document.getElementById('popup');
-          const rect = popup.getBoundingClientRect();
-          const clickedInside = e.clientX >= rect.left && e.clientX <= rect.right && 
-                               e.clientY >= rect.top && e.clientY <= rect.bottom;
-          
-          if (!clickedInside) {
-            GalleryApp.hidePopup();
-          }
-          return;
-        }
-        
+        if (GalleryApp.popupVisible) return;
         if (!InputManager.pointerLocked || GalleryApp.menuOpen) return;
         
         if (this.hoveredBox) {
@@ -1758,12 +1484,6 @@ const GalleryApp = {
     }
   },
   
-  handlePopupClick(event) {
-    if (event.target.id === 'popup' || event.target.className === 'popup-images-scroll') {
-      this.hidePopup();
-    }
-  },
-  
   toggleMenu() {
     this.menuOpen ? this.closeMenu() : this.openMenu();
   },
@@ -1811,10 +1531,49 @@ const GalleryApp = {
     }
   },
   
-  showPopup(item) {
+  showPopup(box) {
     const popup = document.getElementById('popup');
     const popupContent = document.getElementById('popup-content');
-    popupContent.innerHTML = item.userData ? item.userData.popup : item.popup || '';
+    
+    if (CONFIG.IS_MOBILE && box.userData.isMobileCategory) {
+      const cat = box.userData.categoryData;
+      
+      fetch('assets/gallery.json')
+        .then(res => res.json())
+        .then(allItems => {
+          const items = allItems.filter(item => item.category === cat.category);
+          
+          let html = '<div class="popup-images-scroll">';
+          
+          items.forEach(item => {
+            const src = item.thumbnail || item.src;
+            
+            if (src.toLowerCase().endsWith('.mp4') || src.toLowerCase().endsWith('.webm')) {
+              if (item.vimeoUrl) {
+                const vimeoMatch = item.vimeoUrl.match(/vimeo\.com\/(\d+)/);
+                if (vimeoMatch) {
+                  const videoId = vimeoMatch[1];
+                  html += `<iframe src="https://player.vimeo.com/video/${videoId}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+                }
+              } else {
+                html += `<video src="${src}" controls playsinline></video>`;
+              }
+            } else {
+              html += `<img src="${src}">`;
+            }
+          });
+          
+          html += '</div>';
+          popupContent.innerHTML = html;
+        })
+        .catch(err => {
+          console.error('Failed to load gallery JSON:', err);
+          popupContent.innerHTML = '<div class="popup-images-scroll"><p style="color:#fff;text-align:center;padding:40px;">Failed to load content</p></div>';
+        });
+    } else {
+      popupContent.innerHTML = box.userData.popup || '';
+    }
+    
     popup.style.display = 'flex';
     this.popupVisible = true;
     
@@ -1830,19 +1589,6 @@ const GalleryApp = {
     
     if (!CONFIG.IS_MOBILE && !this.menuOpen) {
       document.body.requestPointerLock();
-    }
-  },
-  
-  openImageModal(imgElem) {
-    event.stopPropagation();
-    document.getElementById('modal-img').src = imgElem.src;
-    document.getElementById('image-modal').style.display = 'flex';
-  },
-  
-  closeImageModal(event) {
-    if (event.target.id === 'image-modal' || event.target.className === 'modal-close-btn') {
-      document.getElementById('image-modal').style.display = 'none';
-      document.getElementById('modal-img').src = '';
     }
   },
   
