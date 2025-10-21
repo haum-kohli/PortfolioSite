@@ -1001,263 +1001,263 @@ const SceneManager = {
     });
   },
   
-  loadGallery() {
+ loadGallery() {
+  fetch('assets/gallery.json')
+    .then(res => res.json())
+    .then(items => {
+      // Skip videos on mobile
       if (CONFIG.IS_MOBILE) {
-    fetch('assets/gallery.json')
-      .then(res => res.json())
-      .then(items => {
         items = items.filter(item => {
           const isVideo = item.type === 'video' || (item.src && (
             item.src.endsWith('.mp4') || 
             item.src.endsWith('.webm') || 
             item.src.endsWith('.ogv')
           ));
-          return !isVideo; // Skip all videos on mobile
+          return !isVideo;
         });
-    fetch('assets/gallery.json')
-      .then(res => res.json())
-      .then(items => {
-        // Count total assets for loading
-        let totalAssets = items.length;
-        LoadingManager.setTotal(totalAssets);
+      }
+      
+      // Count total assets for loading
+      let totalAssets = items.length;
+      LoadingManager.setTotal(totalAssets);
+      
+      const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
+      const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
+      let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
+      const loader = new THREE.TextureLoader();
+      
+      const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
+        const isVideo = item.type === 'video' || (item.src && (
+          item.src.endsWith('.mp4') || 
+          item.src.endsWith('.webm') || 
+          item.src.endsWith('.ogv')
+        ));
         
-        const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
-        const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
-        let globalIndex = 0, rowIndex = 0, ceilingRowIndex = 0, lastZ = 0;
-        const loader = new THREE.TextureLoader();
+        const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
         
-        const addBox = (item, x, y, z, maxDim, rotationY = 0, isCeiling = false) => {
-          const isVideo = item.type === 'video' || (item.src && (
-            item.src.endsWith('.mp4') || 
-            item.src.endsWith('.webm') || 
-            item.src.endsWith('.ogv')
-          ));
+        if (isVideo) {
+          const video = document.createElement('video');
+          video.src = item.type === 'video' ? item.thumbnail : item.src;
+          video.loop = true;
+          video.muted = true;
+          video.playsInline = true;
+          video.crossOrigin = 'anonymous';
+          video.className = 'hidden-video';
           
-          const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
-          
-          if (isVideo) {
-            const video = document.createElement('video');
-            video.src = item.type === 'video' ? item.thumbnail : item.src;
-            video.loop = true;
-            video.muted = true;
-            video.playsInline = true;
-            video.crossOrigin = 'anonymous';
-            video.className = 'hidden-video';
-            
-            if (CONFIG.IS_MOBILE) {
-  video.setAttribute('playsinline', '');
-  video.setAttribute('webkit-playsinline', '');
-  video.preload = 'metadata';
-  LoadingManager.increment();
-} else {
-              let videoCounted = false;
-              const markLoaded = () => {
-                if (!videoCounted) {
-                  videoCounted = true;
-                  LoadingManager.increment();
-                }
-              };
-              
-              video.addEventListener('canplay', markLoaded, { once: true });
-              video.addEventListener('loadedmetadata', markLoaded, { once: true });
-              video.addEventListener('error', markLoaded, { once: true });
-              setTimeout(markLoaded, 3000);
-            }
-            
-     document.getElementById('hidden-videos-container').appendChild(video);
-if (!CONFIG.IS_MOBILE) {
-  video.play().catch(() => {
-    document.body.addEventListener("click", () => video.play().catch(() => {}), { once: true });
-  });
-}
-            
-            const videoTexture = new THREE.VideoTexture(video);
-            videoTexture.minFilter = THREE.LinearFilter;
-            videoTexture.magFilter = THREE.LinearFilter;
-            videoTexture.format = THREE.RGBFormat;
-            
-            this.videos.push(video);
-            
-            const aspect = video.videoWidth && video.videoHeight 
-              ? video.videoWidth / video.videoHeight 
-              : 16 / 9;
-            
-            let boxWidth, boxHeight;
-            if (aspect >= 1) {
-              boxWidth = maxDim;
-              boxHeight = maxDim / aspect;
-            } else {
-              boxHeight = maxDim;
-              boxWidth = maxDim * aspect;
-            }
-            
-const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-const material = new THREE.MeshStandardMaterial({ 
-  map: videoTexture,
-  color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff,
-  side: THREE.DoubleSide
-});
-            const box = new THREE.Mesh(geometry, material);
-            
-            if (isCeiling) {
-              box.position.set(x, y, z);
-              box.rotation.x = -Math.PI / 2;
-            } else {
-              box.position.set(x, y + boxHeight / 2, z);
-              box.rotation.y = rotationY;
-            }
-            
-            if (!CONFIG.IS_MOBILE) {
-              box.castShadow = true;
-              box.receiveShadow = true;
-            }
-            
-            box.userData.galleryItem = item;
-            box.userData.popup = item.vimeoUrl 
-              ? `<div class="popup-images-scroll"><iframe src="https://player.vimeo.com/video/${item.vimeoUrl.match(/vimeo\.com\/(\d+)/)[1]}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" title="${item.title || ''}"></iframe></div>`
-              : `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop></video></div>`;
-            this.scene.add(box);
-            this.boxes.push(box);
-            
-          } else if (isGif) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 512;
-            canvas.height = 512;
-            
-            try {
-              gifler(item.src).get((anim) => {
-                canvas.width = anim.width;
-                canvas.height = anim.height;
-                
-                const texture = new THREE.CanvasTexture(canvas);
-                const aspect = anim.width / anim.height;
-                
-                let boxWidth, boxHeight;
-                if (aspect >= 1) {
-                  boxWidth = maxDim;
-                  boxHeight = maxDim / aspect;
-                } else {
-                  boxHeight = maxDim;
-                  boxWidth = maxDim * aspect;
-                }
-                
-          const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-                const box = new THREE.Mesh(geometry, material);
-                
-                if (isCeiling) {
-                  box.position.set(x, y, z);
-                  box.rotation.x = -Math.PI / 2;
-                } else {
-                  box.position.set(x, y + boxHeight / 2, z);
-                  box.rotation.y = rotationY;
-                }
-                
-                if (!CONFIG.IS_MOBILE) {
-                  box.castShadow = true;
-                  box.receiveShadow = true;
-                }
-                
-                box.userData.galleryItem = item;
-                box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
-                this.scene.add(box);
-                this.boxes.push(box);
-                
-                this.gifAnimations.push(anim);
-                anim.animateInCanvas(canvas);
-                
-                let animationRunning = true;
-                const updateTexture = () => {
-                  if (animationRunning && !GalleryApp.menuOpen) {
-                    texture.needsUpdate = true;
-                  }
-                  requestAnimationFrame(updateTexture);
-                };
-                updateTexture();
-                
-                anim.stop = () => { animationRunning = false; };
-                anim.play = () => { animationRunning = true; };
-                
-                LoadingManager.increment();
-              }).catch(() => LoadingManager.increment());
-            } catch (e) {
-              LoadingManager.increment();
-            }
-            
+          if (CONFIG.IS_MOBILE) {
+            video.setAttribute('playsinline', '');
+            video.setAttribute('webkit-playsinline', '');
+            video.preload = 'metadata';
+            LoadingManager.increment();
           } else {
-            loader.load(
-              item.src,
-              texture => {
-                const aspect = texture.image.width / texture.image.height;
-                let boxWidth, boxHeight;
-                if (aspect >= 1) {
-                  boxWidth = maxDim;
-                  boxHeight = maxDim / aspect;
-                } else {
-                  boxHeight = maxDim;
-                  boxWidth = maxDim * aspect;
-                }
-                
-const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-                const box = new THREE.Mesh(geometry, material);
-                
-                if (isCeiling) {
-                  box.position.set(x, y, z);
-                  box.rotation.x = -Math.PI / 2;
-                } else {
-                  box.position.set(x, y + boxHeight / 2, z);
-                  box.rotation.y = rotationY;
-                }
-                
-                if (!CONFIG.IS_MOBILE) {
-                  box.castShadow = true;
-                  box.receiveShadow = true;
-                }
-                
-                box.userData.galleryItem = item;
-                box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
-                this.scene.add(box);
-                this.boxes.push(box);
-                
+            let videoCounted = false;
+            const markLoaded = () => {
+              if (!videoCounted) {
+                videoCounted = true;
                 LoadingManager.increment();
-              },
-              undefined,
-              () => LoadingManager.increment()
-            );
+              }
+            };
+            
+            video.addEventListener('canplay', markLoaded, { once: true });
+            video.addEventListener('loadedmetadata', markLoaded, { once: true });
+            video.addEventListener('error', markLoaded, { once: true });
+            setTimeout(markLoaded, 3000);
           }
-        };
-        
-        while (globalIndex < items.length) {
-          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-            const item = items[globalIndex];
-            const currentZ = rowIndex * rowSpacing + zOffset;
-            lastZ = Math.max(lastZ, currentZ);
-            addBox(item, leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+          
+          document.getElementById('hidden-videos-container').appendChild(video);
+          if (!CONFIG.IS_MOBILE) {
+            video.play().catch(() => {
+              document.body.addEventListener("click", () => video.play().catch(() => {}), { once: true });
+            });
           }
-          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-            const item = items[globalIndex];
-            const currentZ = rowIndex * rowSpacing + zOffset;
-            lastZ = Math.max(lastZ, currentZ);
-            addBox(item, rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+          
+          const videoTexture = new THREE.VideoTexture(video);
+          videoTexture.minFilter = THREE.LinearFilter;
+          videoTexture.magFilter = THREE.LinearFilter;
+          videoTexture.format = THREE.RGBFormat;
+          
+          this.videos.push(video);
+          
+          const aspect = video.videoWidth && video.videoHeight 
+            ? video.videoWidth / video.videoHeight 
+            : 16 / 9;
+          
+          let boxWidth, boxHeight;
+          if (aspect >= 1) {
+            boxWidth = maxDim;
+            boxHeight = maxDim / aspect;
+          } else {
+            boxHeight = maxDim;
+            boxWidth = maxDim * aspect;
           }
-          rowIndex++;
-          for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
-            const item = items[globalIndex];
-            const z = ceilingRowIndex * ceilingZSpacing + zOffset;
-            lastZ = Math.max(lastZ, z);
-            addBox(item, ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
+          
+          const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+          const material = new THREE.MeshStandardMaterial({ 
+            map: videoTexture,
+            color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff,
+            side: THREE.DoubleSide
+          });
+          const box = new THREE.Mesh(geometry, material);
+          
+          if (isCeiling) {
+            box.position.set(x, y, z);
+            box.rotation.x = -Math.PI / 2;
+          } else {
+            box.position.set(x, y + boxHeight / 2, z);
+            box.rotation.y = rotationY;
           }
-          ceilingRowIndex++;
+          
+          if (!CONFIG.IS_MOBILE) {
+            box.castShadow = true;
+            box.receiveShadow = true;
+          }
+          
+          box.userData.galleryItem = item;
+          box.userData.popup = item.vimeoUrl 
+            ? `<div class="popup-images-scroll"><iframe src="https://player.vimeo.com/video/${item.vimeoUrl.match(/vimeo\.com\/(\d+)/)[1]}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" title="${item.title || ''}"></iframe></div>`
+            : `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop></video></div>`;
+          this.scene.add(box);
+          this.boxes.push(box);
+          
+        } else if (isGif) {
+          const canvas = document.createElement('canvas');
+          canvas.width = 512;
+          canvas.height = 512;
+          
+          try {
+            gifler(item.src).get((anim) => {
+              canvas.width = anim.width;
+              canvas.height = anim.height;
+              
+              const texture = new THREE.CanvasTexture(canvas);
+              const aspect = anim.width / anim.height;
+              
+              let boxWidth, boxHeight;
+              if (aspect >= 1) {
+                boxWidth = maxDim;
+                boxHeight = maxDim / aspect;
+              } else {
+                boxHeight = maxDim;
+                boxWidth = maxDim * aspect;
+              }
+              
+              const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+              const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+              const box = new THREE.Mesh(geometry, material);
+              
+              if (isCeiling) {
+                box.position.set(x, y, z);
+                box.rotation.x = -Math.PI / 2;
+              } else {
+                box.position.set(x, y + boxHeight / 2, z);
+                box.rotation.y = rotationY;
+              }
+              
+              if (!CONFIG.IS_MOBILE) {
+                box.castShadow = true;
+                box.receiveShadow = true;
+              }
+              
+              box.userData.galleryItem = item;
+              box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+              this.scene.add(box);
+              this.boxes.push(box);
+              
+              this.gifAnimations.push(anim);
+              anim.animateInCanvas(canvas);
+              
+              let animationRunning = true;
+              const updateTexture = () => {
+                if (animationRunning && !GalleryApp.menuOpen) {
+                  texture.needsUpdate = true;
+                }
+                requestAnimationFrame(updateTexture);
+              };
+              updateTexture();
+              
+              anim.stop = () => { animationRunning = false; };
+              anim.play = () => { animationRunning = true; };
+              
+              LoadingManager.increment();
+            }).catch(() => LoadingManager.increment());
+          } catch (e) {
+            LoadingManager.increment();
+          }
+          
+        } else {
+          loader.load(
+            item.src,
+            texture => {
+              const aspect = texture.image.width / texture.image.height;
+              let boxWidth, boxHeight;
+              if (aspect >= 1) {
+                boxWidth = maxDim;
+                boxHeight = maxDim / aspect;
+              } else {
+                boxHeight = maxDim;
+                boxWidth = maxDim * aspect;
+              }
+              
+              const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+              const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+              const box = new THREE.Mesh(geometry, material);
+              
+              if (isCeiling) {
+                box.position.set(x, y, z);
+                box.rotation.x = -Math.PI / 2;
+              } else {
+                box.position.set(x, y + boxHeight / 2, z);
+                box.rotation.y = rotationY;
+              }
+              
+              if (!CONFIG.IS_MOBILE) {
+                box.castShadow = true;
+                box.receiveShadow = true;
+              }
+              
+              box.userData.galleryItem = item;
+              box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+              this.scene.add(box);
+              this.boxes.push(box);
+              
+              LoadingManager.increment();
+            },
+            undefined,
+            () => LoadingManager.increment()
+          );
         }
-        
-        this.extendRoom(lastZ + 30);
-      })
-      .catch(err => {
-        console.error('Failed to load gallery JSON', err);
-        LoadingManager.complete();
-      });
-  },
+      };
+      
+      while (globalIndex < items.length) {
+        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+          const item = items[globalIndex];
+          const currentZ = rowIndex * rowSpacing + zOffset;
+          lastZ = Math.max(lastZ, currentZ);
+          addBox(item, leftX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+        }
+        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+          const item = items[globalIndex];
+          const currentZ = rowIndex * rowSpacing + zOffset;
+          lastZ = Math.max(lastZ, currentZ);
+          addBox(item, rightX, 6 + j * (maxDimension + 2), currentZ, maxDimension, Math.PI / 2);
+        }
+        rowIndex++;
+        for (let j = 0; j < 2 && globalIndex < items.length; j++, globalIndex++) {
+          const item = items[globalIndex];
+          const z = ceilingRowIndex * ceilingZSpacing + zOffset;
+          lastZ = Math.max(lastZ, z);
+          addBox(item, ceilingX[j % 2], ceilingYOffset, z, maxDimension, -Math.PI / 2, true);
+        }
+        ceilingRowIndex++;
+      }
+      
+      this.extendRoom(lastZ + 30);
+    })
+    .catch(err => {
+      console.error('Failed to load gallery JSON', err);
+      LoadingManager.complete();
+    });
+},
   
   pauseAllAnimations() {
     this.videos.forEach(video => {
