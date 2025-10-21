@@ -1002,6 +1002,18 @@ const SceneManager = {
   },
   
   loadGallery() {
+      if (CONFIG.IS_MOBILE) {
+    fetch('assets/gallery.json')
+      .then(res => res.json())
+      .then(items => {
+        items = items.filter(item => {
+          const isVideo = item.type === 'video' || (item.src && (
+            item.src.endsWith('.mp4') || 
+            item.src.endsWith('.webm') || 
+            item.src.endsWith('.ogv')
+          ));
+          return !isVideo; // Skip all videos on mobile
+        });
     fetch('assets/gallery.json')
       .then(res => res.json())
       .then(items => {
@@ -1033,11 +1045,11 @@ const SceneManager = {
             video.className = 'hidden-video';
             
             if (CONFIG.IS_MOBILE) {
-              video.setAttribute('playsinline', '');
-              video.setAttribute('webkit-playsinline', '');
-              LoadingManager.increment();
-              video.load();
-            } else {
+  video.setAttribute('playsinline', '');
+  video.setAttribute('webkit-playsinline', '');
+  video.preload = 'metadata';
+  LoadingManager.increment();
+} else {
               let videoCounted = false;
               const markLoaded = () => {
                 if (!videoCounted) {
@@ -1052,10 +1064,12 @@ const SceneManager = {
               setTimeout(markLoaded, 3000);
             }
             
-            document.getElementById('hidden-videos-container').appendChild(video);
-            video.play().catch(() => {
-              document.body.addEventListener("click", () => video.play().catch(() => {}), { once: true });
-            });
+     document.getElementById('hidden-videos-container').appendChild(video);
+if (!CONFIG.IS_MOBILE) {
+  video.play().catch(() => {
+    document.body.addEventListener("click", () => video.play().catch(() => {}), { once: true });
+  });
+}
             
             const videoTexture = new THREE.VideoTexture(video);
             videoTexture.minFilter = THREE.LinearFilter;
