@@ -1052,16 +1052,15 @@ const SceneManager = {
         return res.json();
       })
       .then(items => {
+        // On mobile, filter out items with video thumbnails for performance
         if (CONFIG.IS_MOBILE) {
           items = items.filter(item => {
-            const isVideo = item.type === 'video' || 
-                           item.vimeoUrl || 
-                           (item.src && (
-                             item.src.toLowerCase().endsWith('.mp4') || 
-                             item.src.toLowerCase().endsWith('.webm') || 
-                             item.src.toLowerCase().endsWith('.ogv')
-                           ));
-            return !isVideo;
+            const hasVideoThumbnail = item.src && (
+              item.src.toLowerCase().endsWith('.mp4') || 
+              item.src.toLowerCase().endsWith('.webm') || 
+              item.src.toLowerCase().endsWith('.ogv')
+            );
+            return !hasVideoThumbnail;
           });
           
           if (items.length > CONFIG.MAX_MOBILE_ITEMS) {
@@ -1152,28 +1151,23 @@ const SceneManager = {
   addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
-    // Check if it's a video - include all video detection logic
-    const isVideo = item.type === 'video' || 
-                   item.vimeoUrl || 
-                   (item.src && (
-                     item.src.toLowerCase().endsWith('.mp4') || 
-                     item.src.toLowerCase().endsWith('.webm') || 
-                     item.src.toLowerCase().endsWith('.ogv')
-                   ));
+    // Check if item has a video thumbnail (src) - these are the small preview videos
+    const hasVideoThumbnail = item.src && (
+      item.src.toLowerCase().endsWith('.mp4') || 
+      item.src.toLowerCase().endsWith('.webm') || 
+      item.src.toLowerCase().endsWith('.ogv')
+    );
     
-    // Separate check for Vimeo
-    const isVimeo = item.vimeoUrl;
+    const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
     
-    // Filter videos on mobile ONLY
-    if (CONFIG.IS_MOBILE && isVideo) {
+    // Skip video thumbnails on mobile for performance
+    if (CONFIG.IS_MOBILE && hasVideoThumbnail) {
       if (countForLoading) LoadingManager.increment();
       return;
     }
     
-    const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
-    
-    // Handle VIDEO files (not Vimeo embeds)
-    if (isVideo && !isVimeo && item.src) {
+    // Handle VIDEO THUMBNAILS (these play on the wall, click opens Vimeo embed)
+    if (hasVideoThumbnail) {
       const video = document.createElement('video');
       video.src = item.src;
       video.loop = true;
@@ -1212,9 +1206,13 @@ const SceneManager = {
         box.receiveShadow = true;
         
         box.userData.galleryItem = item;
-        box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
+        // If item has vimeoUrl, clicking opens the Vimeo embed. Otherwise, show the video.
+        if (item.vimeoUrl) {
+          box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+        } else {
+          box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
+        }
         box.userData.video = video;
-        box.userData.isVideo = true;
         
         this.scene.add(box);
         this.boxes.push(box);
@@ -1224,66 +1222,16 @@ const SceneManager = {
         
         if (countForLoading) LoadingManager.increment();
         
-        console.log('Video loaded successfully:', item.src);
+        console.log('Video thumbnail loaded:', item.src, 'Opens:', item.vimeoUrl || 'self');
       });
       
       video.addEventListener('error', (e) => {
-        console.error('Video load error:', item.src, e);
+        console.error('Video thumbnail load error:', item.src, e);
         if (countForLoading) LoadingManager.increment();
       });
       
       video.load();
       
-      return;
-    }
-    
-    // Handle VIMEO embeds
-    if (isVimeo) {
-      const aspect = 16 / 9;
-      let boxWidth, boxHeight;
-      if (aspect >= 1) {
-        boxWidth = maxDim;
-        boxHeight = maxDim / aspect;
-      } else {
-        boxHeight = maxDim;
-        boxWidth = maxDim * aspect;
-      }
-      
-      const canvas = document.createElement('canvas');
-      canvas.width = 512;
-      canvas.height = 512;
-      const ctx = canvas.getContext('2d');
-      ctx.fillStyle = '#1a1a1a';
-      ctx.fillRect(0, 0, 512, 512);
-      ctx.fillStyle = '#00adef';
-      ctx.font = 'bold 48px Arial';
-      ctx.textAlign = 'center';
-      ctx.textBaseline = 'middle';
-      ctx.fillText('VIMEO', 256, 256);
-      
-      const texture = new THREE.CanvasTexture(canvas);
-      const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-      const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-      const box = new THREE.Mesh(geometry, material);
-      
-      if (isCeiling) {
-        box.position.set(x, y, z);
-        box.rotation.x = -Math.PI / 2;
-      } else {
-        box.position.set(x, y + boxHeight / 2, z);
-        box.rotation.y = rotationY;
-      }
-      
-      box.castShadow = true;
-      box.receiveShadow = true;
-      
-      box.userData.galleryItem = item;
-      box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
-      
-      this.scene.add(box);
-      this.boxes.push(box);
-      
-      if (countForLoading) LoadingManager.increment();
       return;
     }
     
