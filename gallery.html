@@ -1159,23 +1159,39 @@ const SceneManager = {
     );
     
     const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
+    const isImage = item.src && !hasVideoThumbnail && !isGif;
+    
+    console.log('Processing item:', {
+      src: item.src,
+      vimeoUrl: item.vimeoUrl,
+      hasVideoThumbnail,
+      isGif,
+      isImage,
+      isMobile: CONFIG.IS_MOBILE
+    });
     
     // Skip video thumbnails on mobile for performance
     if (CONFIG.IS_MOBILE && hasVideoThumbnail) {
+      console.log('Skipping video on mobile:', item.src);
       if (countForLoading) LoadingManager.increment();
       return;
     }
     
     // Handle VIDEO THUMBNAILS (these play on the wall, click opens Vimeo embed)
     if (hasVideoThumbnail) {
+      console.log('Loading video thumbnail:', item.src);
+      
       const video = document.createElement('video');
       video.src = item.src;
       video.loop = true;
       video.muted = true;
       video.playsInline = true;
       video.crossOrigin = 'anonymous';
+      video.preload = 'auto';
       
-      video.addEventListener('loadedmetadata', () => {
+      const handleMetadata = () => {
+        console.log('Video metadata loaded:', item.src, video.videoWidth, 'x', video.videoHeight);
+        
         const aspect = video.videoWidth / video.videoHeight;
         let boxWidth, boxHeight;
         if (aspect >= 1) {
@@ -1189,9 +1205,15 @@ const SceneManager = {
         const texture = new THREE.VideoTexture(video);
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
+        texture.format = THREE.RGBFormat;
         
         const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-        const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+        const material = new THREE.MeshStandardMaterial({ 
+          map: texture, 
+          side: THREE.DoubleSide,
+          emissive: 0x222222,
+          emissiveIntensity: 0.2
+        });
         const box = new THREE.Mesh(geometry, material);
         
         if (isCeiling) {
@@ -1202,15 +1224,19 @@ const SceneManager = {
           box.rotation.y = rotationY;
         }
         
-        box.castShadow = true;
-        box.receiveShadow = true;
+        if (!CONFIG.IS_MOBILE) {
+          box.castShadow = true;
+          box.receiveShadow = true;
+        }
         
         box.userData.galleryItem = item;
         // If item has vimeoUrl, clicking opens the Vimeo embed. Otherwise, show the video.
         if (item.vimeoUrl) {
           box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
+          console.log('Video will open Vimeo embed:', item.vimeoUrl);
         } else {
           box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
+          console.log('Video will open self in popup');
         }
         box.userData.video = video;
         
@@ -1218,18 +1244,31 @@ const SceneManager = {
         this.boxes.push(box);
         this.videos.push(video);
         
-        video.play().catch(e => console.warn('Video autoplay failed:', e));
+        console.log('Video box added to scene at position:', x, y + boxHeight / 2, z);
+        
+        video.play().catch(e => {
+          console.warn('Video autoplay failed (this is normal):', e);
+          // Try playing again after a short delay
+          setTimeout(() => video.play().catch(() => {}), 100);
+        });
         
         if (countForLoading) LoadingManager.increment();
-        
-        console.log('Video thumbnail loaded:', item.src, 'Opens:', item.vimeoUrl || 'self');
-      });
+      };
       
-      video.addEventListener('error', (e) => {
-        console.error('Video thumbnail load error:', item.src, e);
+      const handleError = (e) => {
+        console.error('Video thumbnail load error:', item.src, e, video.error);
         if (countForLoading) LoadingManager.increment();
-      });
+      };
       
+      const handleCanPlay = () => {
+        console.log('Video can play:', item.src);
+      };
+      
+      video.addEventListener('loadedmetadata', handleMetadata);
+      video.addEventListener('error', handleError);
+      video.addEventListener('canplay', handleCanPlay);
+      
+      // Start loading
       video.load();
       
       return;
