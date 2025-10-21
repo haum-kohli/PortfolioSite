@@ -971,7 +971,7 @@ const SceneManager = {
   createCheckeredTexture(size = 1024, squares = 32) {
     // Smaller textures on mobile
     if (CONFIG.IS_MOBILE) {
-      size = 256;
+      size = 512;
       squares = 16;
     }
     
@@ -986,7 +986,11 @@ const SceneManager = {
       }
     }
     const texture = new THREE.CanvasTexture(canvas);
-    texture.generateMipmaps = false;
+    if (CONFIG.IS_MOBILE) {
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+    }
     return texture;
   },
   
@@ -1012,7 +1016,15 @@ const SceneManager = {
     texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
     texture.repeat.set(2, 2);
     
-    const wall = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ map: texture, side: THREE.DoubleSide }));
+    const wall = new THREE.Mesh(
+      geometry, 
+      new THREE.MeshStandardMaterial({ 
+        map: texture, 
+        side: THREE.DoubleSide,
+        metalness: 0,
+        roughness: 1
+      })
+    );
     wall.position.set(...position);
     if (rotation) wall.rotation.set(...rotation);
     wall.userData.type = 'floorOrWall';
@@ -1038,10 +1050,17 @@ const SceneManager = {
     tex.repeat.set(2, Math.max(1, newLength / 50));
     const floor = new THREE.Mesh(
       floorGeo,
-      new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide })
+      new THREE.MeshStandardMaterial({ 
+        map: tex, 
+        side: THREE.DoubleSide,
+        metalness: 0,
+        roughness: 1
+      })
     );
     floor.position.set(0, 4, newLength / 2);
-    floor.receiveShadow = true;
+    if (!CONFIG.IS_MOBILE) {
+      floor.receiveShadow = true;
+    }
     floor.userData.type = 'floorOrWall';
     this.scene.add(floor);
     this.objects.push(floor);
@@ -1054,6 +1073,9 @@ const SceneManager = {
     ];
     
     walls.forEach(w => {
+      if (!CONFIG.IS_MOBILE) {
+        w.receiveShadow = true;
+      }
       this.scene.add(w);
       this.objects.push(w);
     });
@@ -1221,13 +1243,18 @@ const SceneManager = {
         texture.minFilter = THREE.LinearFilter;
         texture.magFilter = THREE.LinearFilter;
         texture.format = THREE.RGBFormat;
+        if (CONFIG.IS_MOBILE) {
+          texture.generateMipmaps = false;
+        }
         
         const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
         const material = new THREE.MeshStandardMaterial({ 
           map: texture, 
           side: THREE.DoubleSide,
           emissive: 0x222222,
-          emissiveIntensity: 0.2
+          emissiveIntensity: 0.2,
+          metalness: 0,
+          roughness: 1
         });
         const box = new THREE.Mesh(geometry, material);
         
