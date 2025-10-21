@@ -585,8 +585,8 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
   MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
-  MAX_MOBILE_GIFS: IS_MOBILE ? 3 : 999, // Reduced to 3 for stability
-  MAX_MOBILE_ITEMS: IS_MOBILE ? 20 : 999, // Add total item limit
+  MAX_MOBILE_GIFS: IS_MOBILE ? 10 : 999, // Allow 10 GIFs on mobile
+  MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999, // No item limit - only filter videos
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
