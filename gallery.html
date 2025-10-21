@@ -586,10 +586,12 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
   MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 250 : 700,
-  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 250 : 999,
+  MOBILE_LOAD_DISTANCE: IS_MOBILE ? 300 : 999,
   MAX_MOBILE_GIFS: IS_MOBILE ? 15 : 999,
   MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999,
-  INITIAL_MOBILE_LOAD: IS_MOBILE ? 999 : 999, // Load all on mobile now
+  INITIAL_MOBILE_LOAD: IS_MOBILE ? 30 : 999, // Load first 30 immediately
+  BATCH_LOAD_SIZE: IS_MOBILE ? 5 : 999, // Load 5 at a time after initial
+  BATCH_LOAD_INTERVAL: IS_MOBILE ? 200 : 0, // Load batch every 200ms
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -908,6 +910,8 @@ const SceneManager = {
   gifCount: 0,
   pendingItems: [],
   loadedItemPositions: new Set(),
+  batchLoadInterval: null,
+  currentBatchIndex: 0,
   
   init() {
     this.camera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 1, 1000);
@@ -1123,19 +1127,34 @@ const SceneManager = {
           tempCeilingRowIndex++;
         }
         
-        // Store all items for loading (no lazy load)
-        this.pendingItems = [];
+        // Store all items - sort by distance from start for progressive loading
+        this.pendingItems = [...itemPositions].sort((a, b) => a.z - b.z);
         
-        const initialLoadCount = itemPositions.length;
+        const initialLoadCount = CONFIG.IS_MOBILE ? Math.min(CONFIG.INITIAL_MOBILE_LOAD, itemPositions.length) : itemPositions.length;
         
+        // Load initial batch
         for (let i = 0; i < initialLoadCount; i++) {
           const pos = itemPositions[i];
           this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, true);
+          this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
+        }
+        
+        if (CONFIG.IS_MOBILE) {
+          this.pendingItems = this.pendingItems.slice(initialLoadCount);
+          this.currentBatchIndex = initialLoadCount;
+          
+          // Start progressive batch loading after initial load
+          if (this.pendingItems.length > 0) {
+            console.log(`Initial ${initialLoadCount} loaded. Will load ${this.pendingItems.length} more in batches.`);
+            this.startBatchLoading();
+          }
+        } else {
+          this.pendingItems = [];
         }
         
         this.extendRoom(lastZ + 30);
         
-        console.log(`Loaded all ${initialLoadCount} items`);
+        console.log(`Gallery ready: ${initialLoadCount} items loaded`);
       })
       .catch(err => {
         console.error('Gallery load failed:', err);
@@ -1419,6 +1438,39 @@ const SceneManager = {
     }
   },
   
+  startBatchLoading() {
+    if (!CONFIG.IS_MOBILE || this.pendingItems.length === 0) return;
+    
+    // Clear any existing interval
+    if (this.batchLoadInterval) {
+      clearInterval(this.batchLoadInterval);
+    }
+    
+    // Load batches progressively in the background
+    this.batchLoadInterval = setInterval(() => {
+      if (this.pendingItems.length === 0) {
+        clearInterval(this.batchLoadInterval);
+        this.batchLoadInterval = null;
+        console.log('All items loaded!');
+        return;
+      }
+      
+      // Load next batch
+      const batchSize = Math.min(CONFIG.BATCH_LOAD_SIZE, this.pendingItems.length);
+      const batch = this.pendingItems.splice(0, batchSize);
+      
+      batch.forEach(pos => {
+        const posKey = `${pos.x},${pos.y},${pos.z}`;
+        if (!this.loadedItemPositions.has(posKey)) {
+          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, false);
+          this.loadedItemPositions.add(posKey);
+        }
+      });
+      
+      console.log(`Batch loaded: ${batchSize} items, ${this.pendingItems.length} remaining`);
+    }, CONFIG.BATCH_LOAD_INTERVAL);
+  },
+  
   pauseAllAnimations() {
     this.gifAnimations.forEach(anim => {
       if (anim.stop) anim.stop();
@@ -1438,6 +1490,12 @@ const SceneManager = {
   },
   
   cleanup() {
+    // Stop batch loading
+    if (this.batchLoadInterval) {
+      clearInterval(this.batchLoadInterval);
+      this.batchLoadInterval = null;
+    }
+    
     this.boxes.forEach(box => {
       if (box.geometry) box.geometry.dispose();
       if (box.material) {
