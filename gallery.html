@@ -924,10 +924,11 @@ const SceneManager = {
     
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+    // Much lighter fog on mobile
+    this.scene.fog = new THREE.Fog(0xff00ff, 50, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
     
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
-    this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
+    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, CONFIG.IS_MOBILE ? 0.3 : 0.5));
+    this.scene.add(new THREE.AmbientLight(0xffffff, CONFIG.IS_MOBILE ? 0.4 : 0.5));
     
     if (!CONFIG.IS_MOBILE) {
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
@@ -946,10 +947,11 @@ const SceneManager = {
     this.scene.add(this.yaw);
     
     this.renderer = new THREE.WebGLRenderer({ 
-      antialias: !CONFIG.IS_MOBILE,
-      powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance"
+      antialias: false, // Disable antialiasing on all devices for performance
+      powerPreference: CONFIG.IS_MOBILE ? "low-power" : "high-performance",
+      precision: CONFIG.IS_MOBILE ? 'lowp' : 'highp'
     });
-    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 0.75 : window.devicePixelRatio);
+    this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 0.6 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     
     if (!CONFIG.IS_MOBILE) {
@@ -967,6 +969,12 @@ const SceneManager = {
   },
   
   createCheckeredTexture(size = 1024, squares = 32) {
+    // Smaller textures on mobile
+    if (CONFIG.IS_MOBILE) {
+      size = 256;
+      squares = 16;
+    }
+    
     const canvas = document.createElement('canvas');
     canvas.width = canvas.height = size;
     const ctx = canvas.getContext('2d');
@@ -977,7 +985,9 @@ const SceneManager = {
         ctx.fillRect(x * s, y * s, s, s);
       }
     }
-    return new THREE.CanvasTexture(canvas);
+    const texture = new THREE.CanvasTexture(canvas);
+    texture.generateMipmaps = false;
+    return texture;
   },
   
   createDeformedGeometry(geometry, deformAmount = 10) {
@@ -1077,7 +1087,9 @@ const SceneManager = {
         LoadingManager.setTotal(CONFIG.IS_MOBILE ? CONFIG.INITIAL_MOBILE_LOAD : items.length);
         
         const rowSpacing = 60, leftX = -70, rightX = 70, ceilingYOffset = 90;
-        const ceilingX = [-30, 30], ceilingZSpacing = 50, maxDimension = 40, zOffset = 50;
+        const ceilingX = [-30, 30], ceilingZSpacing = 50;
+        const maxDimension = CONFIG.IS_MOBILE ? CONFIG.MOBILE_IMAGE_SIZE : 40;
+        const zOffset = 50;
         let lastZ = 0;
         
         const itemPositions = [];
@@ -1278,7 +1290,7 @@ const SceneManager = {
     // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
-      const maxCanvasSize = CONFIG.IS_MOBILE ? 256 : 1024;
+      const maxCanvasSize = CONFIG.IS_MOBILE ? 128 : 1024; // Even smaller GIF canvas
       canvas.width = maxCanvasSize;
       canvas.height = maxCanvasSize;
       
@@ -1320,7 +1332,10 @@ const SceneManager = {
           const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
           const material = new THREE.MeshStandardMaterial({ 
             map: texture, 
-            side: THREE.DoubleSide 
+            side: THREE.DoubleSide,
+            // Disable expensive features on mobile
+            metalness: 0,
+            roughness: 1
           });
           const box = new THREE.Mesh(geometry, material);
           
@@ -1405,7 +1420,12 @@ const SceneManager = {
           }
           
           const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-          const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
+          const material = new THREE.MeshStandardMaterial({ 
+            map: texture, 
+            side: THREE.DoubleSide,
+            metalness: 0,
+            roughness: 1
+          });
           const box = new THREE.Mesh(geometry, material);
           
           if (isCeiling) {
