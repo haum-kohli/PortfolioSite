@@ -1,202 +1,249 @@
 [
   {
     "src": "assets2/1hollisvinyl.webp",
-    "title": "Hollis Vinyl"
+    "title": "Hollis Vinyl",
+    "category": "misc"
   },
   {
     "src": "assets2/2hollisposter.webp",
-    "title": "Hollis Poster"
+    "title": "Hollis Poster",
+    "category": "posters"
   },
   {
     "src": "assets2/beachlife.webp",
-    "title": "Beach Life"
+    "title": "Beach Life",
+    "category": "posters"
   },
   {
     "src": "assets2/bigsteppers.webp",
-    "title": "Big Steppers"
+    "title": "Big Steppers",
+    "category": "posters"
   },
   {
     "type": "video",
     "thumbnail": "assets2/blobscut.mp4",
     "vimeoUrl": "https://vimeo.com/1128966951",
-    "title": "Blobs"
+    "title": "Blobs",
+    "category": "video"
   },
   {
     "src": "assets2/braidmain.webp",
-    "title": "Braid Main"
+    "title": "Braid Main",
+    "category": "posters"
   },
   {
     "src": "assets2/braidteaser.webp",
-    "title": "Braid Teaser"
+    "title": "Braid Teaser",
+    "category": "posters"
   },
   {
     "src": "assets2/cartimockup.webp",
-    "title": "Carti Mockup"
+    "title": "Carti Mockup",
+    "category": "misc"
   },
   {
     "src": "assets2/charlotte.webp",
-    "title": "Charlotte"
+    "title": "Charlotte",
+    "category": "photo"
   },
   {
     "type": "video",
     "thumbnail": "assets2/clockcut.mp4",
     "vimeoUrl": "https://vimeo.com/1128966475",
-    "title": "Clock"
+    "title": "Clock",
+    "category": "video"
   },
   {
     "src": "assets2/collageposters.webp",
-    "title": "Collage Posters"
+    "title": "Collage Posters",
+    "category": "posters"
   },
   {
     "src": "assets2/dance.webp",
-    "title": "Dance"
+    "title": "Dance",
+    "category": "photo"
   },
   {
     "src": "assets2/dance2.webp",
-    "title": "Dance 2"
+    "title": "Dance 2",
+    "category": "photo"
   },
   {
     "src": "assets2/dune.webp",
-    "title": "Dune"
+    "title": "Dune",
+    "category": "posters"
   },
   {
     "type": "video",
     "thumbnail": "assets2/frankcut.mp4",
     "vimeoUrl": "https://vimeo.com/1129026743",
-    "title": "Frank Miyazaki"
+    "title": "Frank Miyazaki",
+    "category": "video"
   },
   {
     "src": "assets2/halloweenmockup.webp",
-    "title": "Halloween Mockup"
+    "title": "Halloween Mockup",
+    "category": "misc"
   },
   {
     "src": "assets2/heliotrope.webp",
-    "title": "Heliotrope"
+    "title": "Heliotrope",
+    "category": "photo"
   },
   {
     "src": "assets2/heliotrope2.webp",
-    "title": "Heliotrope 2"
+    "title": "Heliotrope 2",
+    "category": "photo"
   },
   {
     "src": "assets2/heliotrope3.webp",
-    "title": "Heliotrope 3"
+    "title": "Heliotrope 3",
+    "category": "photo"
   },
   {
     "type": "video",
     "thumbnail": "assets2/holliscut.mp4",
     "vimeoUrl": "https://vimeo.com/1129024390",
-    "title": "Hollis"
+    "title": "Hollis",
+    "category": "video"
   },
   {
     "src": "assets2/ken.webp",
-    "title": "Ken"
+    "title": "Ken",
+    "category": "posters"
   },
   {
     "src": "assets2/lookdown.webp",
-    "title": "Look Down"
+    "title": "Look Down",
+    "category": "photo"
   },
   {
     "src": "assets2/lookup.webp",
-    "title": "Look Up"
+    "title": "Look Up",
+    "category": "photo"
   },
   {
     "src": "assets2/maliciousmade.webp",
-    "title": "Malicious Made"
+    "title": "Malicious Made",
+    "category": "misc"
   },
   {
     "src": "assets2/max.webp",
-    "title": "Max"
+    "title": "Max",
+    "category": "photo"
   },
   {
     "src": "assets2/maxi1.webp",
-    "title": "Maxi 1"
+    "title": "Maxi 1",
+    "category": "photo"
   },
   {
     "src": "assets2/maxi2.webp",
-    "title": "Maxi 2"
+    "title": "Maxi 2",
+    "category": "photo"
   },
   {
     "src": "assets2/mfdoom.webp",
-    "title": "MF DOOM"
+    "title": "MF DOOM",
+    "category": "posters"
   },
   {
     "src": "assets2/nas.webp",
-    "title": "Nas"
+    "title": "Nas",
+    "category": "posters"
   },
   {
     "src": "assets2/peggy.webp",
-    "title": "Peggy"
+    "title": "Peggy",
+    "category": "posters"
   },
   {
     "src": "assets2/reevox1.webp",
-    "title": "Reevox 1"
+    "title": "Reevox 1",
+    "category": "misc"
   },
   {
     "src": "assets2/reevox2.webp",
-    "title": "Reevox 2"
+    "title": "Reevox 2",
+    "category": "misc"
   },
   {
     "src": "assets2/reevox4.webp",
-    "title": "Reevox 4"
+    "title": "Reevox 4",
+    "category": "misc"
   },
   {
     "src": "assets2/reevox5.webp",
-    "title": "Reevox 5"
+    "title": "Reevox 5",
+    "category": "misc"
   },
   {
     "src": "assets2/standing.webp",
-    "title": "Standing"
+    "title": "Standing",
+    "category": "photo"
   },
   {
     "src": "assets2/supercroix.webp",
-    "title": "Supercroix"
+    "title": "Supercroix",
+    "category": "misc"
   },
   {
     "type": "video",
     "thumbnail": "assets2/surrealismcut.mp4",
     "vimeoUrl": "https://vimeo.com/1128966897",
-    "title": "Surrealism"
+    "title": "Surrealism",
+    "category": "video"
   },
   {
     "type": "video",
     "thumbnail": "assets2/titlefightcut.mp4",
     "vimeoUrl": "https://vimeo.com/1129023114",
-    "title": "Title Fight"
+    "title": "Title Fight",
+    "category": "video"
   },
   {
     "src": "assets2/yeat.webp",
-    "title": "Yeat"
+    "title": "Yeat",
+    "category": "posters"
   },
   {
     "src": "assets2/yoann.webp",
-    "title": "Yoann"
+    "title": "Yoann",
+    "category": "photo"
   },
   {
     "src": "assets2/yoannjuju.webp",
-    "title": "Yoann Juju"
+    "title": "Yoann Juju",
+    "category": "photo"
   },
   {
     "src": "assets2/yoannjuju2.webp",
-    "title": "Yoann Juju 2"
+    "title": "Yoann Juju 2",
+    "category": "photo"
   },
   {
     "src": "assets2/yoannjuju3.webp",
-    "title": "Yoann Juju 3"
+    "title": "Yoann Juju 3",
+    "category": "photo"
   },
   {
     "src": "assets2/yoannjuju5.webp",
-    "title": "Yoann Juju 5"
+    "title": "Yoann Juju 5",
+    "category": "photo"
   },
   {
     "src": "assets2/yoannjuju6.webp",
-    "title": "Yoann Juju 6"
+    "title": "Yoann Juju 6",
+    "category": "photo"
   },
   {
     "src": "assets2/zabio.webp",
-    "title": "Zabio"
+    "title": "Zabio",
+    "category": "photo"
   },
   {
     "src": "assets2/zabio2.webp",
-    "title": "Zabio 2"
+    "title": "Zabio 2",
+    "category": "photo"
   }
 ]
