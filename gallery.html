@@ -1,14 +1,4 @@
-init() {
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Escape') {
-        e.preventDefault();
-        if (GalleryApp.popupVisible) {
-          GalleryApp.hidePopup();
-        }
-        return;
-      }
-      this.keys[e.code] = true;
-    });<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="utf-8" />
@@ -645,8 +635,6 @@ const InputManager = {
         e.preventDefault();
         if (GalleryApp.popupVisible) {
           GalleryApp.hidePopup();
-        } else if (!GalleryApp.menuOpen) {
-          GalleryApp.toggleMenu();
         }
         return;
       }
@@ -715,31 +703,18 @@ const InputManager = {
       
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
-        if (!touchData) return;
+        if (!touchData || !touchData.isCameraControl) return;
         
-        const totalMoveDistance = Math.sqrt(
-          Math.pow(touch.clientX - touchData.startX, 2) + 
-          Math.pow(touch.clientY - touchData.startY, 2)
-        );
+        const deltaX = touch.clientX - touchData.lastX;
+        const deltaY = touch.clientY - touchData.lastY;
         
-        if (totalMoveDistance > 25) {
-          touchData.hasMoved = true;
-        }
+        // Camera rotates based on drag delta (how much finger moved this frame)
+        // When finger stops moving, delta becomes 0 and camera stops
+        this.mobileLookDelta.x = deltaX;
+        this.mobileLookDelta.y = deltaY;
         
-        if (touchData.isCameraControl) {
-          const deltaX = touch.clientX - touchData.lastX;
-          const deltaY = touch.clientY - touchData.lastY;
-          const frameMoveDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-          
-          // Only update camera if there's actual drag movement (not just thumb tilt/pressure)
-          if (touchData.hasMoved && frameMoveDistance > 1) {
-            this.mobileLookDelta.x = deltaX;
-            this.mobileLookDelta.y = deltaY;
-          }
-          
-          touchData.lastX = touch.clientX;
-          touchData.lastY = touch.clientY;
-        }
+        touchData.lastX = touch.clientX;
+        touchData.lastY = touch.clientY;
       });
     });
     
