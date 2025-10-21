@@ -587,9 +587,9 @@ const CONFIG = {
   MOBILE_LOOK_SENSITIVITY: 0.010,
   MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 250 : 700,
   MOBILE_LOAD_DISTANCE: IS_MOBILE ? 250 : 999,
-  MAX_MOBILE_GIFS: IS_MOBILE ? 20 : 999,
+  MAX_MOBILE_GIFS: IS_MOBILE ? 15 : 999,
   MAX_MOBILE_ITEMS: IS_MOBILE ? 999 : 999,
-  INITIAL_MOBILE_LOAD: IS_MOBILE ? 25 : 999,
+  INITIAL_MOBILE_LOAD: IS_MOBILE ? 999 : 999, // Load all on mobile now
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -1123,25 +1123,19 @@ const SceneManager = {
           tempCeilingRowIndex++;
         }
         
-        this.pendingItems = [...itemPositions];
+        // Store all items for loading (no lazy load)
+        this.pendingItems = [];
         
-        const initialLoadCount = CONFIG.IS_MOBILE ? Math.min(CONFIG.INITIAL_MOBILE_LOAD, itemPositions.length) : itemPositions.length;
+        const initialLoadCount = itemPositions.length;
         
         for (let i = 0; i < initialLoadCount; i++) {
           const pos = itemPositions[i];
           this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, true);
-          this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
-        }
-        
-        if (CONFIG.IS_MOBILE) {
-          this.pendingItems = this.pendingItems.slice(initialLoadCount);
-        } else {
-          this.pendingItems = [];
         }
         
         this.extendRoom(lastZ + 30);
         
-        console.log(`Initial load: ${initialLoadCount} items, Pending: ${this.pendingItems.length} items`);
+        console.log(`Loaded all ${initialLoadCount} items`);
       })
       .catch(err => {
         console.error('Gallery load failed:', err);
@@ -1422,41 +1416,6 @@ const SceneManager = {
           if (countForLoading) LoadingManager.increment();
         }
       );
-    }
-  },
-  
-  checkLazyLoad() {
-    if (!CONFIG.IS_MOBILE || this.pendingItems.length === 0) return;
-    
-    const playerPos = this.yaw.position;
-    const loadDistance = CONFIG.MOBILE_LOAD_DISTANCE;
-    let loadedThisFrame = 0;
-    const maxLoadPerFrame = 3;
-    
-    this.pendingItems = this.pendingItems.filter(pos => {
-      if (loadedThisFrame >= maxLoadPerFrame) return true;
-      
-      const distance = Math.sqrt(
-        Math.pow(playerPos.x - pos.x, 2) +
-        Math.pow(playerPos.z - pos.z, 2)
-      );
-      
-      if (distance < loadDistance) {
-        const posKey = `${pos.x},${pos.y},${pos.z}`;
-        if (!this.loadedItemPositions.has(posKey)) {
-          console.log(`Lazy loading item at distance ${Math.round(distance)}`);
-          this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, false);
-          this.loadedItemPositions.add(posKey);
-          loadedThisFrame++;
-          return false;
-        }
-      }
-      
-      return true;
-    });
-    
-    if (loadedThisFrame > 0) {
-      console.log(`Loaded ${loadedThisFrame} items, ${this.pendingItems.length} remaining`);
     }
   },
   
@@ -1781,7 +1740,6 @@ const GalleryApp = {
     if (!this.menuOpen) {
       PhysicsManager.update(delta);
       InteractionManager.update();
-      SceneManager.checkLazyLoad();
     }
     
     SceneManager.renderer.render(SceneManager.scene, SceneManager.camera);
