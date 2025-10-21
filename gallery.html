@@ -1055,10 +1055,11 @@ const SceneManager = {
         // On mobile, filter out items with video thumbnails for performance
         if (CONFIG.IS_MOBILE) {
           items = items.filter(item => {
-            const hasVideoThumbnail = item.src && (
-              item.src.toLowerCase().endsWith('.mp4') || 
-              item.src.toLowerCase().endsWith('.webm') || 
-              item.src.toLowerCase().endsWith('.ogv')
+            const videoSrc = item.thumbnail || item.src;
+            const hasVideoThumbnail = videoSrc && (
+              videoSrc.toLowerCase().endsWith('.mp4') || 
+              videoSrc.toLowerCase().endsWith('.webm') || 
+              videoSrc.toLowerCase().endsWith('.ogv')
             );
             return !hasVideoThumbnail;
           });
@@ -1151,38 +1152,29 @@ const SceneManager = {
   addBox(item, x, y, z, maxDim, rotationY = 0, isCeiling = false, countForLoading = false) {
     const loader = new THREE.TextureLoader();
     
-    // Check if item has a video thumbnail (src) - these are the small preview videos
-    const hasVideoThumbnail = item.src && (
-      item.src.toLowerCase().endsWith('.mp4') || 
-      item.src.toLowerCase().endsWith('.webm') || 
-      item.src.toLowerCase().endsWith('.ogv')
+    // Video items use "thumbnail" property for the .mp4 file
+    const videoSrc = item.thumbnail || item.src;
+    
+    // Check if item has a video thumbnail
+    const hasVideoThumbnail = videoSrc && (
+      videoSrc.toLowerCase().endsWith('.mp4') || 
+      videoSrc.toLowerCase().endsWith('.webm') || 
+      videoSrc.toLowerCase().endsWith('.ogv')
     );
     
-    const isGif = item.src && item.src.toLowerCase().endsWith('.gif');
-    const isImage = item.src && !hasVideoThumbnail && !isGif;
-    
-    console.log('Processing item:', {
-      src: item.src,
-      vimeoUrl: item.vimeoUrl,
-      hasVideoThumbnail,
-      isGif,
-      isImage,
-      isMobile: CONFIG.IS_MOBILE
-    });
+    const isGif = videoSrc && videoSrc.toLowerCase().endsWith('.gif');
+    const isImage = videoSrc && !hasVideoThumbnail && !isGif;
     
     // Skip video thumbnails on mobile for performance
     if (CONFIG.IS_MOBILE && hasVideoThumbnail) {
-      console.log('Skipping video on mobile:', item.src);
       if (countForLoading) LoadingManager.increment();
       return;
     }
     
     // Handle VIDEO THUMBNAILS (these play on the wall, click opens Vimeo embed)
     if (hasVideoThumbnail) {
-      console.log('Loading video thumbnail:', item.src);
-      
       const video = document.createElement('video');
-      video.src = item.src;
+      video.src = videoSrc;
       video.loop = true;
       video.muted = true;
       video.playsInline = true;
@@ -1190,8 +1182,6 @@ const SceneManager = {
       video.preload = 'auto';
       
       const handleMetadata = () => {
-        console.log('Video metadata loaded:', item.src, video.videoWidth, 'x', video.videoHeight);
-        
         const aspect = video.videoWidth / video.videoHeight;
         let boxWidth, boxHeight;
         if (aspect >= 1) {
@@ -1233,10 +1223,8 @@ const SceneManager = {
         // If item has vimeoUrl, clicking opens the Vimeo embed. Otherwise, show the video.
         if (item.vimeoUrl) {
           box.userData.popup = `<div class="popup-images-scroll"><iframe src="${item.vimeoUrl}" width="100%" height="100%" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
-          console.log('Video will open Vimeo embed:', item.vimeoUrl);
         } else {
-          box.userData.popup = `<div class="popup-images-scroll"><video src="${item.src}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
-          console.log('Video will open self in popup');
+          box.userData.popup = `<div class="popup-images-scroll"><video src="${videoSrc}" controls autoplay loop style="max-width:90vw;max-height:90vh;"></video></div>`;
         }
         box.userData.video = video;
         
@@ -1244,11 +1232,8 @@ const SceneManager = {
         this.boxes.push(box);
         this.videos.push(video);
         
-        console.log('Video box added to scene at position:', x, y + boxHeight / 2, z);
-        
         video.play().catch(e => {
           console.warn('Video autoplay failed (this is normal):', e);
-          // Try playing again after a short delay
           setTimeout(() => video.play().catch(() => {}), 100);
         });
         
@@ -1256,24 +1241,19 @@ const SceneManager = {
       };
       
       const handleError = (e) => {
-        console.error('Video thumbnail load error:', item.src, e, video.error);
+        console.error('Video thumbnail load error:', videoSrc, e, video.error);
         if (countForLoading) LoadingManager.increment();
-      };
-      
-      const handleCanPlay = () => {
-        console.log('Video can play:', item.src);
       };
       
       video.addEventListener('loadedmetadata', handleMetadata);
       video.addEventListener('error', handleError);
-      video.addEventListener('canplay', handleCanPlay);
       
-      // Start loading
       video.load();
       
       return;
     }
     
+    // Limit GIFs on mobile
     if (CONFIG.IS_MOBILE && isGif) {
       if (this.gifCount >= CONFIG.MAX_MOBILE_GIFS) {
         if (countForLoading) LoadingManager.increment();
@@ -1282,6 +1262,7 @@ const SceneManager = {
       this.gifCount++;
     }
     
+    // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
       const maxCanvasSize = CONFIG.IS_MOBILE ? 256 : 1024;
@@ -1344,7 +1325,7 @@ const SceneManager = {
           }
           
           box.userData.galleryItem = item;
-          box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}" alt="${item.title || ''}"></div>`;
           this.scene.add(box);
           this.boxes.push(box);
           
@@ -1397,7 +1378,7 @@ const SceneManager = {
       }, 5000);
       
       loader.load(
-        item.src,
+        videoSrc,
         texture => {
           clearTimeout(loadTimeout);
           const aspect = texture.image.width / texture.image.height;
@@ -1428,7 +1409,7 @@ const SceneManager = {
           }
           
           box.userData.galleryItem = item;
-          box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+          box.userData.popup = `<div class="popup-images-scroll"><img src="${videoSrc}" alt="${item.title || ''}"></div>`;
           this.scene.add(box);
           this.boxes.push(box);
           
@@ -1437,7 +1418,7 @@ const SceneManager = {
         undefined,
         (err) => {
           clearTimeout(loadTimeout);
-          console.error('Image load error:', item.src, err);
+          console.error('Image load error:', videoSrc, err);
           if (countForLoading) LoadingManager.increment();
         }
       );
