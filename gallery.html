@@ -234,6 +234,37 @@
     border: none;
   }
 
+  @media (min-width: 1025px) {
+    .popup-images-scroll {
+      align-items: center;
+      justify-content: center;
+      padding: 60px 40px 40px 40px;
+    }
+    
+    .popup-images-scroll img {
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    
+    .popup-images-scroll video {
+      max-width: 90vw;
+      max-height: 90vh;
+      width: auto;
+      height: auto;
+      object-fit: contain;
+    }
+    
+    .popup-images-scroll iframe {
+      max-width: 90vw;
+      max-height: 90vh;
+      width: 80vw;
+      aspect-ratio: 16/9;
+    }
+  }
+
   #click-prompt {
     position: fixed;
     top: 50%;
@@ -682,8 +713,15 @@ const InputManager = {
         }
         
         if (touchData.isCameraControl && touchData.hasMoved) {
-          this.mobileLookDelta.x = touch.clientX - touchData.lastX;
-          this.mobileLookDelta.y = touch.clientY - touchData.lastY;
+          const deltaX = touch.clientX - touchData.lastX;
+          const deltaY = touch.clientY - touchData.lastY;
+          
+          // Only update camera if there's actual movement (not just thumb tilt)
+          if (Math.abs(deltaX) > 1.5 || Math.abs(deltaY) > 1.5) {
+            this.mobileLookDelta.x = deltaX;
+            this.mobileLookDelta.y = deltaY;
+          }
+          
           touchData.lastX = touch.clientX;
           touchData.lastY = touch.clientY;
         }
