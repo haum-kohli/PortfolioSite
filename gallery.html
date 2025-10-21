@@ -547,7 +547,34 @@
 
 <script>
 const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
+// Prevent infinite reload loop
+let loadAttempts = parseInt(sessionStorage.getItem('loadAttempts') || '0');
+const MAX_LOAD_ATTEMPTS = 3;
 
+if (loadAttempts >= MAX_LOAD_ATTEMPTS) {
+  document.body.innerHTML = '<div style="padding:20px;font-family:monospace;color:#fff;background:#000;height:100vh;display:flex;align-items:center;justify-content:center;text-align:center;"><div><h2>Loading Error</h2><p>Unable to load gallery after multiple attempts.</p><button onclick="sessionStorage.removeItem(\'loadAttempts\');location.reload()" style="margin-top:20px;padding:10px 20px;font-size:16px;">Try Again</button></div></div>';
+  throw new Error('Max load attempts reached');
+}
+
+sessionStorage.setItem('loadAttempts', (loadAttempts + 1).toString());
+
+// Clear on successful load
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    sessionStorage.removeItem('loadAttempts');
+  }, 2000);
+});
+
+// Catch all errors
+window.addEventListener('error', (e) => {
+  console.error('Global error caught:', e.message, e.filename, e.lineno);
+  return true; // Prevent default error handling
+});
+
+window.addEventListener('unhandledrejection', (e) => {
+  console.error('Unhandled promise rejection:', e.reason);
+  e.preventDefault();
+});
 const CONFIG = {
   IS_MOBILE,
   HOVER_DISTANCE: 160,
@@ -558,7 +585,8 @@ const CONFIG = {
   MOUSE_SENSITIVITY: 0.002,
   MOBILE_LOOK_SENSITIVITY: 0.010,
   MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 700,
-  MAX_MOBILE_GIFS: IS_MOBILE ? 5 : 999, // Limit GIFs on mobile
+  MAX_MOBILE_GIFS: IS_MOBILE ? 3 : 999, // Reduced to 3 for stability
+  MAX_MOBILE_ITEMS: IS_MOBILE ? 20 : 999, // Add total item limit
   
   gifUrls: [
     'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
@@ -1020,24 +1048,25 @@ const SceneManager = {
       })
       .then(items => {
         // Filter out videos and vimeo content on mobile
-        if (CONFIG.IS_MOBILE) {
-          items = items.filter(item => {
-            const isVideo = item.type === 'video' || 
-                           item.vimeoUrl || 
-                           (item.src && (
-                             item.src.toLowerCase().endsWith('.mp4') || 
-                             item.src.toLowerCase().endsWith('.webm') || 
-                             item.src.toLowerCase().endsWith('.ogv')
-                           ));
-            return !isVideo;
-          });
-        }
+// Filter out videos and vimeo content on mobile
+      if (CONFIG.IS_MOBILE) {
+        items = items.filter(item => {
+          const isVideo = item.type === 'video' || 
+                         item.vimeoUrl || 
+                         (item.src && (
+                           item.src.toLowerCase().endsWith('.mp4') || 
+                           item.src.toLowerCase().endsWith('.webm') || 
+                           item.src.toLowerCase().endsWith('.ogv')
+                         ));
+          return !isVideo;
+        });
         
-        if (items.length === 0) {
-          console.error('No items to display');
-          LoadingManager.forceComplete();
-          return;
+        // Limit total items on mobile
+        if (items.length > CONFIG.MAX_MOBILE_ITEMS) {
+          items = items.slice(0, CONFIG.MAX_MOBILE_ITEMS);
+          console.log(`Limited to ${CONFIG.MAX_MOBILE_ITEMS} items for mobile performance`);
         }
+      }
         
         LoadingManager.setTotal(items.length);
         
@@ -1074,84 +1103,117 @@ const SceneManager = {
             this.gifCount++;
           }
           
-          if (isGif) {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            
-            const loadTimeout = setTimeout(() => {
-              console.warn('GIF load timeout:', item.src);
-              LoadingManager.increment();
-            }, 5000);
-            
+ if (isGif) {
+  const canvas = document.createElement('canvas');
+  const maxCanvasSize = CONFIG.IS_MOBILE ? 512 : 1024;
+  canvas.width = maxCanvasSize;
+  canvas.height = maxCanvasSize;
+  
+  const loadTimeout = setTimeout(() => {
+    console.warn('GIF load timeout:', item.src);
+    LoadingManager.increment();
+  }, 8000); // Increased timeout
+  
+  try {
+    gifler(item.src).get((anim) => {
+      clearTimeout(loadTimeout);
+      
+      // Limit canvas size
+      const scale = Math.min(maxCanvasSize / anim.width, maxCanvasSize / anim.height, 1);
+      canvas.width = Math.floor(anim.width * scale);
+      canvas.height = Math.floor(anim.height * scale);
+      
+      const ctx = canvas.getContext('2d', { 
+        alpha: false,
+        willReadFrequently: false,
+        desynchronized: true 
+      });
+      
+      const texture = new THREE.CanvasTexture(canvas);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.generateMipmaps = false;
+      
+      const aspect = anim.width / anim.height;
+      
+      let boxWidth, boxHeight;
+      if (aspect >= 1) {
+        boxWidth = maxDim;
+        boxHeight = maxDim / aspect;
+      } else {
+        boxHeight = maxDim;
+        boxWidth = maxDim * aspect;
+      }
+      
+      const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
+      const material = new THREE.MeshStandardMaterial({ 
+        map: texture, 
+        side: THREE.DoubleSide 
+      });
+      const box = new THREE.Mesh(geometry, material);
+      
+      if (isCeiling) {
+        box.position.set(x, y, z);
+        box.rotation.x = -Math.PI / 2;
+      } else {
+        box.position.set(x, y + boxHeight / 2, z);
+        box.rotation.y = rotationY;
+      }
+      
+      if (!CONFIG.IS_MOBILE) {
+        box.castShadow = true;
+        box.receiveShadow = true;
+      }
+      
+      box.userData.galleryItem = item;
+      box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
+      this.scene.add(box);
+      this.boxes.push(box);
+      
+      this.gifAnimations.push(anim);
+      
+      // Use requestAnimationFrame for canvas updates
+      let animationRunning = true;
+      let lastUpdate = 0;
+      const fps = CONFIG.IS_MOBILE ? 15 : 30; // Limit FPS on mobile
+      const frameDelay = 1000 / fps;
+      
+      const updateTexture = (timestamp) => {
+        if (!animationRunning) return;
+        
+        if (timestamp - lastUpdate >= frameDelay) {
+          if (!GalleryApp.menuOpen) {
             try {
-              gifler(item.src).get((anim) => {
-                clearTimeout(loadTimeout);
-                canvas.width = anim.width;
-                canvas.height = anim.height;
-                
-                const texture = new THREE.CanvasTexture(canvas);
-                const aspect = anim.width / anim.height;
-                
-                let boxWidth, boxHeight;
-                if (aspect >= 1) {
-                  boxWidth = maxDim;
-                  boxHeight = maxDim / aspect;
-                } else {
-                  boxHeight = maxDim;
-                  boxWidth = maxDim * aspect;
-                }
-                
-                const geometry = new THREE.PlaneGeometry(boxWidth, boxHeight);
-                const material = new THREE.MeshStandardMaterial({ map: texture, side: THREE.DoubleSide });
-                const box = new THREE.Mesh(geometry, material);
-                
-                if (isCeiling) {
-                  box.position.set(x, y, z);
-                  box.rotation.x = -Math.PI / 2;
-                } else {
-                  box.position.set(x, y + boxHeight / 2, z);
-                  box.rotation.y = rotationY;
-                }
-                
-                if (!CONFIG.IS_MOBILE) {
-                  box.castShadow = true;
-                  box.receiveShadow = true;
-                }
-                
-                box.userData.galleryItem = item;
-                box.userData.popup = `<div class="popup-images-scroll"><img src="${item.src}" alt="${item.title || ''}"></div>`;
-                this.scene.add(box);
-                this.boxes.push(box);
-                
-                this.gifAnimations.push(anim);
-                anim.animateInCanvas(canvas);
-                
-                let animationRunning = true;
-                const updateTexture = () => {
-                  if (animationRunning && !GalleryApp.menuOpen) {
-                    texture.needsUpdate = true;
-                  }
-                  requestAnimationFrame(updateTexture);
-                };
-                updateTexture();
-                
-                anim.stop = () => { animationRunning = false; };
-                anim.play = () => { animationRunning = true; };
-                
-                LoadingManager.increment();
-              }).catch((err) => {
-                clearTimeout(loadTimeout);
-                console.error('GIF error:', item.src, err);
-                LoadingManager.increment();
-              });
+              anim.animateInCanvas(canvas);
+              texture.needsUpdate = true;
             } catch (e) {
-              clearTimeout(loadTimeout);
-              console.error('GIF exception:', item.src, e);
-              LoadingManager.increment();
+              console.error('GIF animation error:', e);
+              animationRunning = false;
             }
-            
-          } else {
+          }
+          lastUpdate = timestamp;
+        }
+        
+        requestAnimationFrame(updateTexture);
+      };
+      
+      requestAnimationFrame(updateTexture);
+      
+      anim.stop = () => { animationRunning = false; };
+      anim.play = () => { animationRunning = true; lastUpdate = 0; };
+      
+      LoadingManager.increment();
+    }).catch((err) => {
+      clearTimeout(loadTimeout);
+      console.error('GIF error:', item.src, err);
+      LoadingManager.increment();
+    });
+  } catch (e) {
+    clearTimeout(loadTimeout);
+    console.error('GIF exception:', item.src, e);
+    LoadingManager.increment();
+  }
+} else {
             // Regular image
             const loadTimeout = setTimeout(() => {
               console.warn('Image load timeout:', item.src);
@@ -1247,6 +1309,30 @@ const SceneManager = {
     this.gifAnimations.forEach(anim => {
       if (anim.play) anim.play();
     });
+  }
+    ,
+  
+  // ADD THIS NEW METHOD:
+  cleanup() {
+    // Dispose of textures and geometries
+    this.boxes.forEach(box => {
+      if (box.geometry) box.geometry.dispose();
+      if (box.material) {
+        if (box.material.map) box.material.map.dispose();
+        box.material.dispose();
+      }
+    });
+    
+    // Clear animations
+    this.gifAnimations.forEach(anim => {
+      if (anim.stop) anim.stop();
+    });
+    this.gifAnimations = [];
+    
+    // Clear videos
+    this.videos = [];
+    
+    console.log('Scene cleanup complete');
   }
 };
 
