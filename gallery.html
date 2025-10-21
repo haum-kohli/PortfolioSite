@@ -660,7 +660,8 @@ const InputManager = {
         document.getElementById('click-prompt').style.display = 'none';
       }
       
-      if (wasLocked && !this.pointerLocked && !GalleryApp.menuOpen && !GalleryApp.popupVisible) {
+      // Only open menu if pointer lock was lost and no popup is open
+      if (wasLocked && !this.pointerLocked && !GalleryApp.menuOpen && !GalleryApp.popupVisible && !GalleryApp.popupJustClosed) {
         GalleryApp.openMenu();
       }
     });
@@ -1542,9 +1543,9 @@ const InteractionManager = {
 const GalleryApp = {
   menuOpen: false,
   popupVisible: false,
+  popupJustClosed: false,
   animationId: null,
   prevTime: performance.now(),
-  escapeUsedRecently: false,
   
   init() {
     LoadingManager.init();
@@ -1674,10 +1675,14 @@ const GalleryApp = {
     const popup = document.getElementById('popup');
     popup.style.display = 'none';
     this.popupVisible = false;
+    this.popupJustClosed = true;
     
-    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
-      document.body.requestPointerLock();
-    }
+    setTimeout(() => {
+      this.popupJustClosed = false;
+      if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    }, 150);
   },
   
   animate() {
