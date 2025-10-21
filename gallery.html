@@ -239,8 +239,10 @@
   }
 
   .popup-images-scroll iframe {
-    width: 100%;
-    height: 100%;
+    width: 640px;
+    height: 360px;
+    max-width: 90vw;
+    max-height: 50vh;
     border: none;
   }
 
@@ -1169,6 +1171,7 @@ const SceneManager = {
         // Load initial batch
         for (let i = 0; i < initialLoadCount; i++) {
           const pos = itemPositions[i];
+          console.log(`Loading item ${i+1}/${initialLoadCount}:`, pos.item.src || pos.item.thumbnail);
           this.addBox(pos.item, pos.x, pos.y, pos.z, pos.maxDim, pos.rotationY, pos.isCeiling, true);
           this.loadedItemPositions.add(`${pos.x},${pos.y},${pos.z}`);
         }
@@ -1202,6 +1205,12 @@ const SceneManager = {
     // Video items use "thumbnail" property for the .mp4 file
     const videoSrc = item.thumbnail || item.src;
     
+    if (!videoSrc) {
+      console.error('Item has no src or thumbnail:', item);
+      if (countForLoading) LoadingManager.increment();
+      return;
+    }
+    
     // Check if item has a video thumbnail
     const hasVideoThumbnail = videoSrc && (
       videoSrc.toLowerCase().endsWith('.mp4') || 
@@ -1211,6 +1220,8 @@ const SceneManager = {
     
     const isGif = videoSrc && videoSrc.toLowerCase().endsWith('.gif');
     const isImage = videoSrc && !hasVideoThumbnail && !isGif;
+    
+    console.log('Adding item:', { src: videoSrc, hasVideoThumbnail, isGif, isImage, isMobile: CONFIG.IS_MOBILE });
     
     // Skip video thumbnails on mobile for performance
     if (CONFIG.IS_MOBILE && hasVideoThumbnail) {
@@ -1317,7 +1328,7 @@ const SceneManager = {
     // Handle GIFs
     if (isGif) {
       const canvas = document.createElement('canvas');
-      const maxCanvasSize = CONFIG.IS_MOBILE ? 128 : 1024; // Even smaller GIF canvas
+      const maxCanvasSize = CONFIG.IS_MOBILE ? 256 : 1024; // Back to 256 for mobile
       canvas.width = maxCanvasSize;
       canvas.height = maxCanvasSize;
       
