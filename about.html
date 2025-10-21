@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no, maximum-scale=1" />
   <title>Portfolio - About</title>
   <style>
+/* ===== FONTS ===== */
+@font-face {
+  font-family: 'MacklinSansBold';
+  src: url('assets/fonts/MacklinSans-Bold.ttf') format('truetype');
+  font-weight: bold;
+}
 @font-face {
   font-family: 'Monospace821Bold';
   src: url('assets/fonts/MONOSPACE821BOLDBT.TTF') format('truetype');
@@ -15,8 +21,8 @@
   src: url('assets/fonts/MONOSPACE821BT.TTF') format('truetype');
   font-weight: normal;
 }
-@import url('https://fonts.googleapis.com/css?family=Oswald:wght@400;600&display=swap');
 
+/* ===== BASE ===== */
 body { 
   margin: 0; 
   overflow: hidden;
@@ -25,7 +31,56 @@ body {
   user-select: none;
 }
 
-/* Reticle */
+/* ===== LOADING SCREEN ===== */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: #000;
+  z-index: 99999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Monospace821Bold', monospace;
+  color: #fff;
+  transition: opacity 0.5s ease;
+}
+
+#loading-screen.fade-out {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.loading-text {
+  font-size: 3em;
+  margin-bottom: 40px;
+}
+
+.loading-bar-container {
+  width: 60%;
+  max-width: 500px;
+  height: 30px;
+  border: 3px solid #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.loading-bar {
+  height: 100%;
+  background: #fff;
+  width: 0%;
+  transition: width 0.3s ease;
+}
+
+.loading-percentage {
+  font-size: 2em;
+  margin-top: 20px;
+}
+
+/* ===== RETICLE ===== */
 #reticle {
   position: fixed;
   top: 50%;
@@ -47,11 +102,12 @@ body {
   transform: scale(1.3);
 }
 
-/* Menu */
+/* ===== MENU ===== */
 #top-menu {
   display: none;
   position: fixed;
-  top: 0; left: 0;
+  top: 0;
+  left: 0;
   width: 100vw;
   height: 100vh;
   background: rgba(0, 0, 0, 0.85);
@@ -59,19 +115,17 @@ body {
   z-index: 9999;
   padding: 40px;
   box-sizing: border-box;
-  overflow-y: auto;
-  align-items: flex-start;
-  justify-content: flex-start;
+  overflow: hidden;
+  align-items: left;
+  justify-content: left;
   flex-direction: column;
 }
 
 #menu-logo {
-  width: 150px;    
+  width: 150px;
   height: auto;
-  margin-bottom: 60px;
+  margin-bottom: 40px;
   cursor: pointer;
-  transition: transform 0.3s ease, filter 0.3s ease;
-  align-self: flex-start;
 }
 
 #menu-logo img {
@@ -83,8 +137,7 @@ body {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  justify-content: flex-start;
-  gap: 20px;
+  gap: 10px;
 }
 
 .menu-btn {
@@ -97,31 +150,24 @@ body {
   border: none;
   text-align: left;
   text-decoration: underline;
-  padding: 10px 0;
+  padding: 5px 0;
   transition: color 0.2s;
+  line-height: 1;
 }
 
 .menu-btn:hover {
   color: rgb(34, 255, 0);
 }
 
-#menu-info {
-  margin-top: 40px;
-  font-family: 'monospace821';
-  color: #fff;
-  font-size: 1.5em;
-}
-
-/* Popup */
+/* ===== POPUP ===== */
 #popup {
   display: none;
   position: fixed;
-  left: 0; 
+  left: 0;
   top: 0;
-  width: 100vw; 
+  width: 100vw;
   height: 100vh;
   background: rgba(255,255,255,0.97);
-  border: none;
   color: #222;
   font-family: 'Monospace821';
   z-index: 10001;
@@ -133,7 +179,8 @@ body {
 
 #popup .close-btn {
   position: absolute;
-  top: 18px; right: 28px;
+  top: 18px;
+  right: 28px;
   font-size: 2em;
   color: #ff0000;
   background: none;
@@ -143,7 +190,9 @@ body {
   transition: color 0.2s;
 }
 
-#popup .close-btn:hover { color: #222; }
+#popup .close-btn:hover { 
+  color: #222; 
+}
 
 #popup .popup-content-layout {
   display: flex;
@@ -153,27 +202,26 @@ body {
 }
 
 #popup .popup-left {
-  width: 100%; 
+  width: 100%;
   padding: 60px 24px 24px 24px;
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
   border-bottom: 1.5px solid #e0e0e0;
-  overflow-y: auto; 
+  overflow-y: auto;
   position: relative;
   z-index: 1;
-  max-height: 25%;
+  max-height: 50%;
   flex-shrink: 0;
 }
 
 #popup .popup-left h2 {
-  font-family: 'monospace821Bold';
+  font-family: 'MacklinSansBold', 'monospace821Bold', sans-serif;
   margin-top: 0;
   margin-bottom: 10px;
 }
 
 #popup .popup-left p {
-  pointer-events: auto;
   margin: 0;
   line-height: 1.5;
 }
@@ -198,15 +246,24 @@ body {
   scrollbar-width: none;
 }
 
-#popup .popup-images-scroll::-webkit-scrollbar { width: 0; height: 0; }
+#popup .popup-images-scroll::-webkit-scrollbar { 
+  width: 0; 
+  height: 0; 
+}
 
-#popup .popup-images-scroll img,
-#popup .popup-images-scroll video {
+#popup .popup-images-scroll img {
   display: block;
   width: 100%;
   height: auto;
   object-fit: contain;
   cursor: pointer;
+}
+
+#popup .popup-images-scroll iframe {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 #popup .image-row {
@@ -223,13 +280,15 @@ body {
   object-fit: cover;
 }
 
-/* Fullscreen image modal */
+/* ===== IMAGE MODAL ===== */
 #image-modal {
   display: none;
   position: fixed;
   z-index: 10002;
-  left: 0; top: 0;
-  width: 100vw; height: 100vh;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
   background: rgba(0,0,0,0.85);
   align-items: center;
   justify-content: center;
@@ -245,7 +304,8 @@ body {
 
 #image-modal .modal-close-btn {
   position: absolute;
-  top: 32px; right: 48px;
+  top: 32px;
+  right: 48px;
   font-size: 3em;
   color: #fff;
   background: none;
@@ -255,8 +315,11 @@ body {
   text-shadow: 0 2px 8px #000;
 }
 
-#image-modal .modal-close-btn:hover { color: #FFD600; }
+#image-modal .modal-close-btn:hover { 
+  color: #FFD600; 
+}
 
+/* ===== DOOM POPUP ===== */
 #doom-popup {
   display: none;
   position: fixed;
@@ -338,6 +401,8 @@ body {
   border-radius: 4px;
   z-index: 10003;
 }
+
+/* ===== CLICK PROMPT ===== */
 #click-prompt {
   position: fixed;
   top: 50%;
@@ -354,7 +419,7 @@ body {
   padding: 20px;
 }
 
-/* Mobile Controls */
+/* ===== MOBILE CONTROLS ===== */
 #mobile-controls {
   display: none;
   position: fixed;
@@ -386,8 +451,6 @@ body {
   border-radius: 50%;
   position: relative;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
 .joystick-stick {
@@ -402,48 +465,21 @@ body {
   transform: translate(-50%, -50%);
   transition: none;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
   clip-path: polygon(
-    0px calc(100% - 20px),
-    4px calc(100% - 20px),
-    4px calc(100% - 12px),
-    8px calc(100% - 12px),
-    8px calc(100% - 8px),
-    12px calc(100% - 8px),
-    12px calc(100% - 4px),
-    20px calc(100% - 4px),
-    20px 100%,
-    calc(100% - 20px) 100%,
-    calc(100% - 20px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 4px),
-    calc(100% - 12px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 8px),
-    calc(100% - 8px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 12px),
-    calc(100% - 4px) calc(100% - 20px),
-    100% calc(100% - 20px),
-    100% 20px,
-    calc(100% - 4px) 20px,
-    calc(100% - 4px) 12px,
-    calc(100% - 8px) 12px,
-    calc(100% - 8px) 8px,
-    calc(100% - 12px) 8px,
-    calc(100% - 12px) 4px,
-    calc(100% - 20px) 4px,
-    calc(100% - 20px) 0px,
-    20px 0px,
-    20px 4px,
-    12px 4px,
-    12px 8px,
-    8px 8px,
-    8px 12px,
-    4px 12px,
-    4px 20px,
-    0px 20px
+    0px calc(100% - 20px), 4px calc(100% - 20px), 4px calc(100% - 12px), 8px calc(100% - 12px),
+    8px calc(100% - 8px), 12px calc(100% - 8px), 12px calc(100% - 4px), 20px calc(100% - 4px),
+    20px 100%, calc(100% - 20px) 100%, calc(100% - 20px) calc(100% - 4px),
+    calc(100% - 12px) calc(100% - 4px), calc(100% - 12px) calc(100% - 8px),
+    calc(100% - 8px) calc(100% - 8px), calc(100% - 8px) calc(100% - 12px),
+    calc(100% - 4px) calc(100% - 12px), calc(100% - 4px) calc(100% - 20px),
+    100% calc(100% - 20px), 100% 20px, calc(100% - 4px) 20px, calc(100% - 4px) 12px,
+    calc(100% - 8px) 12px, calc(100% - 8px) 8px, calc(100% - 12px) 8px,
+    calc(100% - 12px) 4px, calc(100% - 20px) 4px, calc(100% - 20px) 0px, 20px 0px,
+    20px 4px, 12px 4px, 12px 8px, 8px 8px, 8px 12px, 4px 12px, 4px 20px, 0px 20px
   );
 }
 
+/* ===== SHOTGUN GIF ===== */
 #shotgun-gif {
   position: fixed;
   bottom: 0;
@@ -455,10 +491,9 @@ body {
   z-index: 999;
   pointer-events: none;
   image-rendering: pixelated;
-  image-rendering: -moz-crisp-edges;
-  image-rendering: crisp-edges;
 }
 
+/* ===== MOBILE MENU BUTTON ===== */
 #mobile-menu-btn {
   position: fixed;
   top: 20px;
@@ -480,7 +515,28 @@ body {
   border-radius: 4px;
 }
 
-@media (max-width: 768px) {
+#mobile-menu-close {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  font-family: 'Monospace821Bold', monospace;
+  font-size: 2em;
+  color: #fff;
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: none;
+  pointer-events: auto;
+  width: 60px;
+  height: 60px;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* ===== MOBILE/TABLET RESPONSIVE ===== */
+@media (max-width: 1024px) {
   #mobile-controls {
     display: block;
   }
@@ -493,50 +549,55 @@ body {
     display: none !important;
   }
   
-  #reticle {
-    display: block;
-  }
-  
   .menu-btn {
-    font-size: 12vw;
-    line-height: 1.1;
+    font-size: 10vw;
     width: 100%;
   }
   
   #menu-logo {
-    width: 120px;
-    margin-bottom: 40px;
-  }
-  
-  #top-menu {
-    padding: 40px;
-    padding-top: 60px;
-    align-items: flex-start;
-    justify-content: flex-start;
-  }
-  
-  #menu-pages {
-    align-items: flex-start;
-    width: 100%;
-    gap: 10px;
-  }
-
-  #menu-info {
-    display: none;
+    width: 100px;
+    margin-bottom: 30px;
   }
   
   #menu-random-gif {
     display: block;
-    margin-top: 40px;
-    width: 80%;
-    max-width: 400px;
+    margin-top: 30px;
+    width: 70%;
+    max-width: 300px;
     height: auto;
     border: 3px solid #fff;
     box-shadow: 0 0 20px rgba(255, 255, 255, 0.3);
   }
+  
+  .loading-text {
+    font-size: 2em;
+  }
+  
+  .loading-bar-container {
+    width: 80%;
+  }
+  
+  #popup .popup-content-layout {
+    flex-direction: column !important;
+  }
+  
+  #popup .popup-left {
+    display: none !important;
+  }
+  
+  #popup .popup-right {
+    width: 100% !important;
+    padding: 60px 0 24px 0 !important;
+  }
+
+  #popup .popup-images-scroll {
+    overflow-y: auto !important;
+    padding: 0 24px !important;
+  }
 }
 
-@media (min-width: 769px) {
+/* ===== DESKTOP RESPONSIVE ===== */
+@media (min-width: 1025px) {
   #popup {
     left: 5vw;
     top: 5vh;
@@ -547,41 +608,37 @@ body {
   }
   
   #popup .popup-content-layout {
-    flex-direction: row;
+    flex-direction: row !important;
   }
   
   #popup .popup-left {
-    width: 30%;
-    max-height: 100%;
-    border-right: 1.5px solid #e0e0e0;
-    border-bottom: none;
-    padding: 24px 20px 24px 24px;
+    width: 50% !important;
+    max-height: 100% !important;
+    border-right: 1.5px solid #e0e0e0 !important;
+    border-bottom: none !important;
+    padding: 24px 20px 24px 24px !important;
   }
   
   #popup .popup-right {
-    width: 70%;
+    width: 50% !important;
   }
   
   #menu-logo {
     position: absolute;
     top: 40px;
-    right: 150px;
-    width: 200px;
+    right: 40px;
+    width: 150px;
     margin-bottom: 0;
   }
   
   #menu-pages {
-    align-items: flex-start;
+    position: absolute;
+    top: 40px;
+    left: 40px;
   }
   
   .menu-btn {
-    font-size: 15em;
-    text-align: left;
-  }
-  
-  #top-menu {
-    align-items: flex-start;
-    justify-content: flex-start;
+    font-size: 12em;
   }
   
   #menu-random-gif {
@@ -595,11 +652,24 @@ body {
 </head>
 <body>
 
+<!-- ===== LOADING SCREEN ===== -->
+<div id="loading-screen">
+  <div class="loading-text">|| LOADING ||</div>
+  <div class="loading-bar-container">
+    <div class="loading-bar" id="loading-bar"></div>
+  </div>
+  <div class="loading-percentage" id="loading-percentage">0%</div>
+</div>
+
+<!-- ===== RETICLE ===== -->
 <div id="reticle"></div>
 
-<div id="click-prompt">|| CLICK_TO_START ||  ESC=MENU</div>
+<!-- ===== CLICK PROMPT ===== -->
+<div id="click-prompt">|| CLICK_TO_START || ESC=MENU</div>
 
+<!-- ===== MENU ===== -->
 <div id="top-menu" onclick="AboutApp.handleMenuClick(event)">
+  <button id="mobile-menu-close" onclick="AboutApp.closeMenu()">&times;</button>
   <div id="menu-logo">
     <a href="index.html">
       <img src="assets/haumlogofinal.svg" alt="Logo">
@@ -607,23 +677,25 @@ body {
   </div>
   <div id="menu-pages">
     <button class="menu-btn" data-url="home.html">HOME</button>
-    <button class="menu-btn" data-url="about.html">ABOUT</button>
     <button class="menu-btn" data-url="gallery.html">GALLERY</button>
-    <div id="menu-info">// WASD=MOVE // MOUSE=LOOK_AROUND // ESC=MENU // CLICK=SELECT //</div>
+    <button class="menu-btn" data-url="about.html">ABOUT</button>
   </div>
   <img id="menu-random-gif" src="" alt="Random GIF" style="display: none;">
 </div>
 
+<!-- ===== POPUP ===== -->
 <div id="popup">
   <button class="close-btn" onclick="AboutApp.hidePopup()">&times;</button>
   <div id="popup-content"></div>
 </div>
 
+<!-- ===== IMAGE MODAL ===== -->
 <div id="image-modal" onclick="AboutApp.closeImageModal(event)">
   <button class="modal-close-btn" onclick="AboutApp.closeImageModal(event)">&times;</button>
   <img id="modal-img" src="" alt="Popup Image">
 </div>
 
+<!-- ===== DOOM POPUP ===== -->
 <div id="doom-popup">
   <button id="doom-popup-close-btn" onclick="AboutApp.hideDoomPopup()">×</button>
   <div id="doom-popup-content">
@@ -634,10 +706,13 @@ body {
   </div>
 </div>
 
+<!-- ===== MOBILE MENU BUTTON ===== -->
 <button id="mobile-menu-btn">+</button>
 
+<!-- ===== SHOTGUN GIF ===== -->
 <img id="shotgun-gif" src="assets/POVSHOTGUN_static.png" alt="Shotgun">
 
+<!-- ===== MOBILE CONTROLS ===== -->
 <div id="mobile-controls">
   <div id="movement-joystick" class="mobile-joystick">
     <div class="joystick-base">
@@ -647,10 +722,82 @@ body {
 </div>
 
 <script>
-// Detect mobile
-const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 768;
+const IS_MOBILE = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth <= 1024;
 
-// ===== SHOTGUN GIF MANAGER =====
+// ===== CONFIG =====
+const CONFIG = {
+  IS_MOBILE,
+  HOVER_DISTANCE: 80,
+  CLICK_DISTANCE: 150,
+  MOVEMENT_SPEED: 150,
+  MOBILE_MOVEMENT_SPEED: 300,
+  JUMP_FORCE: 250,
+  MOUSE_SENSITIVITY: 0.002,
+  MOBILE_LOOK_SENSITIVITY: 0.010,
+  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 500,
+  
+  gifUrls: [
+    'assets/gifs/arach.gif', 'assets/gifs/baron.gif', 'assets/gifs/chomphead.gif', 
+    'assets/gifs/dancingdino.gif', 'assets/gifs/dragonmouth.gif', 'assets/gifs/elemental.gif', 
+    'assets/gifs/greendragon.gif', 'assets/gifs/jackhammer.gif', 'assets/gifs/legorun.gif', 
+    'assets/gifs/orangedino.gif', 'assets/gifs/pinkydemon.gif', 'assets/gifs/shotgunblast.gif',
+    'assets/gifs/skullfire.gif', 'assets/gifs/whitedragon.gif', 'assets/gifs/yellowdragon.gif'
+  ]
+};
+
+// ===== LOADING MANAGER =====
+const LoadingManager = {
+  totalAssets: 0,
+  loadedAssets: 0,
+  isLoading: true,
+  displayedPercentage: 0,
+  targetPercentage: 0,
+  smoothingInterval: null,
+  
+  init() {
+    this.loadingScreen = document.getElementById('loading-screen');
+    this.loadingBar = document.getElementById('loading-bar');
+    this.loadingPercentage = document.getElementById('loading-percentage');
+    this.startSmoothProgress();
+  },
+  
+  startSmoothProgress() {
+    this.smoothingInterval = setInterval(() => {
+      if (this.displayedPercentage < this.targetPercentage) {
+        this.displayedPercentage = Math.min(
+          this.targetPercentage,
+          this.displayedPercentage + Math.max(1, (this.targetPercentage - this.displayedPercentage) * 0.1)
+        );
+        this.loadingBar.style.width = Math.round(this.displayedPercentage) + '%';
+        this.loadingPercentage.textContent = Math.round(this.displayedPercentage) + '%';
+        
+        if (this.displayedPercentage >= 100) {
+          clearInterval(this.smoothingInterval);
+          setTimeout(() => this.complete(), 500);
+        }
+      }
+    }, 50);
+  },
+  
+  setTotal(total) {
+    this.totalAssets = total;
+  },
+  
+  increment() {
+    this.loadedAssets++;
+    const actualPercentage = (this.loadedAssets / this.totalAssets) * 100;
+    this.targetPercentage = actualPercentage;
+    if (this.loadedAssets >= this.totalAssets) this.targetPercentage = 100;
+  },
+  
+  complete() {
+    this.isLoading = false;
+    this.loadingScreen.classList.add('fade-out');
+    setTimeout(() => this.loadingScreen.style.display = 'none', 500);
+  }
+};
+
+// ===== SHOTGUN GIF =====
 const ShotgunGif = {
   imgElement: null,
   isPlaying: false,
@@ -660,54 +807,20 @@ const ShotgunGif = {
   init() {
     this.imgElement = document.getElementById('shotgun-gif');
     this.imgElement.src = this.staticFrameUrl;
-    console.log('Shotgun GIF initialized with static frame');
   },
   
   play() {
-    if (this.isPlaying || !this.imgElement) {
-      console.log('Shotgun already playing or not loaded');
-      return;
-    }
-    
-    console.log('Playing shotgun animation!');
+    if (this.isPlaying || !this.imgElement) return;
     this.isPlaying = true;
-    
     this.imgElement.src = this.animatedUrl + '?' + Math.random();
-    
     setTimeout(() => {
       this.imgElement.src = this.staticFrameUrl;
       this.isPlaying = false;
-      console.log('Animation complete, back to static');
     }, 1500);
   }
 };
 
-// ===== CONFIG MODULE =====
-const CONFIG = {
-  IS_MOBILE: IS_MOBILE,
-  HOVER_DISTANCE: 80,
-  CLICK_DISTANCE: 150,
-  MOVEMENT_SPEED: 150,
-  MOBILE_MOVEMENT_SPEED: 300,
-  JUMP_FORCE: 250,
-  MOUSE_SENSITIVITY: 0.002,
-  MOBILE_LOOK_SENSITIVITY: 0.010,
-  
-  // Mobile optimizations
-  MOBILE_MAX_TEXTURE_SIZE: 512,
-  MOBILE_REDUCE_QUALITY: IS_MOBILE,
-  MOBILE_DISABLE_SHADOWS: IS_MOBILE,
-  MOBILE_LIMIT_DRAW_DISTANCE: IS_MOBILE ? 400 : 500,
-  
-  gifUrls: [
-    'assets/arach.gif', 'assets/baron.gif', 'assets/chomphead.gif', 'assets/dancingdino.gif',
-    'assets/dragonmouth.gif', 'assets/elemental.gif', 'assets/greendragon.gif', 'assets/jackhammer.gif',
-    'assets/legorun.gif', 'assets/orangedino.gif', 'assets/pinkydemon.gif', 'assets/shotgunblast.gif',
-    'assets/skullfire.gif', 'assets/whitedragon.gif', 'assets/yellowdragon.gif'
-  ]
-};
-
-// ===== INPUT MANAGER MODULE =====
+// ===== INPUT MANAGER =====
 const InputManager = {
   keys: {},
   pointerLocked: false,
@@ -725,33 +838,35 @@ const InputManager = {
       this.keys[e.code] = true;
     });
     
-    document.addEventListener('keyup', (e) => {
-      this.keys[e.code] = false;
-    });
+    document.addEventListener('keyup', (e) => this.keys[e.code] = false);
     
     if (!CONFIG.IS_MOBILE) {
-      document.addEventListener('pointerlockchange', () => {
-        const wasLocked = this.pointerLocked;
-        this.pointerLocked = document.pointerLockElement === document.body;
-        
-        if (this.pointerLocked) {
-          document.getElementById('click-prompt').style.display = 'none';
-        }
-        
-        if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
-          AboutApp.openMenu();
-        }
-      });
-      
-      document.addEventListener('click', () => {
-        if (!this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
-          document.body.requestPointerLock();
-        }
-      });
+      this.initDesktopControls();
     } else {
       this.initMobileControls();
       document.getElementById('click-prompt').style.display = 'none';
     }
+  },
+  
+  initDesktopControls() {
+    document.addEventListener('pointerlockchange', () => {
+      const wasLocked = this.pointerLocked;
+      this.pointerLocked = document.pointerLockElement === document.body;
+      
+      if (this.pointerLocked) {
+        document.getElementById('click-prompt').style.display = 'none';
+      }
+      
+      if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+        AboutApp.openMenu();
+      }
+    });
+    
+    document.addEventListener('click', () => {
+      if (!this.pointerLocked && !AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && !LoadingManager.isLoading) {
+        document.body.requestPointerLock();
+      }
+    });
   },
   
   initMobileControls() {
@@ -760,17 +875,11 @@ const InputManager = {
       this.mobileMovement.z = y;
     });
     
-    // Multi-touch support for simultaneous joystick and camera control
     document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        
         const isOnJoystick = target && target.closest('#movement-joystick');
-        const isOnUI = target && (
-          target.closest('#mobile-menu-btn') || 
-          target.closest('#popup') ||
-          target.closest('#top-menu')
-        );
+        const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
         
         this.activeTouches.set(touch.identifier, {
           startX: touch.clientX,
@@ -785,22 +894,16 @@ const InputManager = {
     });
     
     document.addEventListener('touchmove', (e) => {
-      if (AboutApp.menuOpen || AboutApp.popupVisible) return;
+      if (AboutApp.popupVisible || AboutApp.menuOpen) return;
       
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
-        if (!touchData) return;
+        if (!touchData || !touchData.isCameraControl) return;
         
-        if (touchData.isCameraControl) {
-          const deltaX = touch.clientX - touchData.lastX;
-          const deltaY = touch.clientY - touchData.lastY;
-          
-          this.mobileLookDelta.x = deltaX;
-          this.mobileLookDelta.y = deltaY;
-          
-          touchData.lastX = touch.clientX;
-          touchData.lastY = touch.clientY;
-        }
+        this.mobileLookDelta.x = touch.clientX - touchData.lastX;
+        this.mobileLookDelta.y = touch.clientY - touchData.lastY;
+        touchData.lastX = touch.clientX;
+        touchData.lastY = touch.clientY;
       });
     });
     
@@ -817,18 +920,16 @@ const InputManager = {
           if (distMoved < 20) {
             ShotgunGif.play();
             
-            if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible) {
-              if (InteractionManager.hoveredBox) {
-                const cameraPos = new THREE.Vector3();
-                SceneManager.camera.getWorldPosition(cameraPos);
-                const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
-                
-                if (dist <= CONFIG.CLICK_DISTANCE) {
-                  if (InteractionManager.hoveredBox.userData.isDoomArcade) {
-                    AboutApp.showDoomPopup();
-                  } else if (InteractionManager.hoveredBox.userData.isDisplay) {
-                    AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
-                  }
+            if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && InteractionManager.hoveredBox) {
+              const cameraPos = new THREE.Vector3();
+              SceneManager.camera.getWorldPosition(cameraPos);
+              const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
+              
+              if (dist <= CONFIG.CLICK_DISTANCE) {
+                if (InteractionManager.hoveredBox.userData.isDoomArcade) {
+                  AboutApp.showDoomPopup();
+                } else if (InteractionManager.hoveredBox.userData.isDisplay) {
+                  AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
                 }
               }
             }
@@ -838,27 +939,13 @@ const InputManager = {
         this.activeTouches.delete(touch.identifier);
       });
       
-      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
-      if (!hasCameraTouch) {
+      if (!Array.from(this.activeTouches.values()).some(t => t.isCameraControl)) {
         this.mobileLookDelta.x = 0;
         this.mobileLookDelta.y = 0;
       }
     });
     
-    document.addEventListener('touchcancel', (e) => {
-      Array.from(e.changedTouches).forEach(touch => {
-        this.activeTouches.delete(touch.identifier);
-      });
-      
-      const hasCameraTouch = Array.from(this.activeTouches.values()).some(t => t.isCameraControl);
-      if (!hasCameraTouch) {
-        this.mobileLookDelta.x = 0;
-        this.mobileLookDelta.y = 0;
-      }
-    });
-    
-    const menuBtn = document.getElementById('mobile-menu-btn');
-    menuBtn.addEventListener('click', (e) => {
+    document.getElementById('mobile-menu-btn').addEventListener('click', (e) => {
       e.preventDefault();
       AboutApp.toggleMenu();
     });
@@ -868,15 +955,7 @@ const InputManager = {
     const joystick = document.getElementById(id);
     const stick = joystick.querySelector('.joystick-stick');
     const base = joystick.querySelector('.joystick-base');
-    
     let activeTouch = null;
-    
-    const handleStart = (e) => {
-      e.preventDefault();
-      if (e.touches && e.touches.length > 0) {
-        activeTouch = e.touches[0].identifier;
-      }
-    };
     
     const handleMove = (e) => {
       if (activeTouch === null) return;
@@ -909,10 +988,7 @@ const InputManager = {
       }
       
       stick.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px))`;
-      
-      const normalizedX = deltaX / maxDistance;
-      const normalizedY = deltaY / maxDistance;
-      callback(normalizedX, normalizedY);
+      callback(deltaX / maxDistance, deltaY / maxDistance);
     };
     
     const handleEnd = (e) => {
@@ -922,34 +998,30 @@ const InputManager = {
       callback(0, 0);
     };
     
-    joystick.addEventListener('touchstart', handleStart, { passive: false });
+    joystick.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      if (e.touches && e.touches.length > 0) {
+        activeTouch = e.touches[0].identifier;
+      }
+    }, { passive: false });
+    
     joystick.addEventListener('touchmove', handleMove, { passive: false });
     joystick.addEventListener('touchend', handleEnd, { passive: false });
     joystick.addEventListener('touchcancel', handleEnd, { passive: false });
   },
   
-  isKeyPressed(code) {
-    return this.keys[code] || false;
-  },
-  
   getMovementInput() {
     if (CONFIG.IS_MOBILE) {
-      return {
-        x: this.mobileMovement.x,
-        z: this.mobileMovement.z
-      };
-    } else {
-      return {
-        x: (this.isKeyPressed('KeyD') || this.isKeyPressed('ArrowRight') ? 1 : 0) - 
-           (this.isKeyPressed('KeyA') || this.isKeyPressed('ArrowLeft') ? 1 : 0),
-        z: (this.isKeyPressed('KeyS') || this.isKeyPressed('ArrowDown') ? 1 : 0) - 
-           (this.isKeyPressed('KeyW') || this.isKeyPressed('ArrowUp') ? 1 : 0)
-      };
+      return { x: this.mobileMovement.x, z: this.mobileMovement.z };
     }
+    return {
+      x: (this.keys.KeyD || this.keys.ArrowRight ? 1 : 0) - (this.keys.KeyA || this.keys.ArrowLeft ? 1 : 0),
+      z: (this.keys.KeyS || this.keys.ArrowDown ? 1 : 0) - (this.keys.KeyW || this.keys.ArrowUp ? 1 : 0)
+    };
   }
 };
 
-// ===== SCENE MANAGER MODULE =====
+// ===== SCENE MANAGER =====
 const SceneManager = {
   scene: null,
   camera: null,
@@ -974,11 +1046,11 @@ const SceneManager = {
     this.scene = new THREE.Scene();
     this.scene.background = new THREE.Color(0xcc11cc);
     this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+    
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
     
-    // Only add directional light and shadows on desktop
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       const dirLight = new THREE.DirectionalLight(0xffffff, 1);
       dirLight.position.set(0, 300, 50);
       dirLight.castShadow = true;
@@ -1001,7 +1073,7 @@ const SceneManager = {
     this.renderer.setPixelRatio(CONFIG.IS_MOBILE ? 1 : window.devicePixelRatio);
     this.renderer.setSize(window.innerWidth, window.innerHeight);
     
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       this.renderer.shadowMap.enabled = true;
       this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     }
@@ -1014,6 +1086,7 @@ const SceneManager = {
       this.renderer.setSize(window.innerWidth, window.innerHeight);
     });
     
+    LoadingManager.setTotal(3);
     this.createEnvironment();
   },
   
@@ -1067,7 +1140,7 @@ const SceneManager = {
     tex.repeat.set(2, 2);
     const floor = new THREE.Mesh(floorGeo, new THREE.MeshStandardMaterial({ map: tex, side: THREE.DoubleSide }));
     floor.position.set(0, 4, 100);
-    floor.receiveShadow = !CONFIG.MOBILE_DISABLE_SHADOWS;
+    floor.receiveShadow = !CONFIG.IS_MOBILE;
     this.scene.add(floor);
     this.objects.push(floor);
     
@@ -1082,27 +1155,64 @@ const SceneManager = {
       this.objects.push(wall);
     });
     
-    // Cube moved to back of room
     const geometry = new THREE.BoxGeometry(30, 30, 30);
-    const material = new THREE.MeshStandardMaterial({ color: 0x44aa88 });
+    const textureLoader = new THREE.TextureLoader();
+    
+    // Load texture for the rotating box
+    const boxTexture = textureLoader.load(
+      'assets/wizardofoz.webp',
+      () => LoadingManager.increment(),
+      undefined,
+      () => {
+        console.warn('Failed to load box texture');
+        LoadingManager.increment();
+      }
+    );
+    
+    const material = new THREE.MeshStandardMaterial({ map: boxTexture });
     this.bigbox = new THREE.Mesh(geometry, material);
     this.bigbox.position.set(0, 20, 180);
     
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       this.bigbox.castShadow = true;
       this.bigbox.receiveShadow = true;
     }
     
-    this.scene.add(this.bigbox);
+    this.bigbox.userData.isDisplay = true;
+    this.bigbox.userData.projectData = {
+      title: "",
+      description: "",
+      media: [
+        { type: "image", src: "assets/newvidsoon.webp" }
+      ]
+    };
     
-    // Create 16x9 display box on left wall with temp project data
+    this.scene.add(this.bigbox);
+    this.boxes.push(this.bigbox);
+    
     const displayGeometry = new THREE.BoxGeometry(60, 35, 5);
-    const displayMaterial = new THREE.MeshStandardMaterial({ color: 0x333333 });
+    
+    // Load texture for the display box
+    const displayTexture = textureLoader.load(
+      'assets/aboutme.webp',
+      () => LoadingManager.increment(),
+      undefined,
+      () => {
+        console.warn('Failed to load display texture, using solid color');
+        LoadingManager.increment();
+      }
+    );
+    
+    const displayMaterial = new THREE.MeshStandardMaterial({ 
+      map: displayTexture,
+      color: 0xffffff
+    });
+    
     this.displayBox = new THREE.Mesh(displayGeometry, displayMaterial);
     this.displayBox.position.set(-45, 25, 100);
     this.displayBox.rotation.y = Math.PI / 2;
     
-    if (!CONFIG.MOBILE_DISABLE_SHADOWS) {
+    if (!CONFIG.IS_MOBILE) {
       this.displayBox.castShadow = true;
       this.displayBox.receiveShadow = true;
     }
@@ -1110,27 +1220,44 @@ const SceneManager = {
     this.displayBox.userData.isDisplay = true;
     this.displayBox.userData.projectData = {
       title: "About Me",
-      description: "This is a temporary description about me and my work. Lorem ipsum dolor sit amet, consectetur adipiscing elit. I love creating interactive 3D experiences and working with web technologies.",
+      description: `"Hi! I'm Soham, a student in graphic design at ECV Aix-en-Provence. I love pushing the limits of what I know and experimenting with new programs/ways of doing things. I honestly like most domains of design, but I definitely tend to have a little more interest in digital mediums.
+      
+      <div style="margin: 20px 0; display: flex; gap: 15px; align-items: center;">
+        <a href="https://www.instagram.com/haum_kohli/" target="_blank" style="display: inline-block;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
+            <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+          </svg>
+        </a>
+        <a href="https://www.linkedin.com/in/haum/" target="_blank" style="display: inline-block;">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="#000000">
+            <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+          </svg>
+        </a>
+      </div>
+      
+      <p style="margin: 20px 0 10px 0; font-style: italic;">Music is an essential part of my creative process and design philosophy.</p>
+      
+      <div style="margin-top: 15px;">
+        <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/454e70CPg4oTs3RaZcuw9K?utm_source=generator&theme=0" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+      </div>`,
       media: [
-        { type: "image", src: "https://via.placeholder.com/800x600/1976D2/FFFFFF?text=Image+1" },
-        { type: "image", src: "https://via.placeholder.com/600x800/FFD600/000000?text=Image+2" },
-        { type: "image", src: "https://via.placeholder.com/800x600/44aa88/FFFFFF?text=Image+3" }
+        { type: "image", src: "assets/me.webp" },
+  
       ]
     };
     this.scene.add(this.displayBox);
     this.boxes.push(this.displayBox);
     
-    // Create DOOM arcade on right wall - only on PC
     if (!CONFIG.IS_MOBILE) {
       const arcadeGeometry = new THREE.BoxGeometry(12, 16, 3);
+      const doomTexture = textureLoader.load(
+        'assets/DOOMCOVER.webp',
+        () => LoadingManager.increment(),
+        undefined,
+        () => LoadingManager.increment()
+      );
       
-      // Load DOOMCOVER.PNG texture
-      const textureLoader = new THREE.TextureLoader();
-      const doomTexture = textureLoader.load('assets/DOOMCOVER.webp');
-      
-      const arcadeMaterial = new THREE.MeshStandardMaterial({ 
-        map: doomTexture
-      });
+      const arcadeMaterial = new THREE.MeshStandardMaterial({ map: doomTexture });
       this.doomArcade = new THREE.Mesh(arcadeGeometry, arcadeMaterial);
       this.doomArcade.position.set(45, 18, 100);
       this.doomArcade.rotation.y = -Math.PI / 2;
@@ -1140,7 +1267,6 @@ const SceneManager = {
       this.scene.add(this.doomArcade);
       this.boxes.push(this.doomArcade);
       
-      // Add text above arcade
       const canvas = document.createElement('canvas');
       canvas.width = 512;
       canvas.height = 128;
@@ -1161,11 +1287,13 @@ const SceneManager = {
       textMesh.position.set(45, 28, 100);
       textMesh.rotation.y = -Math.PI / 2;
       this.scene.add(textMesh);
+    } else {
+      LoadingManager.increment();
     }
   }
 };
 
-// ===== PHYSICS MANAGER MODULE =====
+// ===== PHYSICS MANAGER =====
 const PhysicsManager = {
   velocity: new THREE.Vector3(),
   direction: new THREE.Vector3(),
@@ -1208,7 +1336,7 @@ const PhysicsManager = {
       this.canJump = true;
     }
     
-    if (InputManager.isKeyPressed('Space') && this.canJump) {
+    if (InputManager.keys.Space && this.canJump) {
       this.velocity.y += CONFIG.JUMP_FORCE;
       this.canJump = false;
     }
@@ -1227,10 +1355,10 @@ const PhysicsManager = {
   }
 };
 
-// ===== INTERACTION MANAGER MODULE =====
+// ===== INTERACTION MANAGER =====
 const InteractionManager = {
-  reticle: null,
   raycaster: new THREE.Raycaster(),
+  reticle: null,
   hoveredBox: null,
   
   init() {
@@ -1238,7 +1366,7 @@ const InteractionManager = {
     
     if (!CONFIG.IS_MOBILE) {
       document.addEventListener('mousemove', (e) => {
-        if (InputManager.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+        if (InputManager.pointerLocked && !AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible) {
           SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
           SceneManager.pitch.rotation.x = Math.max(
             -Math.PI/2, 
@@ -1247,10 +1375,20 @@ const InteractionManager = {
         }
       });
       
-      document.addEventListener('click', () => {
+      document.addEventListener('click', (e) => {
         ShotgunGif.play();
         
         if (AboutApp.doomPopupVisible || AboutApp.popupVisible) {
+          const popup = document.getElementById('popup');
+          if (AboutApp.popupVisible) {
+            const rect = popup.getBoundingClientRect();
+            const clickedInside = e.clientX >= rect.left && e.clientX <= rect.right && 
+                                 e.clientY >= rect.top && e.clientY <= rect.bottom;
+            
+            if (!clickedInside) {
+              AboutApp.hidePopup();
+            }
+          }
           return;
         }
         
@@ -1274,7 +1412,6 @@ const InteractionManager = {
   },
   
   update() {
-    // Handle mobile look controls
     if (CONFIG.IS_MOBILE && (InputManager.mobileLookDelta.x !== 0 || InputManager.mobileLookDelta.y !== 0)) {
       SceneManager.yaw.rotation.y -= InputManager.mobileLookDelta.x * CONFIG.MOBILE_LOOK_SENSITIVITY;
       SceneManager.pitch.rotation.x = Math.max(
@@ -1283,7 +1420,6 @@ const InteractionManager = {
       );
     }
     
-    // Check for hovering over boxes
     if ((!CONFIG.IS_MOBILE && !InputManager.pointerLocked) || AboutApp.popupVisible || AboutApp.menuOpen || AboutApp.doomPopupVisible) {
       this.reticle.classList.remove('hover');
       this.hoveredBox = null;
@@ -1315,14 +1451,53 @@ const InteractionManager = {
   }
 };
 
-// ===== POPUP MANAGER MODULE =====
+// ===== POPUP MANAGER =====
 const PopupManager = {
   generateHTML(project) {
-    const mediaContent = project.media.map(m =>
-      m.type === "video"
-        ? `<video src="${m.src}" controls playsinline style="width:100%;height:auto;object-fit:contain;"></video>`
-        : `<img src="${m.src}" alt="${project.title}" onclick="AboutApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`
-    ).join('');
+    // If there's no title and no description, just show the image(s) fullscreen
+    const hasContent = project.title || project.description;
+    
+    const mediaContent = project.media.map(m => {
+      if (m.type === "video") {
+        const vimeoMatch = m.src.match(/vimeo\.com\/(\d+)/);
+        if (vimeoMatch) {
+          const videoId = vimeoMatch[1];
+          return `<div style="width:100%;height:100%;min-height:${CONFIG.IS_MOBILE ? '100vh' : '85vh'};display:flex;align-items:center;justify-content:center;margin:0;background:#000;flex-shrink:0;">
+            <iframe src="https://player.vimeo.com/video/${videoId}?background=0&autoplay=0&loop=0&byline=0&title=0&portrait=0&controls=1&sidedock=0" 
+                    frameborder="0" 
+                    allow="autoplay; fullscreen; picture-in-picture" 
+                    style="width:100%;height:100%;" 
+                    title="${project.title}">
+            </iframe>
+          </div>
+          <script src="https://player.vimeo.com/api/player.js"><\/script>`;
+        } else {
+          return `<div style="width:100%;height:100%;min-height:${CONFIG.IS_MOBILE ? '100vh' : '85vh'};display:flex;align-items:center;justify-content:center;margin:0;background:#000;flex-shrink:0;">
+            <video src="${m.src}" controls playsinline style="width:100%;height:100%;object-fit:contain;"></video>
+          </div>`;
+        }
+      } else if (m.type === 'image' || m.type === 'img') {
+        return `<img src="${m.src}" alt="${project.title}" onclick="AboutApp.openImageModal(this)" style="width:100%;height:auto;object-fit:contain;display:block;">`;
+      } else {
+        return '';
+      }
+    }).join('');
+    
+    // If no content, return just the image centered
+    if (!hasContent) {
+      return `
+        <div style="display:flex;width:100%;height:100%;align-items:center;justify-content:center;background:#fff;">
+          ${mediaContent}
+        </div>
+      `;
+    }
+    
+    const mobileHeader = CONFIG.IS_MOBILE ? `
+      <div style="margin-bottom: 20px;">
+        <h2 style="font-family: 'MacklinSansBold', 'monospace821Bold', sans-serif; margin: 0 0 10px 0;">${project.title}</h2>
+        <p style="font-family: 'Monospace821'; margin: 0; line-height: 1.5;">${project.description}</p>
+      </div>
+    ` : '';
     
     return `
       <div class="popup-content-layout">
@@ -1332,88 +1507,15 @@ const PopupManager = {
         </div>
         <div class="popup-right">
           <div class="popup-images-scroll">
-            ${mediaContent}
+            ${mobileHeader}${mediaContent}
           </div>
         </div>
       </div>
     `;
-  },
-  
-  layoutMedia(root) {
-    const scrollContainer = root.querySelector('.popup-images-scroll');
-    if (!scrollContainer) return;
-    
-    const mediaElems = Array.from(scrollContainer.querySelectorAll('img, video'));
-    if (mediaElems.length === 0) return;
-    
-    const promises = mediaElems.map(elem => new Promise(resolve => {
-      if (elem.tagName === 'IMG') {
-        if (elem.complete && elem.naturalWidth) {
-          resolve({ elem, w: elem.naturalWidth, h: elem.naturalHeight });
-        } else {
-          const onLoad = () => {
-            elem.removeEventListener('load', onLoad);
-            resolve({ elem, w: elem.naturalWidth, h: elem.naturalHeight });
-          };
-          elem.addEventListener('load', onLoad);
-        }
-      } else {
-        if (elem.readyState >= 1 && elem.videoWidth) {
-          resolve({ elem, w: elem.videoWidth, h: elem.videoHeight });
-        } else {
-          const onMeta = () => {
-            elem.removeEventListener('loadedmetadata', onMeta);
-            resolve({ elem, w: elem.videoWidth, h: elem.videoHeight });
-          };
-          elem.addEventListener('loadedmetadata', onMeta);
-        }
-      }
-    }));
-    
-    Promise.all(promises).then(results => {
-      scrollContainer.innerHTML = '';
-      let pendingRow = null;
-      
-      results.forEach(({ elem, w, h }) => {
-        elem.style.maxWidth = '100%';
-        elem.style.display = 'block';
-        elem.style.height = 'auto';
-        elem.style.objectFit = 'contain';
-        
-        const isPortrait = h > w;
-        
-        if (isPortrait) {
-          if (!pendingRow) {
-            pendingRow = document.createElement('div');
-            pendingRow.className = 'image-row';
-          }
-          pendingRow.appendChild(elem);
-          if (pendingRow.children.length === 2) {
-            scrollContainer.appendChild(pendingRow);
-            pendingRow = null;
-          }
-        } else {
-          if (pendingRow) {
-            scrollContainer.appendChild(pendingRow);
-            pendingRow = null;
-          }
-          scrollContainer.appendChild(elem);
-        }
-      });
-      
-      if (pendingRow) {
-        const spacer = document.createElement('div');
-        spacer.style.flex = '1';
-        pendingRow.appendChild(spacer);
-        scrollContainer.appendChild(pendingRow);
-      }
-    }).catch(e => {
-      console.warn('Error in layout popup media:', e);
-    });
   }
 };
 
-// ===== MAIN APP MODULE =====
+// ===== MAIN APP =====
 const AboutApp = {
   menuOpen: false,
   popupVisible: false,
@@ -1423,6 +1525,7 @@ const AboutApp = {
   dosboxInstance: null,
   
   init() {
+    LoadingManager.init();
     InputManager.init();
     SceneManager.init();
     InteractionManager.init();
@@ -1446,11 +1549,7 @@ const AboutApp = {
   },
   
   toggleMenu() {
-    if (this.menuOpen) {
-      this.closeMenu();
-    } else {
-      this.openMenu();
-    }
+    this.menuOpen ? this.closeMenu() : this.openMenu();
   },
   
   openMenu() {
@@ -1464,6 +1563,9 @@ const AboutApp = {
       const randomGif = CONFIG.gifUrls[Math.floor(Math.random() * CONFIG.gifUrls.length)];
       gifImg.src = randomGif;
       gifImg.style.display = 'block';
+      
+      const closeBtn = document.getElementById('mobile-menu-close');
+      closeBtn.style.display = 'flex';
     }
     
     if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
@@ -1481,6 +1583,9 @@ const AboutApp = {
       const gifImg = document.getElementById('menu-random-gif');
       gifImg.style.display = 'none';
       gifImg.src = '';
+      
+      const closeBtn = document.getElementById('mobile-menu-close');
+      closeBtn.style.display = 'none';
     }
     
     if (!CONFIG.IS_MOBILE) {
@@ -1491,9 +1596,7 @@ const AboutApp = {
   showPopup(project) {
     const popup = document.getElementById('popup');
     const popupContent = document.getElementById('popup-content');
-    const html = PopupManager.generateHTML(project);
-    popupContent.innerHTML = html;
-    requestAnimationFrame(() => PopupManager.layoutMedia(popupContent));
+    popupContent.innerHTML = PopupManager.generateHTML(project);
     popup.style.display = 'flex';
     popup.style.opacity = '1';
     this.popupVisible = true;
@@ -1523,7 +1626,6 @@ const AboutApp = {
       document.exitPointerLock();
     }
     
-    // Initialize DOOM if not already
     if (!this.dosboxInstance) {
       this.dosboxInstance = new Dosbox({
         id: "dosbox",
@@ -1541,8 +1643,6 @@ const AboutApp = {
     const popup = document.getElementById('doom-popup');
     popup.style.display = 'none';
     this.doomPopupVisible = false;
-    
-    // Force reload the entire page to kill DOOM audio
     window.location.reload();
   },
   
