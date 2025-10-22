@@ -168,32 +168,23 @@
     cursor: pointer;
   }
 
-  #popup-close-btn {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  width: 40px;
-  height: 40px;
-  background: none;
+#popup-close-btn {
+ position: absolute;
+  top: 18px;
+  right: 28px;
+  font-size: 2em;
   color: #ff0000;
+  background: none;
   border: none;
-  font-size: 48px;
-  font-weight: bold;
   cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 10002;
+  z-index: 10003;
   font-family: 'Monospace821Bold', monospace;
-  line-height: 1;
-  pointer-events: auto;
   transition: color 0.2s;
 }
 
 #popup-close-btn:hover {
   color: #222;
 }
-
   #popup-content {
     width: 100%;
     height: 100%;
@@ -364,14 +355,14 @@
     border-radius: 4px;
   }
 
-  #mobile-menu-close {
+#mobile-menu-close {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 10000;
   font-family: 'Monospace821Bold', monospace;
   font-size: 2em;
-  color: #ff0000;
+  color: #fff;
   background: none;
   border: none;
   cursor: pointer;
@@ -382,11 +373,6 @@
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: color 0.2s;
-}
-
-#mobile-menu-close:hover {
-  color: #222;
 }
 
   @media (max-width: 1024px) {
@@ -1688,19 +1674,33 @@ const GalleryApp = {
     }
   },
   
-  hidePopup() {
-    const popup = document.getElementById('popup');
-    popup.style.display = 'none';
-    this.popupVisible = false;
-    this.popupJustClosed = true;
-    
-    setTimeout(() => {
-      this.popupJustClosed = false;
-      if (!CONFIG.IS_MOBILE && !this.menuOpen) {
-        document.body.requestPointerLock();
-      }
-    }, 150);
-  },
+hidePopup() {
+  const popup = document.getElementById('popup');
+  const popupContent = document.getElementById('popup-content');
+  
+  // Stop all videos and iframes in the popup
+  const videos = popupContent.querySelectorAll('video');
+  videos.forEach(video => {
+    video.pause();
+    video.currentTime = 0;
+  });
+  
+  const iframes = popupContent.querySelectorAll('iframe');
+  iframes.forEach(iframe => {
+    iframe.src = iframe.src; // Reload iframe to stop it
+  });
+  
+  popup.style.display = 'none';
+  this.popupVisible = false;
+  this.popupJustClosed = true;
+  
+  setTimeout(() => {
+    this.popupJustClosed = false;
+    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+      document.body.requestPointerLock();
+    }
+  }, 150);
+}
   
   animate() {
     this.animationId = requestAnimationFrame(() => this.animate());
