@@ -307,16 +307,17 @@ body {
   top: 32px;
   right: 48px;
   font-size: 3em;
-  color: #fff;
+  color: #ff0000;
   background: none;
   border: none;
   cursor: pointer;
   z-index: 10003;
-  text-shadow: 0 2px 8px #000;
+  font-family: 'Monospace821Bold', monospace;
+  transition: color 0.2s;
 }
 
 #image-modal .modal-close-btn:hover { 
-  color: #FFD600; 
+  color: #222; 
 }
 
 /* ===== DOOM POPUP ===== */
@@ -514,7 +515,6 @@ body {
   justify-content: center;
   border-radius: 4px;
 }
-
 #mobile-menu-close {
   position: fixed;
   top: 20px;
@@ -522,7 +522,7 @@ body {
   z-index: 10000;
   font-family: 'Monospace821Bold', monospace;
   font-size: 2em;
-  color: #fff;
+  color: #ff0000;
   background: none;
   border: none;
   cursor: pointer;
@@ -533,6 +533,11 @@ body {
   align-items: center;
   justify-content: center;
   line-height: 1;
+  transition: color 0.2s;
+}
+
+#mobile-menu-close:hover {
+  color: #222;
 }
 
 /* ===== MOBILE/TABLET RESPONSIVE ===== */
