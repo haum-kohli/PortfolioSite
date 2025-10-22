@@ -11,7 +11,7 @@
     font-weight: bold;
   }
   @font-face {
-    font-family: 'Monospace821Bold';
+    font-family: 'Monospace821Bold';F
     src: url('assets/fonts/MONOSPACE821BOLDBT.TTF') format('truetype');
     font-weight: bold;
   }
@@ -1644,13 +1644,13 @@ const GalleryApp = {
               const vimeoMatch = item.vimeoUrl.match(/vimeo\.com\/(\d+)/);
               if (vimeoMatch) {
                 const videoId = vimeoMatch[1];
-                html += `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=0&loop=0&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
+                html += `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=0&loop=0&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="width:100%;aspect-ratio:16/9;display:block;margin-bottom:10px;border:none;"></iframe>`;
               }
             } else {
-              html += `<video src="${src}" controls playsinline></video>`;
+              html += `<video src="${src}" controls playsinline style="width:100%;height:auto;display:block;margin-bottom:10px;"></video>`;
             }
           } else if (src) {
-            html += `<img src="${src}">`;
+            html += `<img src="${src}" style="width:100%;height:auto;display:block;margin-bottom:10px;">`;
           }
         });
         
@@ -1668,15 +1668,6 @@ const GalleryApp = {
   popup.style.display = 'flex';
   this.popupVisible = true;
   
-  // Add click handler for desktop only
-  if (!CONFIG.IS_MOBILE) {
-    popup.onclick = (e) => {
-      if (e.target === popup) {
-        this.hidePopup();
-      }
-    };
-  }
-  
   if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
     document.exitPointerLock();
   }
@@ -1685,9 +1676,6 @@ const GalleryApp = {
 hidePopup() {
   const popup = document.getElementById('popup');
   const popupContent = document.getElementById('popup-content');
-  
-  // Remove click handler
-  popup.onclick = null;
   
   // Stop all videos and iframes in the popup
   const videos = popupContent.querySelectorAll('video');
