@@ -2,7 +2,7 @@
   {
     "id": "carti",
     "type": "video",
-    "title": "Carti Project",
+    "title": "Olympian",
     "description": "This is a project I made shortly after the relase of the highly anticipated 'MUSIC' by Playboi Carti. It is a lyric video for his track 'Olympian'. I merged multiple of his pre-existing music videos to form a base and then went off that to create the different typographic visuals.",
     "videoSrc": "assets/carticompressed.mp4",
     "thumbnail": "carti1.webp",
@@ -19,7 +19,7 @@
   {
     "id": "asfalt",
     "type": "image",
-    "title": "Asfalt Texture",
+    "title": "Asfalt",
     "description": "Asfalt was my final project in my second year, created for a brief that gave us full freedom as long as it resulted in a physical typographic specimen. Inspired by anti-design and condensed, stretched fonts, I used a Dinamo Type face based on road markings to design a four-meter leporello about the history of racism and highways in the United States. Starting with the 1939 New York World’s Fair, it explores how highway construction destroyed black and brown neighborhoods. The visuals draw from highway signage and protest posters, turning typography into a reflection on ongoing infrastructural segregation.",
     "thumbnail": "asfalt.webp",
     "x": -50,
@@ -42,7 +42,7 @@
   {
     "id": "frank",
     "type": "image",
-    "title": "Frank Texture",
+    "title": "A-OK",
     "description": "A-OK was my vision for what a new Frank Ocean album could resemble. I deliberately based my visuals off the editorial work and the jewlery work he has done at HOMER rather than basing it off his older artistic direction. His older direction was far more tame than what he works with today which is far more experimental. Even looking just at the Blonde vinyl rerelase one can see that his art direction has had a big shift.",
     "thumbnail": "frank.webp",
     "x": 30,
@@ -62,8 +62,8 @@
   {
     "id": "hollis",
     "type": "video",
-    "title": "Hollis Project",
-    "description": "This was a lyric video I made for the song 'Light' by 2Hollis. In this one my main goal was really to experiment with creating texture from videos as I hadn't tried it out too much. I ended up mixing that with a more anti-design style of putting my text as well as some audio-reactvie visuals as well.",
+    "title": "Light",
+    "description": "This was a lyric video I made for the song 'Light' by 2Hollis. In this one my main goal was really to experiment with creating texture from videos as I hadn't tried it out too much. I ended up mixing that with a more anti-design style of putting my text as well as some audio-reactive visuals as well.",
     "videoSrc": "assets/holliscompressed.mp4",
     "thumbnail": "hollis1.webp",
     "x": -70,
@@ -121,7 +121,7 @@
   {
     "id": "kendrick",
     "type": "video",
-    "title": "Kendrick Project",
+    "title": "Meet The Grahams",
     "description": "Another video I made right after Kendrick Lamar released 'Meet the Grahams'. My main goal with this one was to play around with rotoscoping and really understand how it worked. Along with this I also learned how to 3d track scenes to place my text inside of them so it was a major learning experience for me.",
     "videoSrc": "assets/kendrickcompressed.mp4",
     "thumbnail": "kendrick1.webp",
