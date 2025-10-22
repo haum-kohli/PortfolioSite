@@ -304,9 +304,9 @@ body {
 
 #image-modal .modal-close-btn {
   position: absolute;
-  top: 32px;
-  right: 48px;
-  font-size: 3em;
+  top: 18px;
+  right: 28px;
+  font-size: 2em;
   color: #ff0000;
   background: none;
   border: none;
@@ -347,16 +347,22 @@ body {
 
 #doom-popup-close-btn {
   position: absolute;
-  top: 20px;
-  right: 20px;
+  top: 18px;
+  right: 28px;
   background: none;
-  color: #fff;
+  color: #ff0000;
   border: none;
-  font-size: 48px;
+  font-size: 2em;
   cursor: pointer;
   z-index: 10002;
   padding: 0;
   line-height: 1;
+  font-family: 'Monospace821Bold', monospace;
+  transition: color 0.2s;
+}
+
+#doom-popup-close-btn:hover {
+  color: #222;
 }
 
 #dosbox {
@@ -522,7 +528,7 @@ body {
   z-index: 10000;
   font-family: 'Monospace821Bold', monospace;
   font-size: 2em;
-  color: #ff0000;
+  color: #fff;
   background: none;
   border: none;
   cursor: pointer;
@@ -533,11 +539,6 @@ body {
   align-items: center;
   justify-content: center;
   line-height: 1;
-  transition: color 0.2s;
-}
-
-#mobile-menu-close:hover {
-  color: #222;
 }
 
 /* ===== MOBILE/TABLET RESPONSIVE ===== */
@@ -1636,8 +1637,22 @@ const AboutApp = {
     }
   },
   
- hidePopup() {
+hidePopup() {
   const popup = document.getElementById('popup');
+  const popupContent = document.getElementById('popup-content');
+  
+  // Stop all videos and iframes in the popup
+  const videos = popupContent.querySelectorAll('video');
+  videos.forEach(video => {
+    video.pause();
+    video.currentTime = 0;
+  });
+  
+  const iframes = popupContent.querySelectorAll('iframe');
+  iframes.forEach(iframe => {
+    iframe.src = iframe.src; // Reload iframe to stop it
+  });
+  
   popup.style.display = 'none';
   popup.style.opacity = '0';
   this.popupVisible = false;
@@ -1649,8 +1664,7 @@ const AboutApp = {
       document.body.requestPointerLock();
     }
   }, 150);
-},
-  
+}
   showDoomPopup() {
     const popup = document.getElementById('doom-popup');
     popup.style.display = 'flex';
