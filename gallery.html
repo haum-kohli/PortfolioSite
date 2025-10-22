@@ -155,18 +155,17 @@
   }
 
   #popup {
-    display: none;
-    position: fixed;
-    left: 0;
-    top: 0;
-    width: 100vw;
-    height: 100vh;
-    background: rgba(0,0,0,0.95);
-    z-index: 10001;
-    justify-content: center;
-    align-items: center;
-    cursor: pointer;
-  }
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.95);
+  z-index: 10001;
+  justify-content: center;
+  align-items: center;
+}
 
 #popup-close-btn {
   position: absolute;
@@ -177,7 +176,7 @@
   background: none;
   border: none;
   cursor: pointer;
-  z-index: 11;
+  z-index: 10003;
   transition: color 0.2s;
   font-family: 'Monospace821Bold', monospace;
   line-height: 1;
@@ -186,29 +185,27 @@
 #popup-close-btn:hover { 
   color: #222; 
 }
-}
-  #popup-content {
-    width: 100%;
-    height: 100%;
-    position: relative;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    pointer-events: none;
-  }
 
-  .popup-images-scroll {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    padding: 60px 20px 20px 20px;
-    box-sizing: border-box;
-    pointer-events: auto;
-  }
+#popup-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.popup-images-scroll {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 60px 20px 20px 20px;
+  box-sizing: border-box;
+}
 
   .popup-images-scroll img {
     width: 100%;
@@ -1625,56 +1622,65 @@ const GalleryApp = {
     }
   },
   
-  showPopup(box) {
-    const popup = document.getElementById('popup');
-    const popupContent = document.getElementById('popup-content');
+ showPopup(box) {
+  const popup = document.getElementById('popup');
+  const popupContent = document.getElementById('popup-content');
+  
+  if (CONFIG.IS_MOBILE && box.userData.isMobileCategory) {
+    const cat = box.userData.categoryData;
     
-    if (CONFIG.IS_MOBILE && box.userData.isMobileCategory) {
-      const cat = box.userData.categoryData;
-      
-      fetch('assets/gallery.json')
-        .then(res => res.json())
-        .then(allItems => {
-          const items = allItems.filter(item => item.category === cat.category);
+    fetch('assets/gallery.json')
+      .then(res => res.json())
+      .then(allItems => {
+        const items = allItems.filter(item => item.category === cat.category);
+        
+        let html = '<div class="popup-images-scroll">';
+        
+        items.forEach(item => {
+          const src = item.thumbnail || item.src;
           
-          let html = '<div class="popup-images-scroll">';
-          
-          items.forEach(item => {
-            const src = item.thumbnail || item.src;
-            
-            if (src && (src.toLowerCase().endsWith('.mp4') || src.toLowerCase().endsWith('.webm'))) {
-              if (item.vimeoUrl) {
-                const vimeoMatch = item.vimeoUrl.match(/vimeo\.com\/(\d+)/);
-                if (vimeoMatch) {
-                  const videoId = vimeoMatch[1];
-                  html += `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=0&loop=0&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
-                }
-              } else {
-                html += `<video src="${src}" controls playsinline></video>`;
+          if (src && (src.toLowerCase().endsWith('.mp4') || src.toLowerCase().endsWith('.webm'))) {
+            if (item.vimeoUrl) {
+              const vimeoMatch = item.vimeoUrl.match(/vimeo\.com\/(\d+)/);
+              if (vimeoMatch) {
+                const videoId = vimeoMatch[1];
+                html += `<iframe src="https://player.vimeo.com/video/${videoId}?autoplay=0&loop=0&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe>`;
               }
-            } else if (src) {
-              html += `<img src="${src}">`;
+            } else {
+              html += `<video src="${src}" controls playsinline></video>`;
             }
-          });
-          
-          html += '</div>';
-          popupContent.innerHTML = html;
-        })
-        .catch(err => {
-          console.error('Failed to load gallery JSON:', err);
-          popupContent.innerHTML = '<div class="popup-images-scroll"><p style="color:#fff;text-align:center;padding:40px;">Failed to load content</p></div>';
+          } else if (src) {
+            html += `<img src="${src}">`;
+          }
         });
-    } else {
-      popupContent.innerHTML = box.userData.popup || '';
-    }
-    
-    popup.style.display = 'flex';
-    this.popupVisible = true;
-    
-    if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
-      document.exitPointerLock();
-    }
-  },
+        
+        html += '</div>';
+        popupContent.innerHTML = html;
+      })
+      .catch(err => {
+        console.error('Failed to load gallery JSON:', err);
+        popupContent.innerHTML = '<div class="popup-images-scroll"><p style="color:#fff;text-align:center;padding:40px;">Failed to load content</p></div>';
+      });
+  } else {
+    popupContent.innerHTML = box.userData.popup || '';
+  }
+  
+  popup.style.display = 'flex';
+  this.popupVisible = true;
+  
+  // Add click handler for desktop only
+  if (!CONFIG.IS_MOBILE) {
+    popup.onclick = (e) => {
+      if (e.target === popup) {
+        this.hidePopup();
+      }
+    };
+  }
+  
+  if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
+    document.exitPointerLock();
+  }
+},
   
 hidePopup() {
   const popup = document.getElementById('popup');
