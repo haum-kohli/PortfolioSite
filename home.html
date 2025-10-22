@@ -177,22 +177,24 @@
     overflow: hidden;
   }
 
-  #popup .close-btn {
-    position: absolute;
-    top: 18px;
-    right: 28px;
-    font-size: 2em;
-    color: #ff0000;
-    background: none;
-    border: none;
-    cursor: pointer;
-    z-index: 11;
-    transition: color 0.2s;
-  }
+ #popup .close-btn {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  font-size: 2em;
+  color: #ff0000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 11;
+  transition: color 0.2s;
+  font-family: 'Monospace821Bold', monospace;
+  line-height: 1;
+}
 
-  #popup .close-btn:hover { 
-    color: #222; 
-  }
+#popup .close-btn:hover { 
+  color: #222; 
+}
 
   #popup .popup-content-layout {
     display: flex;
@@ -1645,11 +1647,15 @@ hidePopup() {
   videos.forEach(video => {
     video.pause();
     video.currentTime = 0;
+    video.removeAttribute('src'); // Force mobile to release the video
+    video.load(); // Reset the video element
   });
   
   const iframes = popupContent.querySelectorAll('iframe');
   iframes.forEach(iframe => {
-    iframe.src = iframe.src; // Reload iframe to stop it
+    const src = iframe.src;
+    iframe.src = 'about:blank'; // Immediately stop iframe
+    setTimeout(() => iframe.src = '', 0);
   });
   
   popup.style.display = 'none';
