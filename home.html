@@ -746,7 +746,7 @@ document.addEventListener('keydown', (e) => {
         document.getElementById('click-prompt').style.display = 'none';
       }
       
-      if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible) {
+     if (wasLocked && !this.pointerLocked && !PortfolioApp.menuOpen && !PortfolioApp.popupVisible && !PortfolioApp.popupJustClosed) {
         PortfolioApp.openMenu();
       }
     });
@@ -1546,6 +1546,7 @@ const PopupManager = {
 const PortfolioApp = {
   menuOpen: false,
   popupVisible: false,
+  popupJustClosed: false,
   animationId: null,
   prevTime: performance.now(),
   
@@ -1635,16 +1636,20 @@ const PortfolioApp = {
     }
   },
   
-  hidePopup() {
-    const popup = document.getElementById('popup');
-    popup.style.display = 'none';
-    popup.style.opacity = '0';
-    this.popupVisible = false;
-    
+hidePopup() {
+  const popup = document.getElementById('popup');
+  popup.style.display = 'none';
+  popup.style.opacity = '0';
+  this.popupVisible = false;
+  this.popupJustClosed = true;
+  
+  setTimeout(() => {
+    this.popupJustClosed = false;
     if (!CONFIG.IS_MOBILE && !this.menuOpen) {
       document.body.requestPointerLock();
     }
-  },
+  }, 150);
+},
   
   openImageModal(imgElem) {
     event.stopPropagation();
