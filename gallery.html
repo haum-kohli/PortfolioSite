@@ -514,7 +514,6 @@ const CONFIG = {
     'assets/gifs/skullfire.gif', 'assets/gifs/whitedragon.gif', 'assets/gifs/yellowdragon.gif'
   ],
   
-  // Mobile category boxes
   mobileCategories: [
     { title: 'PHOTO', x: -30, y: 20, z: 80, category: 'photo' },
     { title: 'POSTERS', x: 30, y: 20, z: 80, category: 'posters' },
@@ -660,7 +659,6 @@ const InputManager = {
         document.getElementById('click-prompt').style.display = 'none';
       }
       
-      // Only open menu if pointer lock was lost and no popup is open
       if (wasLocked && !this.pointerLocked && !GalleryApp.menuOpen && !GalleryApp.popupVisible && !GalleryApp.popupJustClosed) {
         GalleryApp.openMenu();
       }
@@ -694,7 +692,8 @@ const InputManager = {
           isJoystick: isOnJoystick,
           isUI: isOnUI,
           isCameraControl: !isOnJoystick && !isOnUI,
-          hasMoved: false
+          hasMoved: false,
+          totalDistance: 0
         });
       });
     });
@@ -709,8 +708,13 @@ const InputManager = {
         const deltaX = touch.clientX - touchData.lastX;
         const deltaY = touch.clientY - touchData.lastY;
         
-        // Camera rotates based on drag delta (how much finger moved this frame)
-        // When finger stops moving, delta becomes 0 and camera stops
+        const moveDist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        touchData.totalDistance += moveDist;
+        
+        if (touchData.totalDistance > 10) {
+          touchData.hasMoved = true;
+        }
+        
         this.mobileLookDelta.x = deltaX;
         this.mobileLookDelta.y = deltaY;
         
@@ -731,7 +735,7 @@ const InputManager = {
           this.mobileMovement.z = 0;
         }
         
-        if (touchData && touchData.isCameraControl && !touchData.hasMoved) {
+        if (touchData && touchData.isCameraControl && !touchData.hasMoved && touchData.totalDistance < 20) {
           ShotgunGif.play();
           
           if (!GalleryApp.popupVisible && !GalleryApp.menuOpen && InteractionManager.hoveredBox) {
@@ -1484,6 +1488,8 @@ const InteractionManager = {
       });
       
       document.addEventListener('click', (e) => {
+        if (CONFIG.IS_MOBILE) return;
+        
         ShotgunGif.play();
         
         if (GalleryApp.popupVisible) return;
