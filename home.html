@@ -281,11 +281,11 @@
     background: #fff;
   }
 
-  #image-modal .modal-close-btn {
+#image-modal .modal-close-btn {
   position: absolute;
-  top: 32px;
-  right: 48px;
-  font-size: 3em;
+  top: 18px;
+  right: 28px;
+  font-size: 2em;
   color: #ff0000;
   background: none;
   border: none;
@@ -412,7 +412,7 @@
     border-radius: 4px;
   }
 
-  #mobile-menu-close {
+#mobile-menu-close {
   position: fixed;
   top: 20px;
   right: 20px;
@@ -420,9 +420,8 @@
   font-family: 'Monospace821Bold', monospace;
   font-size: 2em;
   color: #fff;
-  background: rgba(0, 0, 0, 0.5);
-  border: 2px solid #fff;
-  padding: 8px 16px;
+  background: none;
+  border: none;
   cursor: pointer;
   display: none;
   pointer-events: auto;
@@ -430,7 +429,7 @@
   height: 60px;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  line-height: 1;
 }
   /* ===== MOBILE/TABLET RESPONSIVE ===== */
   @media (max-width: 1024px) {
@@ -1639,6 +1638,20 @@ const PortfolioApp = {
   
 hidePopup() {
   const popup = document.getElementById('popup');
+  const popupContent = document.getElementById('popup-content');
+  
+  // Stop all videos and iframes in the popup
+  const videos = popupContent.querySelectorAll('video');
+  videos.forEach(video => {
+    video.pause();
+    video.currentTime = 0;
+  });
+  
+  const iframes = popupContent.querySelectorAll('iframe');
+  iframes.forEach(iframe => {
+    iframe.src = iframe.src; // Reload iframe to stop it
+  });
+  
   popup.style.display = 'none';
   popup.style.opacity = '0';
   this.popupVisible = false;
@@ -1650,7 +1663,7 @@ hidePopup() {
       document.body.requestPointerLock();
     }
   }, 150);
-},
+}
   
   openImageModal(imgElem) {
     event.stopPropagation();
