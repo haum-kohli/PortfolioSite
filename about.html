@@ -830,14 +830,22 @@ const InputManager = {
   activeTouches: new Map(),
   
   init() {
-    document.addEventListener('keydown', (e) => {
-      if (e.code === 'Escape') {
-        e.preventDefault();
-        AboutApp.toggleMenu();
-        return;
-      }
-      this.keys[e.code] = true;
-    });
+document.addEventListener('keydown', (e) => {
+  if (e.code === 'Escape') {
+    e.preventDefault();
+    if (AboutApp.popupVisible) {
+      AboutApp.hidePopup();
+      return;
+    }
+    if (AboutApp.doomPopupVisible) {
+      AboutApp.hideDoomPopup();
+      return;
+    }
+    AboutApp.toggleMenu();
+    return;
+  }
+  this.keys[e.code] = true;
+});
     
     document.addEventListener('keyup', (e) => this.keys[e.code] = false);
     
@@ -858,7 +866,7 @@ const InputManager = {
         document.getElementById('click-prompt').style.display = 'none';
       }
       
-      if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible) {
+    if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible && !AboutApp.popupJustClosed) {
         AboutApp.openMenu();
       }
     });
@@ -870,87 +878,95 @@ const InputManager = {
     });
   },
   
-  initMobileControls() {
-    this.initJoystick('movement-joystick', (x, y) => {
-      this.mobileMovement.x = x;
-      this.mobileMovement.z = y;
-    });
-    
-    document.addEventListener('touchstart', (e) => {
-      Array.from(e.changedTouches).forEach(touch => {
-        const target = document.elementFromPoint(touch.clientX, touch.clientY);
-        const isOnJoystick = target && target.closest('#movement-joystick');
-        const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
-        
-        this.activeTouches.set(touch.identifier, {
-          startX: touch.clientX,
-          startY: touch.clientY,
-          lastX: touch.clientX,
-          lastY: touch.clientY,
-          isJoystick: isOnJoystick,
-          isUI: isOnUI,
-          isCameraControl: !isOnJoystick && !isOnUI
-        });
-      });
-    });
-    
-    document.addEventListener('touchmove', (e) => {
-      if (AboutApp.popupVisible || AboutApp.menuOpen) return;
+// FIND AND REPLACE THE ENTIRE initMobileControls FUNCTION:
+
+initMobileControls() {
+  this.initJoystick('movement-joystick', (x, y) => {
+    this.mobileMovement.x = x;
+    this.mobileMovement.z = y;
+  });
+  
+  document.addEventListener('touchstart', (e) => {
+    Array.from(e.changedTouches).forEach(touch => {
+      const target = document.elementFromPoint(touch.clientX, touch.clientY);
+      const isOnJoystick = target && target.closest('#movement-joystick');
+      const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
       
-      Array.from(e.changedTouches).forEach(touch => {
-        const touchData = this.activeTouches.get(touch.identifier);
-        if (!touchData || !touchData.isCameraControl) return;
-        
-        this.mobileLookDelta.x = touch.clientX - touchData.lastX;
-        this.mobileLookDelta.y = touch.clientY - touchData.lastY;
-        touchData.lastX = touch.clientX;
-        touchData.lastY = touch.clientY;
+      this.activeTouches.set(touch.identifier, {
+        startX: touch.clientX,
+        startY: touch.clientY,
+        lastX: touch.clientX,
+        lastY: touch.clientY,
+        isJoystick: isOnJoystick,
+        isUI: isOnUI,
+        isCameraControl: !isOnJoystick && !isOnUI,
+        hasMoved: false,
+        totalDistance: 0
       });
     });
+  });
+  
+  document.addEventListener('touchmove', (e) => {
+    if (AboutApp.popupVisible || AboutApp.menuOpen) return;
     
-    document.addEventListener('touchend', (e) => {
-      Array.from(e.changedTouches).forEach(touch => {
-        const touchData = this.activeTouches.get(touch.identifier);
+    Array.from(e.changedTouches).forEach(touch => {
+      const touchData = this.activeTouches.get(touch.identifier);
+      if (!touchData || !touchData.isCameraControl) return;
+      
+      const deltaX = touch.clientX - touchData.lastX;
+      const deltaY = touch.clientY - touchData.lastY;
+      
+      const moveDist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      touchData.totalDistance += moveDist;
+      
+      if (touchData.totalDistance > 10) {
+        touchData.hasMoved = true;
+      }
+      
+      this.mobileLookDelta.x = deltaX;
+      this.mobileLookDelta.y = deltaY;
+      
+      touchData.lastX = touch.clientX;
+      touchData.lastY = touch.clientY;
+    });
+  });
+  
+  document.addEventListener('touchend', (e) => {
+    Array.from(e.changedTouches).forEach(touch => {
+      const touchData = this.activeTouches.get(touch.identifier);
+      
+      if (touchData && touchData.isCameraControl && !touchData.hasMoved && touchData.totalDistance < 20) {
+        ShotgunGif.play();
         
-        if (touchData && touchData.isCameraControl) {
-          const distMoved = Math.sqrt(
-            Math.pow(touch.clientX - touchData.startX, 2) + 
-            Math.pow(touch.clientY - touchData.startY, 2)
-          );
+        if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && InteractionManager.hoveredBox) {
+          const cameraPos = new THREE.Vector3();
+          SceneManager.camera.getWorldPosition(cameraPos);
+          const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
           
-          if (distMoved < 20) {
-            ShotgunGif.play();
-            
-            if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && InteractionManager.hoveredBox) {
-              const cameraPos = new THREE.Vector3();
-              SceneManager.camera.getWorldPosition(cameraPos);
-              const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
-              
-              if (dist <= CONFIG.CLICK_DISTANCE) {
-                if (InteractionManager.hoveredBox.userData.isDoomArcade) {
-                  AboutApp.showDoomPopup();
-                } else if (InteractionManager.hoveredBox.userData.isDisplay) {
-                  AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
-                }
-              }
+          if (dist <= CONFIG.CLICK_DISTANCE) {
+            if (InteractionManager.hoveredBox.userData.isDoomArcade) {
+              AboutApp.showDoomPopup();
+            } else if (InteractionManager.hoveredBox.userData.isDisplay) {
+              AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
             }
           }
         }
-        
-        this.activeTouches.delete(touch.identifier);
-      });
-      
-      if (!Array.from(this.activeTouches.values()).some(t => t.isCameraControl)) {
-        this.mobileLookDelta.x = 0;
-        this.mobileLookDelta.y = 0;
       }
+      
+      this.activeTouches.delete(touch.identifier);
     });
     
-    document.getElementById('mobile-menu-btn').addEventListener('click', (e) => {
-      e.preventDefault();
-      AboutApp.toggleMenu();
-    });
-  },
+    if (!Array.from(this.activeTouches.values()).some(t => t.isCameraControl)) {
+      this.mobileLookDelta.x = 0;
+      this.mobileLookDelta.y = 0;
+    }
+  });
+  
+  document.getElementById('mobile-menu-btn').addEventListener('click', (e) => {
+    e.preventDefault();
+    AboutApp.toggleMenu();
+  });
+},
   
   initJoystick(id, callback) {
     const joystick = document.getElementById(id);
@@ -1517,6 +1533,7 @@ const AboutApp = {
   menuOpen: false,
   popupVisible: false,
   doomPopupVisible: false,
+    popupJustClosed: false,
   animationId: null,
   prevTime: performance.now(),
   dosboxInstance: null,
@@ -1603,16 +1620,20 @@ const AboutApp = {
     }
   },
   
-  hidePopup() {
-    const popup = document.getElementById('popup');
-    popup.style.display = 'none';
-    popup.style.opacity = '0';
-    this.popupVisible = false;
-    
+ hidePopup() {
+  const popup = document.getElementById('popup');
+  popup.style.display = 'none';
+  popup.style.opacity = '0';
+  this.popupVisible = false;
+  this.popupJustClosed = true;
+  
+  setTimeout(() => {
+    this.popupJustClosed = false;
     if (!CONFIG.IS_MOBILE && !this.menuOpen) {
       document.body.requestPointerLock();
     }
-  },
+  }, 150);
+},
   
   showDoomPopup() {
     const popup = document.getElementById('doom-popup');
