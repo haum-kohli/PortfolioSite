@@ -1698,6 +1698,9 @@ hidePopup() {
   
   setTimeout(() => {
     this.popupJustClosed = false;
+    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+      document.body.requestPointerLock();
+    }
   }, 150);
 },
   
