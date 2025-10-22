@@ -717,11 +717,11 @@ const InputManager = {
 document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         e.preventDefault();
-        if (GalleryApp.popupVisible) {
-          GalleryApp.hidePopup();
+        if (PortfolioApp.popupVisible) {
+          PortfolioApp.hidePopup();
           return;
         }
-        GalleryApp.toggleMenu();
+        PortfolioApp.toggleMenu();
         return;
       }
       this.keys[e.code] = true;
@@ -764,7 +764,7 @@ document.addEventListener('keydown', (e) => {
       this.mobileMovement.z = y;
     });
     
-    document.addEventListener('touchstart', (e) => {
+document.addEventListener('touchstart', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const target = document.elementFromPoint(touch.clientX, touch.clientY);
         const isOnJoystick = target && target.closest('#movement-joystick');
@@ -777,46 +777,52 @@ document.addEventListener('keydown', (e) => {
           lastY: touch.clientY,
           isJoystick: isOnJoystick,
           isUI: isOnUI,
-          isCameraControl: !isOnJoystick && !isOnUI
+          isCameraControl: !isOnJoystick && !isOnUI,
+          hasMoved: false,
+          totalDistance: 0
         });
       });
     });
     
-    document.addEventListener('touchmove', (e) => {
+ document.addEventListener('touchmove', (e) => {
       if (PortfolioApp.popupVisible || PortfolioApp.menuOpen) return;
       
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
         if (!touchData || !touchData.isCameraControl) return;
         
-        this.mobileLookDelta.x = touch.clientX - touchData.lastX;
-        this.mobileLookDelta.y = touch.clientY - touchData.lastY;
+        const deltaX = touch.clientX - touchData.lastX;
+        const deltaY = touch.clientY - touchData.lastY;
+        
+        const moveDist = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+        touchData.totalDistance += moveDist;
+        
+        if (touchData.totalDistance > 10) {
+          touchData.hasMoved = true;
+        }
+        
+        this.mobileLookDelta.x = deltaX;
+        this.mobileLookDelta.y = deltaY;
+        
         touchData.lastX = touch.clientX;
         touchData.lastY = touch.clientY;
       });
     });
     
-    document.addEventListener('touchend', (e) => {
+document.addEventListener('touchend', (e) => {
       Array.from(e.changedTouches).forEach(touch => {
         const touchData = this.activeTouches.get(touch.identifier);
         
-        if (touchData && touchData.isCameraControl) {
-          const distMoved = Math.sqrt(
-            Math.pow(touch.clientX - touchData.startX, 2) + 
-            Math.pow(touch.clientY - touchData.startY, 2)
-          );
+        if (touchData && touchData.isCameraControl && !touchData.hasMoved && touchData.totalDistance < 20) {
+          ShotgunGif.play();
           
-          if (distMoved < 20) {
-            ShotgunGif.play();
+          if (!PortfolioApp.popupVisible && !PortfolioApp.menuOpen && InteractionManager.hoveredBox) {
+            const cameraPos = new THREE.Vector3();
+            SceneManager.camera.getWorldPosition(cameraPos);
+            const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
             
-            if (!PortfolioApp.popupVisible && !PortfolioApp.menuOpen && InteractionManager.hoveredBox) {
-              const cameraPos = new THREE.Vector3();
-              SceneManager.camera.getWorldPosition(cameraPos);
-              const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
-              
-              if (dist <= CONFIG.CLICK_DISTANCE) {
-                PortfolioApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
-              }
+            if (dist <= CONFIG.CLICK_DISTANCE) {
+              PortfolioApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
             }
           }
         }
