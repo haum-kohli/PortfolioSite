@@ -714,10 +714,14 @@ const InputManager = {
   activeTouches: new Map(),
   
   init() {
-    document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', (e) => {
       if (e.code === 'Escape') {
         e.preventDefault();
-        PortfolioApp.toggleMenu();
+        if (GalleryApp.popupVisible) {
+          GalleryApp.hidePopup();
+          return;
+        }
+        GalleryApp.toggleMenu();
         return;
       }
       this.keys[e.code] = true;
