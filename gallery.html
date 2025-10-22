@@ -917,8 +917,8 @@ const SceneManager = {
     return geometry;
   },
   
-  createRoom() {
-    const roomLength = CONFIG.IS_MOBILE ? 200 : 600;
+ createRoom() {
+  const roomLength = CONFIG.IS_MOBILE ? 300 : 600;
     
     const floorGeo = this.createDeformedGeometry(
       new THREE.PlaneGeometry(200, roomLength, 20, Math.max(2, Math.ceil(roomLength / 10))),
