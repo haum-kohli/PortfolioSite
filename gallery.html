@@ -1360,6 +1360,7 @@ const SceneManager = {
           if (isCeiling) {
             box.position.set(x, y, z);
             box.rotation.x = -Math.PI / 2;
+              box.scale.x = -1; 
           } else {
             box.position.set(x, y + boxHeight / 2, z);
             box.rotation.y = rotationY;
