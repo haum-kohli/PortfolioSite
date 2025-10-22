@@ -842,21 +842,21 @@ document.addEventListener('touchend', (e) => {
     });
   },
   
-  initJoystick(id, callback) {
+initJoystick(id, callback) {
     const joystick = document.getElementById(id);
     const stick = joystick.querySelector('.joystick-stick');
     const base = joystick.querySelector('.joystick-base');
-    let activeTouch = null;
     
     const handleMove = (e) => {
-      if (activeTouch === null) return;
       e.preventDefault();
       
       let touch = null;
       if (e.touches) {
         for (let i = 0; i < e.touches.length; i++) {
-          if (e.touches[i].identifier === activeTouch) {
-            touch = e.touches[i];
+          const t = e.touches[i];
+          const touchData = this.activeTouches.get(t.identifier);
+          if (touchData && touchData.isJoystick) {
+            touch = t;
             break;
           }
         }
@@ -884,16 +884,27 @@ document.addEventListener('touchend', (e) => {
     
     const handleEnd = (e) => {
       e.preventDefault();
-      activeTouch = null;
-      stick.style.transform = 'translate(-50%, -50%)';
-      callback(0, 0);
+      
+      // Check if any joystick touch still exists
+      let hasJoystickTouch = false;
+      if (e.touches) {
+        for (let i = 0; i < e.touches.length; i++) {
+          const touchData = this.activeTouches.get(e.touches[i].identifier);
+          if (touchData && touchData.isJoystick) {
+            hasJoystickTouch = true;
+            break;
+          }
+        }
+      }
+      
+      if (!hasJoystickTouch) {
+        stick.style.transform = 'translate(-50%, -50%)';
+        callback(0, 0);
+      }
     };
     
     joystick.addEventListener('touchstart', (e) => {
       e.preventDefault();
-      if (e.touches && e.touches.length > 0) {
-        activeTouch = e.touches[0].identifier;
-      }
     }, { passive: false });
     
     joystick.addEventListener('touchmove', handleMove, { passive: false });
