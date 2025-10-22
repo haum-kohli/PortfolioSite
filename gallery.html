@@ -1686,32 +1686,30 @@ hidePopup() {
   const popup = document.getElementById('popup');
   const popupContent = document.getElementById('popup-content');
   
+  // Remove click handler
+  popup.onclick = null;
+  
   // Stop all videos and iframes in the popup
   const videos = popupContent.querySelectorAll('video');
   videos.forEach(video => {
     video.pause();
     video.currentTime = 0;
-    video.removeAttribute('src'); // Force mobile to release the video
-    video.load(); // Reset the video element
+    video.removeAttribute('src');
+    video.load();
   });
   
   const iframes = popupContent.querySelectorAll('iframe');
   iframes.forEach(iframe => {
-    const src = iframe.src;
-    iframe.src = 'about:blank'; // Immediately stop iframe
+    iframe.src = 'about:blank';
     setTimeout(() => iframe.src = '', 0);
   });
   
   popup.style.display = 'none';
-  popup.style.opacity = '0';
   this.popupVisible = false;
   this.popupJustClosed = true;
   
   setTimeout(() => {
     this.popupJustClosed = false;
-    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
-      document.body.requestPointerLock();
-    }
   }, 150);
 },
   
