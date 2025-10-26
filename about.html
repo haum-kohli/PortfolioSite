@@ -1079,9 +1079,10 @@ const SceneManager = {
     this.yaw.add(this.pitch);
     this.yaw.rotation.y = 9.5;
     
-    this.scene = new THREE.Scene();
-    this.scene.background = new THREE.Color(0xcc11cc);
-    this.scene.fog = new THREE.Fog(0xff00ff, 0, CONFIG.MOBILE_LIMIT_DRAW_DISTANCE);
+  this.scene = new THREE.Scene();
+const skyTexture = new THREE.TextureLoader().load('https://images.pexels.com/photos/531756/pexels-photo-531756.jpeg');
+this.scene.background = skyTexture;
+this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
     
     this.scene.add(new THREE.HemisphereLight(0xffffff, 0x444444, 0.5));
     this.scene.add(new THREE.AmbientLight(0xffffff, 0.5));
