@@ -1109,12 +1109,26 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
           
           let material;
           
-          if (isVideo) {
-            const videoElem = document.createElement('video');
-            videoElem.src = project.videoSrc;
-            videoElem.muted = true;
-            videoElem.loop = true;
-            videoElem.playsInline = true;
+    if (isVideo) {
+  const videoElem = document.createElement('video');
+  videoElem.src = project.videoSrc;
+  videoElem.muted = true;
+  videoElem.loop = true;
+  videoElem.playsInline = true;
+  
+  // Create fallback texture first
+  const fallbackTexture = textureLoader.load(
+    project.fallbackImage || `assets/${project.thumbnail}`,
+    () => LoadingManager.increment(),
+    undefined,
+    () => LoadingManager.increment()
+  );
+  
+  // Start with fallback material
+  material = new THREE.MeshStandardMaterial({ 
+    map: fallbackTexture,
+    color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff
+  });
             
             if (CONFIG.IS_MOBILE) {
               videoElem.setAttribute('playsinline', '');
@@ -1141,15 +1155,22 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
             });
             
             const videoTexture = new THREE.VideoTexture(videoElem);
-            videoTexture.minFilter = THREE.LinearFilter;
-            videoTexture.magFilter = THREE.LinearFilter;
-            videoTexture.format = THREE.RGBFormat;
-            
-            this.videos.push(videoElem);
-            material = new THREE.MeshStandardMaterial({ 
-              map: videoTexture,
-              color: CONFIG.IS_MOBILE ? 0x888888 : 0xffffff
-            });
+  videoTexture.minFilter = THREE.LinearFilter;
+  videoTexture.magFilter = THREE.LinearFilter;
+  videoTexture.format = THREE.RGBFormat;
+  
+  this.videos.push(videoElem);
+  
+  // Try to switch to video texture when video can play
+  videoElem.addEventListener('canplay', () => {
+    const box = this.boxes.find(b => b.userData.projectId === project.id);
+    if (box) {
+      box.material.map = videoTexture;
+      box.material.needsUpdate = true;
+    }
+  }, { once: true });
+  
+  // Keep fallback material (already set above)
           } else if (isGif) {
             const canvas = document.createElement('canvas');
             canvas.width = 512;
