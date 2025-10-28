@@ -319,6 +319,80 @@ body {
   color: #222; 
 }
 
+#video-popup {
+  display: none;
+  position: fixed;
+  left: 0;
+  top: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.95);
+  z-index: 10001;
+  justify-content: center;
+  align-items: center;
+}
+
+#video-popup-close-btn {
+  position: absolute;
+  top: 18px;
+  right: 28px;
+  font-size: 2em;
+  color: #ff0000;
+  background: none;
+  border: none;
+  cursor: pointer;
+  z-index: 10003;
+  transition: color 0.2s;
+  font-family: 'Monospace821Bold', monospace;
+  line-height: 1;
+}
+
+#video-popup-close-btn:hover { 
+  color: #222; 
+}
+
+#video-popup-content {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#video-popup .popup-images-scroll {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  padding: 60px 20px 20px 20px;
+  box-sizing: border-box;
+  align-items: center;
+  justify-content: center;
+}
+
+#video-popup .popup-images-scroll iframe {
+  width: 100%;
+  aspect-ratio: 16/9;
+  display: block;
+  border: none;
+}
+
+@media (min-width: 1025px) {
+  #video-popup .popup-images-scroll {
+    padding: 60px 40px 40px 40px;
+  }
+  
+  #video-popup .popup-images-scroll iframe {
+    max-width: 90vw;
+    max-height: 90vh;
+    width: 80vw;
+    aspect-ratio: 16/9;
+  }
+}
 /* ===== DOOM POPUP ===== */
 #doom-popup {
   display: none;
@@ -693,6 +767,11 @@ body {
   <button class="close-btn" onclick="AboutApp.hidePopup()">&times;</button>
   <div id="popup-content"></div>
 </div>
+<!-- ===== VIDEO POPUP ===== -->
+<div id="video-popup">
+  <button id="video-popup-close-btn" onclick="AboutApp.hideVideoPopup()">&times;</button>
+  <div id="video-popup-content"></div>
+</div>
 
 <!-- ===== IMAGE MODAL ===== -->
 <div id="image-modal" onclick="AboutApp.closeImageModal(event)">
@@ -841,6 +920,10 @@ document.addEventListener('keydown', (e) => {
       AboutApp.hidePopup();
       return;
     }
+    if (AboutApp.videoPopupVisible) {
+      AboutApp.hideVideoPopup();
+      return;
+    }
     if (AboutApp.doomPopupVisible) {
       AboutApp.hideDoomPopup();
       return;
@@ -870,20 +953,18 @@ document.addEventListener('keydown', (e) => {
         document.getElementById('click-prompt').style.display = 'none';
       }
       
-    if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.doomPopupVisible && !AboutApp.popupJustClosed) {
+    if (wasLocked && !this.pointerLocked && !AboutApp.menuOpen && !AboutApp.popupVisible && !AboutApp.videoPopupVisible && !AboutApp.doomPopupVisible && !AboutApp.popupJustClosed) {
         AboutApp.openMenu();
       }
     });
     
     document.addEventListener('click', () => {
-      if (!this.pointerLocked && !AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && !LoadingManager.isLoading) {
+      if (!this.pointerLocked && !AboutApp.popupVisible && !AboutApp.videoPopupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && !LoadingManager.isLoading) {
         document.body.requestPointerLock();
       }
     });
   },
   
-// FIND AND REPLACE THE ENTIRE initMobileControls FUNCTION:
-
 initMobileControls() {
   this.initJoystick('movement-joystick', (x, y) => {
     this.mobileMovement.x = x;
@@ -894,7 +975,7 @@ initMobileControls() {
     Array.from(e.changedTouches).forEach(touch => {
       const target = document.elementFromPoint(touch.clientX, touch.clientY);
       const isOnJoystick = target && target.closest('#movement-joystick');
-      const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#top-menu'));
+      const isOnUI = target && (target.closest('#mobile-menu-btn') || target.closest('#popup') || target.closest('#video-popup') || target.closest('#top-menu'));
       
       this.activeTouches.set(touch.identifier, {
         startX: touch.clientX,
@@ -911,7 +992,7 @@ initMobileControls() {
   });
   
   document.addEventListener('touchmove', (e) => {
-    if (AboutApp.popupVisible || AboutApp.menuOpen) return;
+    if (AboutApp.popupVisible || AboutApp.videoPopupVisible || AboutApp.menuOpen) return;
     
     Array.from(e.changedTouches).forEach(touch => {
       const touchData = this.activeTouches.get(touch.identifier);
@@ -942,7 +1023,7 @@ initMobileControls() {
       if (touchData && touchData.isCameraControl && !touchData.hasMoved && touchData.totalDistance < 20) {
         ShotgunGif.play();
         
-        if (!AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && InteractionManager.hoveredBox) {
+        if (!AboutApp.popupVisible && !AboutApp.videoPopupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible && InteractionManager.hoveredBox) {
           const cameraPos = new THREE.Vector3();
           SceneManager.camera.getWorldPosition(cameraPos);
           const dist = cameraPos.distanceTo(InteractionManager.hoveredBox.position);
@@ -952,6 +1033,8 @@ initMobileControls() {
               AboutApp.showDoomPopup();
             } else if (InteractionManager.hoveredBox.userData.isDisplay) {
               AboutApp.showPopup(InteractionManager.hoveredBox.userData.projectData);
+            } else if (InteractionManager.hoveredBox.userData.isVideoDisplay) {
+              AboutApp.showVideoPopup(InteractionManager.hoveredBox.userData.projectData);
             }
           }
         }
@@ -1015,7 +1098,6 @@ initJoystick(id, callback) {
   const handleEnd = (e) => {
     e.preventDefault();
     
-    // Check if any joystick touch still exists
     let hasJoystickTouch = false;
     if (e.touches) {
       for (let i = 0; i < e.touches.length; i++) {
@@ -1169,6 +1251,7 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
   },
   
   createEnvironment() {
+    const textureLoader = new THREE.TextureLoader();
     const floorGeo = this.createDeformedGeometry(new THREE.PlaneGeometry(100, 200, 10, 20), 2);
     floorGeo.rotateX(-Math.PI / 2);
     const tex = this.createCheckeredTexture();
@@ -1193,62 +1276,73 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
     
     const geometry = new THREE.BoxGeometry(30, 30, 30);
 
-// Create video element for texture
-const video = document.createElement('video');
-video.src = 'assets/aboutsectioncompressed.mp4';
-video.loop = true;
-video.muted = true;
-video.playsInline = true;
-video.crossOrigin = 'anonymous';
-video.preload = 'auto';
+    // Create video element
+    const video = document.createElement('video');
+    video.src = 'assets/aboutsectioncompressed.mp4';
+    video.loop = true;
+    video.muted = true;
+    video.playsInline = true;
+    video.crossOrigin = 'anonymous';
+    video.preload = 'auto';
 
-video.addEventListener('loadedmetadata', () => {
-  const texture = new THREE.VideoTexture(video);
-  texture.minFilter = THREE.LinearFilter;
-  texture.magFilter = THREE.LinearFilter;
-  texture.format = THREE.RGBFormat;
-  texture.generateMipmaps = false;
-  
-  const material = new THREE.MeshStandardMaterial({ 
-    map: texture,
-    metalness: 0,
-    roughness: 1
-  });
-  
-  this.bigbox.material = material;
-  
-  video.play().catch(e => {
-    setTimeout(() => video.play().catch(() => {}), 100);
-  });
-  
-  LoadingManager.increment();
-});
+    // Initial material with black color
+    const initialMaterial = new THREE.MeshStandardMaterial({ 
+      color: 0x000000,
+      metalness: 0,
+      roughness: 1
+    });
+    
+    this.bigbox = new THREE.Mesh(geometry, initialMaterial);
+    this.bigbox.position.set(0, 20, 180);
 
-video.addEventListener('error', () => {
-  console.warn('Failed to load video texture');
-  LoadingManager.increment();
-});
+    if (!CONFIG.IS_MOBILE) {
+      this.bigbox.castShadow = true;
+      this.bigbox.receiveShadow = true;
+    }
 
-const material = new THREE.MeshStandardMaterial({ color: 0x000000 });
-this.bigbox = new THREE.Mesh(geometry, material);
-this.bigbox.position.set(0, 20, 180);
+    this.bigbox.userData.isVideoDisplay = true;
+    this.bigbox.userData.video = video;
+    this.bigbox.userData.projectData = {
+      title: "",
+      description: "",
+      media: [
+        { type: "video", src: "https://vimeo.com/1131280784" }
+      ]
+    };
 
-if (!CONFIG.IS_MOBILE) {
-  this.bigbox.castShadow = true;
-  this.bigbox.receiveShadow = true;
-}
+    // Load video and create texture
+    video.addEventListener('loadeddata', () => {
+      console.log('Video loaded successfully');
+      const texture = new THREE.VideoTexture(video);
+      texture.minFilter = THREE.LinearFilter;
+      texture.magFilter = THREE.LinearFilter;
+      texture.format = THREE.RGBFormat;
+      texture.generateMipmaps = false;
+      
+      const videoMaterial = new THREE.MeshStandardMaterial({ 
+        map: texture,
+        metalness: 0,
+        roughness: 1
+      });
+      
+      this.bigbox.material.dispose();
+      this.bigbox.material = videoMaterial;
+      
+      // Start playing video
+      video.play().catch(e => {
+        console.log('Autoplay prevented, will try again on user interaction');
+        setTimeout(() => video.play().catch(() => {}), 100);
+      });
+      
+      LoadingManager.increment();
+    });
 
-this.bigbox.userData.isDisplay = true;
-this.bigbox.userData.video = video;
-this.bigbox.userData.projectData = {
-  title: "Recent Work",
-  description: "Check out my latest project!",
-  media: [
-    { type: "video", src: "https://vimeo.com/1131280784" }
-  ]
-};
+    video.addEventListener('error', (e) => {
+      console.warn('Failed to load video texture:', e);
+      LoadingManager.increment();
+    });
 
-video.load();
+    video.load();
     
     this.scene.add(this.bigbox);
     this.boxes.push(this.bigbox);
@@ -1303,8 +1397,7 @@ video.load();
         <iframe style="border-radius:12px" src="https://open.spotify.com/embed/playlist/454e70CPg4oTs3RaZcuw9K?utm_source=generator&theme=0" width="100%" height="400" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
       </div>`,
       media: [
-        { type: "image", src: "assets/me.webp" },
-  
+        { type: "image", src: "assets/me.webp" }
       ]
     };
     this.scene.add(this.displayBox);
@@ -1428,7 +1521,7 @@ const InteractionManager = {
     
     if (!CONFIG.IS_MOBILE) {
       document.addEventListener('mousemove', (e) => {
-        if (InputManager.pointerLocked && !AboutApp.popupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible) {
+        if (InputManager.pointerLocked && !AboutApp.popupVisible && !AboutApp.videoPopupVisible && !AboutApp.menuOpen && !AboutApp.doomPopupVisible) {
           SceneManager.yaw.rotation.y -= e.movementX * CONFIG.MOUSE_SENSITIVITY;
           SceneManager.pitch.rotation.x = Math.max(
             -Math.PI/2, 
@@ -1440,8 +1533,9 @@ const InteractionManager = {
       document.addEventListener('click', (e) => {
         ShotgunGif.play();
         
-        if (AboutApp.doomPopupVisible || AboutApp.popupVisible) {
+        if (AboutApp.doomPopupVisible || AboutApp.popupVisible || AboutApp.videoPopupVisible) {
           const popup = document.getElementById('popup');
+          const videoPopup = document.getElementById('video-popup');
           if (AboutApp.popupVisible) {
             const rect = popup.getBoundingClientRect();
             const clickedInside = e.clientX >= rect.left && e.clientX <= rect.right && 
@@ -1449,6 +1543,15 @@ const InteractionManager = {
             
             if (!clickedInside) {
               AboutApp.hidePopup();
+            }
+          }
+          if (AboutApp.videoPopupVisible) {
+            const rect = videoPopup.getBoundingClientRect();
+            const clickedInside = e.clientX >= rect.left && e.clientX <= rect.right && 
+                                 e.clientY >= rect.top && e.clientY <= rect.bottom;
+            
+            if (!clickedInside) {
+              AboutApp.hideVideoPopup();
             }
           }
           return;
@@ -1466,6 +1569,8 @@ const InteractionManager = {
               AboutApp.showDoomPopup();
             } else if (this.hoveredBox.userData.isDisplay) {
               AboutApp.showPopup(this.hoveredBox.userData.projectData);
+            } else if (this.hoveredBox.userData.isVideoDisplay) {
+              AboutApp.showVideoPopup(this.hoveredBox.userData.projectData);
             }
           }
         }
@@ -1482,7 +1587,7 @@ const InteractionManager = {
       );
     }
     
-    if ((!CONFIG.IS_MOBILE && !InputManager.pointerLocked) || AboutApp.popupVisible || AboutApp.menuOpen || AboutApp.doomPopupVisible) {
+    if ((!CONFIG.IS_MOBILE && !InputManager.pointerLocked) || AboutApp.popupVisible || AboutApp.videoPopupVisible || AboutApp.menuOpen || AboutApp.doomPopupVisible) {
       this.reticle.classList.remove('hover');
       this.hoveredBox = null;
       return;
@@ -1493,7 +1598,7 @@ const InteractionManager = {
     
     if (intersects.length > 0) {
       const obj = intersects[0].object;
-      if (obj.userData.isDoomArcade || obj.userData.isDisplay) {
+      if (obj.userData.isDoomArcade || obj.userData.isDisplay || obj.userData.isVideoDisplay) {
         const cameraPos = new THREE.Vector3();
         SceneManager.camera.getWorldPosition(cameraPos);
         const dist = cameraPos.distanceTo(obj.position);
@@ -1579,8 +1684,9 @@ const PopupManager = {
 const AboutApp = {
   menuOpen: false,
   popupVisible: false,
+  videoPopupVisible: false,
   doomPopupVisible: false,
-    popupJustClosed: false,
+  popupJustClosed: false,
   animationId: null,
   prevTime: performance.now(),
   dosboxInstance: null,
@@ -1667,38 +1773,77 @@ const AboutApp = {
     }
   },
   
-hidePopup() {
-  const popup = document.getElementById('popup');
-  const popupContent = document.getElementById('popup-content');
-  
-  // Stop all videos and iframes in the popup
-  const videos = popupContent.querySelectorAll('video');
-  videos.forEach(video => {
-    video.pause();
-    video.currentTime = 0;
-    video.removeAttribute('src'); // Force mobile to release the video
-    video.load(); // Reset the video element
-  });
-  
-  const iframes = popupContent.querySelectorAll('iframe');
-  iframes.forEach(iframe => {
-    const src = iframe.src;
-    iframe.src = 'about:blank'; // Immediately stop iframe
-    setTimeout(() => iframe.src = '', 0);
-  });
-  
-  popup.style.display = 'none';
-  popup.style.opacity = '0';
-  this.popupVisible = false;
-  this.popupJustClosed = true;
-  
-  setTimeout(() => {
-    this.popupJustClosed = false;
-    if (!CONFIG.IS_MOBILE && !this.menuOpen) {
-      document.body.requestPointerLock();
+  hidePopup() {
+    const popup = document.getElementById('popup');
+    const popupContent = document.getElementById('popup-content');
+    
+    const videos = popupContent.querySelectorAll('video');
+    videos.forEach(video => {
+      video.pause();
+      video.currentTime = 0;
+      video.removeAttribute('src');
+      video.load();
+    });
+    
+    const iframes = popupContent.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      iframe.src = 'about:blank';
+      setTimeout(() => iframe.src = '', 0);
+    });
+    
+    popup.style.display = 'none';
+    popup.style.opacity = '0';
+    this.popupVisible = false;
+    this.popupJustClosed = true;
+    
+    setTimeout(() => {
+      this.popupJustClosed = false;
+      if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    }, 150);
+  },
+
+  showVideoPopup(project) {
+    const popup = document.getElementById('video-popup');
+    const popupContent = document.getElementById('video-popup-content');
+    
+    const vimeoMatch = project.media[0].src.match(/vimeo\.com\/(\d+)/);
+    if (vimeoMatch) {
+      const videoId = vimeoMatch[1];
+      popupContent.innerHTML = `<div class="popup-images-scroll"><iframe src="https://player.vimeo.com/video/${videoId}?autoplay=0&loop=0&title=0&byline=0&portrait=0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen></iframe></div>`;
     }
-  }, 150);
-},
+    
+    popup.style.display = 'flex';
+    this.videoPopupVisible = true;
+    
+    if (!CONFIG.IS_MOBILE && document.pointerLockElement) {
+      document.exitPointerLock();
+    }
+  },
+
+  hideVideoPopup() {
+    const popup = document.getElementById('video-popup');
+    const popupContent = document.getElementById('video-popup-content');
+    
+    const iframes = popupContent.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+      iframe.src = 'about:blank';
+      setTimeout(() => iframe.src = '', 0);
+    });
+    
+    popup.style.display = 'none';
+    this.videoPopupVisible = false;
+    this.popupJustClosed = true;
+    
+    setTimeout(() => {
+      this.popupJustClosed = false;
+      if (!CONFIG.IS_MOBILE && !this.menuOpen) {
+        document.body.requestPointerLock();
+      }
+    }, 150);
+  },
+  
   showDoomPopup() {
     const popup = document.getElementById('doom-popup');
     popup.style.display = 'flex';
@@ -1748,7 +1893,7 @@ hidePopup() {
     const delta = (time - this.prevTime) / 1000;
     this.prevTime = time;
     
-    if (!this.menuOpen && !this.popupVisible && !this.doomPopupVisible) {
+    if (!this.menuOpen && !this.popupVisible && !this.videoPopupVisible && !this.doomPopupVisible) {
       PhysicsManager.update(delta);
       InteractionManager.update();
       
