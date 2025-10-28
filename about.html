@@ -1192,35 +1192,63 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
     });
     
     const geometry = new THREE.BoxGeometry(30, 30, 30);
-    const textureLoader = new THREE.TextureLoader();
-    
-    const boxTexture = textureLoader.load(
-      'assets/newvidsoon.webp',
-      () => LoadingManager.increment(),
-      undefined,
-      () => {
-        console.warn('Failed to load box texture');
-        LoadingManager.increment();
-      }
-    );
-    
-    const material = new THREE.MeshStandardMaterial({ map: boxTexture });
-    this.bigbox = new THREE.Mesh(geometry, material);
-    this.bigbox.position.set(0, 20, 180);
-    
-    if (!CONFIG.IS_MOBILE) {
-      this.bigbox.castShadow = true;
-      this.bigbox.receiveShadow = true;
-    }
-    
-    this.bigbox.userData.isDisplay = true;
-    this.bigbox.userData.projectData = {
-      title: "",
-      description: "",
-      media: [
-        { type: "image", src: "assets/newvidsoon.webp" }
-      ]
-    };
+
+// Create video element for texture
+const video = document.createElement('video');
+video.src = 'assets/aboutsectioncompressed.mp4';
+video.loop = true;
+video.muted = true;
+video.playsInline = true;
+video.crossOrigin = 'anonymous';
+video.preload = 'auto';
+
+video.addEventListener('loadedmetadata', () => {
+  const texture = new THREE.VideoTexture(video);
+  texture.minFilter = THREE.LinearFilter;
+  texture.magFilter = THREE.LinearFilter;
+  texture.format = THREE.RGBFormat;
+  texture.generateMipmaps = false;
+  
+  const material = new THREE.MeshStandardMaterial({ 
+    map: texture,
+    metalness: 0,
+    roughness: 1
+  });
+  
+  this.bigbox.material = material;
+  
+  video.play().catch(e => {
+    setTimeout(() => video.play().catch(() => {}), 100);
+  });
+  
+  LoadingManager.increment();
+});
+
+video.addEventListener('error', () => {
+  console.warn('Failed to load video texture');
+  LoadingManager.increment();
+});
+
+const material = new THREE.MeshStandardMaterial({ color: 0x000000 });
+this.bigbox = new THREE.Mesh(geometry, material);
+this.bigbox.position.set(0, 20, 180);
+
+if (!CONFIG.IS_MOBILE) {
+  this.bigbox.castShadow = true;
+  this.bigbox.receiveShadow = true;
+}
+
+this.bigbox.userData.isDisplay = true;
+this.bigbox.userData.video = video;
+this.bigbox.userData.projectData = {
+  title: "Recent Work",
+  description: "Check out my latest project!",
+  media: [
+    { type: "video", src: "https://vimeo.com/1131280784" }
+  ]
+};
+
+video.load();
     
     this.scene.add(this.bigbox);
     this.boxes.push(this.bigbox);
