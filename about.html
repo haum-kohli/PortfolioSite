@@ -1276,12 +1276,21 @@ this.scene.fog = new THREE.Fog(0x87CEEB, 50, CONFIG.FOG_DISTANCE);
     
    const geometry = new THREE.BoxGeometry(30, 30, 30);
 
+// Create a new texture loader instance
+const loader = new THREE.TextureLoader();
+
 // Create fallback texture first
-const fallbackTexture = textureLoader.load(
+const fallbackTexture = loader.load(
   'assets/aboutsectioncompressed.webp',
-  () => LoadingManager.increment(),
+  () => {
+    console.log('Fallback image loaded');
+    LoadingManager.increment();
+  },
   undefined,
-  () => LoadingManager.increment()
+  (err) => {
+    console.error('Failed to load fallback image:', err);
+    LoadingManager.increment();
+  }
 );
 
 // Start with fallback material
